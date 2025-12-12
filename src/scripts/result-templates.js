@@ -130,7 +130,6 @@ function getTemplateType(classLevel) {
   return "secondary";
 }
 
-<<<<<<< HEAD
 export async function generateResultSheet(
   student,
   subjectResults,
@@ -138,14 +137,10 @@ export async function generateResultSheet(
   year,
   metadata = {}
 ) {
-=======
-export async function generateResultSheet(student, subjectResults, term, year) {
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
   const templateType = getTemplateType(student.currentClass);
 
   // Route to appropriate template
   if (templateType === "prenursery") {
-<<<<<<< HEAD
     return generatePreNurseryResultSheet(
       student,
       subjectResults,
@@ -169,13 +164,6 @@ export async function generateResultSheet(student, subjectResults, term, year) {
       year,
       metadata
     );
-=======
-    return generatePreNurseryResultSheet(student, subjectResults, term, year);
-  } else if (templateType === "primary") {
-    return generatePrimaryResultSheet(student, subjectResults, term, year);
-  } else {
-    return generateSecondaryResultSheet(student, subjectResults, term, year);
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
   }
 }
 
@@ -185,12 +173,8 @@ async function generateSecondaryResultSheet(
   student,
   subjectResults,
   term,
-<<<<<<< HEAD
   year,
   metadata = {}
-=======
-  year
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
 ) {
   const settings = await getSettings();
   const isJSS = student.currentClass.startsWith("JSS");
@@ -202,12 +186,8 @@ async function generateSecondaryResultSheet(
   <div class="resu-back">
     <div class="resu">
       <!-- School Logo Watermark -->
-<<<<<<< HEAD
       <!-- School Logo Watermark -->
       <div class="resu-overlay overlay-secondary"></div>
-=======
-      <img src="../assets/mmlclogo.jpg" alt="" class="resu-overlay" />
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
       
       <!-- Top Section: Header & Student Info -->
       <div class="top">
@@ -234,11 +214,7 @@ async function generateSecondaryResultSheet(
       <!-- Bottom Section: Statistics & Comments -->
       <div class="bottom">
         ${generateBottomStats(stats)}
-<<<<<<< HEAD
         ${generateComments(metadata)}
-=======
-        ${generateComments()}
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
         <div class="school-sign">SCHOOL SIGNATURE AND STAMP</div>
       </div>
   </div>
@@ -262,17 +238,10 @@ async function generateSecondaryHeader(classLevel) {
           <span class="add-highlight">ADD:</span> Plot 17, Road D, OTUNLA
           LAYOUT, OKE JUNCTION, APETE, IBADAN, OYO STATE, NIGERIA.
         </div>
-<<<<<<< HEAD
         <div class="motto"><span class="phone-highlight">Motto:</span>Knowledge and Discipline builds a destiny.</div>
         <div class="contact">
           <div class="phone">
             <span class="phone-highlight">Tel:</span> +2348072734402, 08055447625
-=======
-        <div class="motto">Knowledge and Discipline builds a destiny.</div>
-        <div class="contact">
-          <div class="phone">
-            <span class="phone-highlight">Tel:</span> 08072734402, 08055447625
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
           </div>
           <div class="email">
             <span class="phone-highlight">E-mail:</span>
@@ -287,7 +256,6 @@ async function generateSecondaryHeader(classLevel) {
 
 // ==================== PRIMARY TEMPLATE (Nursery 2, Primary 1-6) ====================
 
-<<<<<<< HEAD
 async function generatePrimaryResultSheet(
   student,
   subjectResults,
@@ -295,9 +263,6 @@ async function generatePrimaryResultSheet(
   year,
   metadata = {}
 ) {
-=======
-async function generatePrimaryResultSheet(student, subjectResults, term, year) {
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
   const settings = await getSettings();
   const stats = await calculateStatistics(subjectResults, student.currentClass);
 
@@ -305,12 +270,8 @@ async function generatePrimaryResultSheet(student, subjectResults, term, year) {
   <div class="resu-back">
     <div class="resu resu-primary">
       <!-- School Logo Watermark -->
-<<<<<<< HEAD
       <!-- School Logo Watermark -->
       <div class="resu-overlay overlay-primary"></div>
-=======
-      <img src="../assets/pfbslogo.jpg" alt="" class="resu-overlay" />
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
       
       <!-- Top Section: Header & Student Info -->
       <div class="top">
@@ -327,21 +288,13 @@ async function generatePrimaryResultSheet(student, subjectResults, term, year) {
       
       <!-- Middle Section: Results Table -->
       <div class="table">
-<<<<<<< HEAD
         ${await generatePrimaryResultsTable(student, subjectResults, settings)}
-=======
-        ${await generatePrimaryResultsTable(student, subjectResults)}
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
       </div>
       
       <!-- Bottom Section: Statistics & Comments -->
       <div class="bottom">
         ${generateBottomStats(stats)}
-<<<<<<< HEAD
         ${generateComments(metadata)}
-=======
-        ${generateComments()}
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
         <div class="school-sign">SCHOOL SIGNATURE AND STAMP</div>
       </div>
   </div>
@@ -360,17 +313,10 @@ async function generatePrimaryHeader(classLevel) {
           <span class="add-highlight">ADD:</span> Plot 12, Road D, OTUNLA
           LAYOUT, OKE JUNCTION, APETE, IBADAN, OYO STATE, NIGERIA.
         </div>
-<<<<<<< HEAD
         <div class="motto"><span class="phone-highlight">Motto:</span>Ever Increasing in Knowledge</div>
         <div class="contact">
           <div class="phone">
             <span class="phone-highlight">Tel:</span> +2348072734402, 08055447625
-=======
-        <div class="motto">Ever Increasing in Knowledge</div>
-        <div class="contact">
-          <div class="phone">
-            <span class="phone-highlight">Tel:</span> 08072734402, 08055447625
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
           </div>
           <div class="email">
             <span class="phone-highlight">E-mail:</span>
@@ -383,7 +329,6 @@ async function generatePrimaryHeader(classLevel) {
   `;
 }
 
-<<<<<<< HEAD
 async function generatePrimaryResultsTable(
   student,
   subjectResults,
@@ -393,13 +338,6 @@ async function generatePrimaryResultsTable(
     student._id || student.id
   );
   sortSubjects(allSubjectsForStudent, student.currentClass, settings);
-=======
-async function generatePrimaryResultsTable(student, subjectResults) {
-  const allSubjectsForStudent = await getSubjectsForStudent(
-    student._id || student.id
-  );
-  allSubjectsForStudent.sort((a, b) => a.name.localeCompare(b.name));
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
 
   let subjectRows = "";
   allSubjectsForStudent.forEach((subject) => {
@@ -414,11 +352,7 @@ async function generatePrimaryResultsTable(student, subjectResults) {
         <td>70</td>
         <td>${result?.exam || ""}</td>
         <td><strong>${result?.total || ""}</strong></td>
-<<<<<<< HEAD
         <td>${getOrdinal(result?.position)}</td>
-=======
-        <td>${result?.position || ""}</td>
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
         <td>${result?.remarks || ""}</td>
       </tr>
     `;
@@ -472,12 +406,8 @@ async function generatePreNurseryResultSheet(
   student,
   subjectResults,
   term,
-<<<<<<< HEAD
   year,
   metadata = {}
-=======
-  year
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
 ) {
   const settings = await getSettings();
   const stats = await calculateStatistics(subjectResults, student.currentClass);
@@ -486,12 +416,8 @@ async function generatePreNurseryResultSheet(
   <div class="resu-back">
     <div class="resu resu-prenursery">
       <!-- School Logo Watermark -->
-<<<<<<< HEAD
       <!-- School Logo Watermark -->
       <div class="resu-overlay overlay-primary"></div>
-=======
-      <img src="../assets/pfbslogo.jpg" alt="" class="resu-overlay" />
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
       
       <!-- Top Section: Header & Student Info -->
       <div class="top">
@@ -508,26 +434,18 @@ async function generatePreNurseryResultSheet(
       
       <!-- Middle Section: Results Table -->
       <div class="table">
-<<<<<<< HEAD
         ${await generatePreNurseryResultsTable(
           student,
           subjectResults,
           metadata,
           settings
         )}
-=======
-        ${await generatePreNurseryResultsTable(student, subjectResults)}
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
       </div>
       
       <!-- Bottom Section: Statistics & Comments -->
       <div class="bottom">
         ${generateBottomStats(stats)}
-<<<<<<< HEAD
         ${generateComments(metadata)}
-=======
-        ${generateComments()}
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
         <div class="school-sign">SCHOOL SIGNATURE AND STAMP</div>
       </div>
   </div>
@@ -546,17 +464,10 @@ async function generatePreNurseryHeader(classLevel) {
           <span class="add-highlight">ADD:</span> Plot 12, Road D, OTUNLA
           LAYOUT, OKE JUNCTION, APETE, IBADAN, OYO STATE, NIGERIA.
         </div>
-<<<<<<< HEAD
         <div class="motto"><span class="phone-highlight">Motto:</span> Ever Increasing in Knowledge</div>
         <div class="contact">
           <div class="phone">
             <span class="phone-highlight">Tel:</span> +2348072734402, 08055447625
-=======
-        <div class="motto">Ever Increasing in Knowledge</div>
-        <div class="contact">
-          <div class="phone">
-            <span class="phone-highlight">Tel:</span> 08072734402, 08055447625
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
           </div>
           <div class="email">
             <span class="phone-highlight">E-mail:</span>
@@ -569,7 +480,6 @@ async function generatePreNurseryHeader(classLevel) {
   `;
 }
 
-<<<<<<< HEAD
 async function generatePreNurseryResultsTable(
   student,
   subjectResults,
@@ -580,13 +490,6 @@ async function generatePreNurseryResultsTable(
     student._id || student.id
   );
   sortSubjects(allSubjectsForStudent, student.currentClass, settings);
-=======
-async function generatePreNurseryResultsTable(student, subjectResults) {
-  const allSubjectsForStudent = await getSubjectsForStudent(
-    student._id || student.id
-  );
-  allSubjectsForStudent.sort((a, b) => a.name.localeCompare(b.name));
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
 
   let subjectRows = "";
   allSubjectsForStudent.forEach((subject) => {
@@ -601,11 +504,7 @@ async function generatePreNurseryResultsTable(student, subjectResults) {
         <td>60</td>
         <td>${result?.exam || ""}</td>
         <td><strong>${result?.total || ""}</strong></td>
-<<<<<<< HEAD
         <td>${getOrdinal(result?.position)}</td>
-=======
-        <td>${result?.position || ""}</td>
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
         <td>${result?.remarks || ""}</td>
       </tr>
     `;
@@ -621,7 +520,6 @@ async function generatePreNurseryResultsTable(student, subjectResults) {
     `;
   }
 
-<<<<<<< HEAD
   // Conventional Performance table with data from metadata AND contenteditable
   const conv = metadata.conventionalPerformance || {};
   const conventionalRows = `
@@ -672,33 +570,6 @@ async function generatePreNurseryResultsTable(student, subjectResults) {
       <td contenteditable="true" data-rating="excellent" data-field="speakingFluency">${
         conv.excellent?.speakingFluency || ""
       }</td>
-=======
-  // Conventional Performance table
-  const conventionalRows = `
-    <tr>
-      <td>FAIR</td>
-      <td contenteditable="true"></td>
-      <td contenteditable="true"></td>
-      <td contenteditable="true"></td>
-    </tr>
-    <tr>
-      <td>GOOD</td>
-      <td contenteditable="true"></td>
-      <td contenteditable="true"></td>
-      <td contenteditable="true"></td>
-    </tr>
-    <tr>
-      <td>VERY GOOD</td>
-      <td contenteditable="true"></td>
-      <td contenteditable="true"></td>
-      <td contenteditable="true"></td>
-    </tr>
-    <tr>
-      <td>EXCELLENT</td>
-      <td contenteditable="true"></td>
-      <td contenteditable="true"></td>
-      <td contenteditable="true"></td>
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
     </tr>
   `;
 
@@ -750,7 +621,6 @@ async function generatePreNurseryResultsTable(student, subjectResults) {
 
 // ==================== SHARED HELPER FUNCTIONS ====================
 
-<<<<<<< HEAD
 function sortSubjects(subjects, classLevel, settings) {
   if (!settings.subjectOrders) {
     subjects.sort((a, b) => a.name.localeCompare(b.name));
@@ -789,8 +659,6 @@ function sortSubjects(subjects, classLevel, settings) {
   });
 }
 
-=======
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
 // Convert date from YYYY-MM-DD to DD/MM/YYYY for display
 function formatDateForDisplay(dateString) {
   if (!dateString) return "-";
@@ -805,7 +673,6 @@ function formatDateForDisplay(dateString) {
   return `${day}/${month}/${year}`;
 }
 
-<<<<<<< HEAD
 // Get ordinal suffix (1ST, 2ND, 3RD, etc.)
 function getOrdinal(n) {
   if (!n || isNaN(n) || n == 0) return "--";
@@ -824,8 +691,6 @@ function getOrdinal(n) {
   return i + "TH";
 }
 
-=======
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
 async function generateStudentInfo(
   student,
   term,
@@ -855,19 +720,14 @@ async function generateStudentInfo(
     console.log("No attendance found for student:", error);
   }
 
-<<<<<<< HEAD
   const maxAttendance =
     attendance?.maxAttendance || settings.maxAttendance || "-";
-=======
-  const maxAttendance = attendance?.maxAttendance || "-";
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
   const timePresent = attendance?.timePresent || "-";
   const timeAbsent = attendance?.timeAbsent || "-";
 
   return `
     <div class="stat">
       <div class="line">
-<<<<<<< HEAD
         <div class="name"><strong font-weight:900; font-family:"rockwell">NAME:</strong> ${student.firstName} ${student.otherNames}</div>
         <div class="class"><strong font-weight:900; font-family:"rockwell">CLASS:</strong> ${student.currentClass}</div>
       </div>
@@ -884,24 +744,6 @@ async function generateStudentInfo(
       <div class="line">
         <div class="dov"><strong font-weight:900; font-family:"rockwell">DATE OF VACATION:</strong> ${vacationDate}</div>
         <div class="dor"><strong font-weight:900; font-family:"rockwell">DATE OF RESUMPTION:</strong> ${resumptionDate}</div>
-=======
-        <div class="name">NAME: ${student.firstName} ${student.otherNames}</div>
-        <div class="class">CLASS: ${student.currentClass}</div>
-      </div>
-      <div class="line">
-        <div class="term">TERM: ${termDisplay}</div>
-        <div class="session">SESSION: ${year}</div>
-        <div class="max-att">MAX.ATTENDANCE: ${maxAttendance}</div>
-      </div>
-      <div class="line">
-        <div class="noinclass">NUMBER IN CLASS: ${totalStudents}</div>
-        <div class="time-present">TIME PRESENT: ${timePresent}</div>
-        <div class="time-absent">TIME ABSENT: ${timeAbsent}</div>
-      </div>
-      <div class="line">
-        <div class="dov">DATE OF VACATION: ${vacationDate}</div>
-        <div class="dor">DATE OF RESUMPTION: ${resumptionDate}</div>
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
       </div>
     </div>
   `;
@@ -928,11 +770,7 @@ async function generateSecondaryResultsTable(
         </tr>
       </thead>
       <tbody>
-<<<<<<< HEAD
         ${await generateSubjectRows(student, subjectResults, settings)}
-=======
-        ${await generateSubjectRows(student, subjectResults)}
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
       </tbody>
     </table>
     
@@ -940,7 +778,6 @@ async function generateSecondaryResultsTable(
     <div class="table-below">
       <div class="table-below-left">
         <ul class="grade-list">
-<<<<<<< HEAD
           <li><strong style="color: #b70d18;">GRADE:</strong></li>
           <li><strong>A:</strong> EXCELLENT</li>
           <li><strong>B:</strong> GOOD</li>
@@ -949,22 +786,11 @@ async function generateSecondaryResultsTable(
           <li><strong>E:</strong> POOR</li>
           <li><strong>F:</strong> FAIL</li>
           <li><strong>AB:</strong> ABSENT</li>
-=======
-          <li><strong>A:</strong> EXCELLENT (80-100)</li>
-          <li><strong>B:</strong> VERY GOOD (70-79)</li>
-          <li><strong>C:</strong> GOOD (60-69)</li>
-          <li><strong>D:</strong> PASS (50-59)</li>
-          <li><strong>E:</strong> WEAK PASS (40-49)</li>
-          <li><strong>F:</strong> FAIL (0-39)</li>
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
         </ul>
       </div>
       <div class="table-below-right">
         <ul class="feat-list">
-<<<<<<< HEAD
           <li><strong style="color: #b70d18;">INTUITIVE FEAT GRADE:</strong></li>
-=======
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
           <li>PUNCTUALITY & LEADERSHIP:</li>
           <li>ATTENTIVE & ABILITY TO SPEAK IN PUBLIC:</li>
           <li>NEATNESS & WORKING WITH OTHERS:</li>
@@ -978,22 +804,14 @@ async function generateSecondaryResultsTable(
   `;
 }
 
-<<<<<<< HEAD
 async function generateSubjectRows(student, subjectResults, settings) {
-=======
-async function generateSubjectRows(student, subjectResults) {
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
   let rows = "";
 
   const allSubjectsForStudent = await getSubjectsForStudent(
     student._id || student.id
   );
 
-<<<<<<< HEAD
   sortSubjects(allSubjectsForStudent, student.currentClass, settings);
-=======
-  allSubjectsForStudent.sort((a, b) => a.name.localeCompare(b.name));
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
 
   allSubjectsForStudent.forEach((subject) => {
     const result = subjectResults[subject.code];
@@ -1006,13 +824,8 @@ async function generateSubjectRows(student, subjectResults) {
         <td class="mark-col">${result?.exam ?? "--"}</td>
         <td class="mark-col"><strong>${result?.total ?? "--"}</strong></td>
         <td class="mark-col"><strong>${result?.grade ?? "--"}</strong></td>
-<<<<<<< HEAD
         <td>${getOrdinal(result?.position)}</td>
         <td>${result?.remarks ?? "--"}</td>
-=======
-        <td>${result?.position ?? "--"}</td>
-        <td><strong>${result?.remarks ?? "--"}</strong></td>
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
         <td></td>
       </tr>
     `;
@@ -1036,20 +849,12 @@ function generateBottomStats(stats) {
     <div class="bottom-stat">
       <div class="bt-line">
         <div class="tmo">
-<<<<<<< HEAD
           <b>TOTAL MARK OBTAINABLE:</b><span class="bt-value">${
-=======
-          TOTAL MARK OBTAINABLE:<span class="bt-value">${
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
             stats.totalObtainable
           }</span>
         </div>
         <div class="tmo">
-<<<<<<< HEAD
           <b>TOTAL MARK OBTAINED:</b><span class="bt-value">${
-=======
-          TOTAL MARK OBTAINED:<span class="bt-value">${
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
             stats.totalObtained
           }</span>
         </div>
@@ -1077,34 +882,22 @@ function generateBottomStats(stats) {
   `;
 }
 
-<<<<<<< HEAD
 function generateComments(metadata = {}) {
   const classTeacherComment =
     metadata.classTeacherComment || "Keep up the good work!";
   const principalComment =
     metadata.principalComment || "Excellent performance.";
 
-=======
-function generateComments() {
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
   return `
     <div class="comment-section">
       <div class="comment">
         <span class="comment-type">CLASS TEACHER'S COMMENT:</span>
-<<<<<<< HEAD
         <span class="class-teacher-comment" contenteditable="true" data-field="classTeacherComment">${classTeacherComment}</span>
-=======
-        <span class="class-teacher-comment">Keep up the good work!</span>
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
       </div>
       
       <div class="comment">
         <span class="comment-type">SCHOOL PRINCIPAL'S COMMENT:</span>
-<<<<<<< HEAD
         <span class="school-principal-comment" contenteditable="true" data-field="principalComment">${principalComment}</span>
-=======
-        <span class="school-teacher-comment">Excellent performance.</span>
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
       </div>
     </div>
   `;
@@ -1145,7 +938,6 @@ export function getResultStyles() {
       font-family: "ITC";
       src: url(../assets/fonts/ITC-Machine-Medium.otf);
     }
-<<<<<<< HEAD
     
     @font-face {
       font-family: "book-antiqua";
@@ -1162,21 +954,11 @@ export function getResultStyles() {
       height: 1263px;
       margin: 0 auto;
       padding: 15px;
-=======
-
-    .resu-back {
-      width: fit-content;
-      margin: 0 auto;
-      padding: 10px;
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
       position: relative;
       box-shadow: 0 6px 12px rgba(0,0,0,0.15);
       page-break-after: always;
       overflow: hidden;
-<<<<<<< HEAD
       box-sizing: border-box;
-=======
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
     }
 
     .resu-back::before {
@@ -1205,7 +987,6 @@ export function getResultStyles() {
     }
 
     .resu {
-<<<<<<< HEAD
       width: 100%;
       height: 100%;
       background-color: #edf6f1;
@@ -1215,17 +996,6 @@ export function getResultStyles() {
       align-items: center;
       padding: 10px 8px;
       position: relative;
-=======
-      width: 872.88px;
-      height: 1243px;
-      background-color: #edf6f1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 15px 10px;
-      position: relative;
-      margin: 0 auto;
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
       box-shadow: 0 4px 6px rgba(0,0,0,0.1);
       page-break-after: always;
     }
@@ -1236,7 +1006,6 @@ export function getResultStyles() {
 
     .resu-overlay {
       position: absolute;
-<<<<<<< HEAD
       top: 100px;
       left: 0;
       width: 100%;
@@ -1254,17 +1023,6 @@ export function getResultStyles() {
 
     .overlay-primary {
       background-image: url(../assets/pfbslogo.jpg);
-=======
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      z-index: 1;
-      opacity: 0.1;
-      pointer-events: none;
-      margin-top: 30px;
-      max-width: 300px;
-      scale: 1.3;
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
     }
 
     .top, .table, .bottom {
@@ -1274,13 +1032,8 @@ export function getResultStyles() {
     }
 
     .top { flex-basis: 25%; }
-<<<<<<< HEAD
     .table { flex-basis: 61%; }
     .bottom { flex-basis: 14%; }
-=======
-    .table { flex-basis: 60%; }
-    .bottom { flex-basis: 15%; }
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
 
     .header-title {
       width: 100%;
@@ -1332,11 +1085,7 @@ export function getResultStyles() {
     .add-highlight { color: yellow; }
     .phone-highlight { color: #b70d18; }
 
-<<<<<<< HEAD
     .motto { font-size: 15px; text-transform: uppercase; }
-=======
-    .motto { font-size: 18px; text-transform: uppercase; }
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
 
     .contact {
       display: flex;
@@ -1354,80 +1103,51 @@ export function getResultStyles() {
       width: fit-content;
       border-radius: 8px;
       text-transform: uppercase;
-<<<<<<< HEAD
       font-family: "georgia", serif;
-=======
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
     }
 
     .stat {
       width: 100%;
       background-color: white;
       padding: 5px 10px;
-<<<<<<< HEAD
       font-size: 19px;
-=======
-      font-weight: 900;
-      font-size: 18px;
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
       margin-top: 10px;
       border-radius: 4px;
     }
 
 
-<<<<<<< HEAD
     .line { display: flex; text-transform: uppercase; font-family: "Times New Roman", Times, serif; line-height: 18px; }
-=======
-    .line { display: flex; text-transform: uppercase; font-family: "Times New Roman", Times, serif; }
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
     .name { flex-basis: 65%; }
     .class { flex-basis: 35%; }
     .dov, .dor { flex-basis: 50%; }
     .term, .session, .max-att, .noinclass, .time-present, .time-absent { flex-basis: 33%; }
 
     .cog {
-<<<<<<< HEAD
       font-size: 30px;
-=======
-      font-size: 24px;
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
       color: red;
       font-weight: 900;
       align-self: flex-start;
       text-transform: uppercase;
       margin-top: 5px;
-<<<<<<< HEAD
       font-family:"antiqua", serif;
-=======
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
     }
 
     .table table {
       width: 100%;
       border-collapse: collapse;
       table-layout: fixed;
-<<<<<<< HEAD
       border:2px solid black
-=======
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
     }
 
     .table th, .table td {
       border: 1px solid black;
       text-align: center;
       vertical-align: middle;
-<<<<<<< HEAD
       word-wrap: break-word;
       white-space: normal;
       text-transform: uppercase;
       padding: 2px 2px;
       font-size: 15.3px;
-=======
-      padding: 2px;
-      word-wrap: break-word;
-      white-space: normal;
-      text-transform: uppercase;
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
     }
 
     .table th{
@@ -1438,29 +1158,17 @@ export function getResultStyles() {
     }
 
     .table .subject-header {
-<<<<<<< HEAD
       // font-weight: bold;
       width: 28%;
       text-align: center;
       font-size: 36px;
       color: #b70d18;
-=======
-      font-weight: bold;
-      width: 28%;
-      text-align: center;
-      font-size: 36px;
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
     }
 
     .table .mark-col-h { font-size: 11.5px; }
     .table .mark-col { width: 29.8px; word-break: break-word; }
-<<<<<<< HEAD
     .table .other-header { width: 12.4%; font-weight: bold; font-size: 12px; padding: 0; }
     .table .subject-title { text-align: left; font-size:16.5px;}
-=======
-    .table .other-header { width: 12.4%; font-weight: bold; font-size: 12px; padding: 1px; }
-    .table .subject-title { text-align: left; }
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
 
     .table-below {
       display: flex;
@@ -1470,15 +1178,9 @@ export function getResultStyles() {
       padding: 5px 50px;
     }
 
-<<<<<<< HEAD
    .table-below ul li {
       list-style-type: none;
       font-size: 13px;
-=======
-    ul li {
-      list-style-type: none;
-      font-size: 12px;
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
     }
 
     .feat-list { text-align: right; }
@@ -1492,11 +1194,7 @@ export function getResultStyles() {
 
     .bt-line {
       display: flex;
-<<<<<<< HEAD
       font-size: 16.5px;
-=======
-      font-size: 16px;
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
     }
 
     .tmo {
@@ -1512,10 +1210,7 @@ export function getResultStyles() {
       background-color: lightgreen;
       margin-left: 10px;
       padding: 2px 5px;
-<<<<<<< HEAD
       color: #011d10ff;
-=======
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
     }
 
     .comment-section {
@@ -1538,14 +1233,9 @@ export function getResultStyles() {
 
     .school-sign {
       text-align: center;
-<<<<<<< HEAD
       margin-top: 8px;
       margin-bottom: 8px;
       margin-left: 300px;
-=======
-      margin-top: 10px;
-      margin-bottom: 20px;
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
     }
 
     .ovrpercentage,

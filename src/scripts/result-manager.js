@@ -4,20 +4,14 @@ import {
   getStudentResults,
 } from "./storage.js";
 import { generateResultSheet, getResultStyles } from "./result-templates.js";
-<<<<<<< HEAD
 import resultMetadataService from "./api/result-metadata.service.js";
-=======
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
 
 // State
 let currentStudents = [];
 let currentYear = "";
 let currentTerm = "";
 let currentClass = "";
-<<<<<<< HEAD
 let currentStudent = null; // Track current student for reloading
-=======
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
 
 window.addEventListener("DOMContentLoaded", async function () {
   await loadYearOptions();
@@ -76,14 +70,11 @@ function setupEventListeners() {
   document
     .getElementById("downloadAllBtn")
     .addEventListener("click", downloadAllPDF);
-<<<<<<< HEAD
 
   // Add save changes button listener
   document
     .getElementById("saveChangesBtn")
     .addEventListener("click", saveMetadataChanges);
-=======
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
 }
 
 function showLoading(show, text = "Processing...") {
@@ -186,10 +177,7 @@ function filterStudents(query) {
 }
 
 async function selectStudent(student) {
-<<<<<<< HEAD
   currentStudent = student; // Store for reloading after save
-=======
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
   document
     .querySelectorAll(".student-item")
     .forEach((el) => el.classList.remove("active"));
@@ -215,7 +203,6 @@ async function selectStudent(student) {
       currentTerm
     );
 
-<<<<<<< HEAD
     // Load metadata (conventional performance + comments)
     let metadata = {};
     try {
@@ -228,13 +215,10 @@ async function selectStudent(student) {
       console.log("No existing metadata, using defaults");
     }
 
-=======
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
     const resultHTML = await generateResultSheet(
       student,
       termResults.subjects || {},
       currentTerm,
-<<<<<<< HEAD
       currentYear,
       metadata // Pass metadata to all templates
     );
@@ -246,13 +230,6 @@ async function selectStudent(student) {
 
     document.getElementById("printCurrentBtn").disabled = false;
     document.getElementById("saveChangesBtn").disabled = false;
-=======
-      currentYear
-    );
-
-    container.innerHTML = resultHTML;
-    document.getElementById("printCurrentBtn").disabled = false;
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
     document.getElementById(
       "previewTitle"
     ).textContent = `Result: ${student.firstName} ${student.otherNames}`;
@@ -273,7 +250,6 @@ async function printCurrentResult() {
   const element = document.querySelector(".resu");
   if (!element) return;
 
-<<<<<<< HEAD
   try {
     // Auto-save any changes before printing
     showLoading(true, "Saving changes before printing...");
@@ -283,8 +259,6 @@ async function printCurrentResult() {
     console.error("Error saving before print:", error);
   }
 
-=======
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
   // Wait for fonts to load
   try {
     await document.fonts.ready;
@@ -382,7 +356,6 @@ async function downloadAllPDF() {
         currentYear,
         currentTerm
       );
-<<<<<<< HEAD
 
       // Load metadata (conventional performance + comments) for each student
       let metadata = {};
@@ -396,18 +369,12 @@ async function downloadAllPDF() {
         console.log(`No metadata for ${student.firstName}, using defaults`);
       }
 
-=======
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
       const resultHTML = await generateResultSheet(
         student,
         termResults.subjects || {},
         currentTerm,
-<<<<<<< HEAD
         currentYear,
         metadata // Pass metadata for each student
-=======
-        currentYear
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
       );
 
       const wrapper = document.createElement("div");
@@ -460,7 +427,6 @@ async function downloadAllPDF() {
     showLoading(false);
   }
 }
-<<<<<<< HEAD
 
 // ==================== SAVE METADATA (COMMENTS & CONVENTIONAL PERFORMANCE) ====================
 
@@ -533,5 +499,3 @@ async function saveMetadataChanges(silent = false) {
     }
   }
 }
-=======
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
