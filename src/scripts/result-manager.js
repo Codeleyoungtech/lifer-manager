@@ -206,30 +206,18 @@ async function selectStudent(student) {
     // Load metadata (conventional performance + comments)
     let metadata = {};
     try {
-      console.log("Requesting metadata with:", {
-        studentId: student._id,
-        term: currentTerm,
-        year: currentYear,
-      });
-
       metadata = await resultMetadataService.getResultMetadata(
         student._id,
         currentTerm,
         currentYear
       );
 
-      console.log("Fetched Metadata for Result:", metadata);
-      console.log("Metadata type:", typeof metadata);
-      console.log("Has intuitiveFeats?:", !!metadata?.intuitiveFeats);
-
       // If metadata is undefined or doesn't have expected structure, use empty object
       if (!metadata || typeof metadata !== "object") {
-        console.warn("Metadata is invalid, using empty object");
         metadata = {};
       }
     } catch (error) {
-      console.error("Error fetching metadata:", error);
-      console.log("No existing metadata, using defaults", error);
+      // No existing metadata, use defaults
     }
 
     const resultHTML = await generateResultSheet(
@@ -383,7 +371,7 @@ async function downloadAllPDF() {
           currentYear
         );
       } catch (error) {
-        console.log(`No metadata for ${student.firstName}, using defaults`);
+        // No metadata, use defaults
       }
 
       const resultHTML = await generateResultSheet(
@@ -501,20 +489,6 @@ async function saveMetadataChanges(silent = false) {
         intuitiveFeats[field] = cell.textContent.trim();
       }
     });
-
-    console.log("Scraped Intuitive Feats:", intuitiveFeats);
-    console.log("Scraped Conventional:", conventionalPerformance);
-
-    // Debug scraping
-    if (!silent) {
-      // Check if specific fields have data
-      const punc = intuitiveFeats.punctuality;
-      if (punc) {
-        console.log("Punctuality found:", punc);
-      } else {
-        console.log("Punctuality is empty or missing");
-      }
-    }
 
     // Save to backend
     await resultMetadataService.saveResultMetadata(

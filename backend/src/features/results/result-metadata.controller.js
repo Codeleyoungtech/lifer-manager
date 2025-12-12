@@ -14,29 +14,13 @@ const getResultMetadata = async (req, res, next) => {
       });
     }
 
-    console.log(
-      `Fetching metadata for student ${studentId}: term=${term}, year=${year}`
-    );
-
     const metadata = await ResultMetadata.findOne({
       studentId,
       term,
       academicYear: year,
     });
 
-    if (!metadata) {
-      console.log("❌ Metadata NOT found for query:", {
-        studentId,
-        term,
-        academicYear: year,
-      });
-    } else {
-      console.log("✅ Metadata FOUND:", metadata._id);
-      console.log("   - intuitiveFeats:", metadata.intuitiveFeats);
-    }
-
     const responseData = metadata || {};
-    console.log("Backend returning:", responseData);
 
     res.status(200).json(responseData);
   } catch (error) {
@@ -58,13 +42,6 @@ const saveResultMetadata = async (req, res, next) => {
       principalComment,
       intuitiveFeats,
     } = req.body;
-
-    console.log(`💾 Saving metadata for student ${studentId}:`, {
-      term,
-      year,
-      hasIntuitiveFeats: !!intuitiveFeats,
-      intuitiveFeats: intuitiveFeats,
-    });
 
     if (!term || !year) {
       return res.status(400).json({
@@ -92,9 +69,6 @@ const saveResultMetadata = async (req, res, next) => {
         runValidators: true,
       }
     );
-
-    console.log("✅ Metadata saved successfully:", metadata._id);
-    console.log("   - Saved intuitiveFeats:", metadata.intuitiveFeats);
 
     res.status(200).json({
       message: "Result metadata saved successfully",

@@ -2,6 +2,7 @@ import {
   getSettings,
   getSubjectsForStudent,
   getStudentsByClass,
+  getStudentResults,
 } from "./storage.js";
 import attendanceService from "./api/attendance.service.js";
 
@@ -1002,7 +1003,6 @@ async function calculateCumulativeScores(studentId, academicYear) {
         }
       }
     } catch (error) {
-      console.log(`No results found for ${term}:`, error.message);
       // Keep as null if no results
     }
   }
@@ -1259,7 +1259,7 @@ export function getResultStyles() {
       justify-content: space-between;
       margin-top: 5px;
       border: solid 1px #000000;
-      padding: 5px 50px;
+      padding: 5px 30px 5px 50px;
     }
 
    .table-below ul li {
