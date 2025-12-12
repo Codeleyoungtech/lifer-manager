@@ -181,6 +181,10 @@ async function generateSecondaryResultSheet(
   const isSS = student.currentClass.startsWith("SS");
 
   const stats = await calculateStatistics(subjectResults, student.currentClass);
+  const cumulativeScores = await calculateCumulativeScores(
+    student._id || student.id,
+    year
+  );
 
   return `
   <div class="resu-back">
@@ -207,13 +211,14 @@ async function generateSecondaryResultSheet(
         ${await generateSecondaryResultsTable(
           student,
           subjectResults,
-          settings
+          settings,
+          metadata
         )}
       </div>
       
       <!-- Bottom Section: Statistics & Comments -->
       <div class="bottom">
-        ${generateBottomStats(stats)}
+        ${generateBottomStats(stats, cumulativeScores)}
         ${generateComments(metadata)}
         <div class="school-sign">SCHOOL SIGNATURE AND STAMP</div>
       </div>
@@ -265,6 +270,10 @@ async function generatePrimaryResultSheet(
 ) {
   const settings = await getSettings();
   const stats = await calculateStatistics(subjectResults, student.currentClass);
+  const cumulativeScores = await calculateCumulativeScores(
+    student._id || student.id,
+    year
+  );
 
   return `
   <div class="resu-back">
@@ -293,7 +302,7 @@ async function generatePrimaryResultSheet(
       
       <!-- Bottom Section: Statistics & Comments -->
       <div class="bottom">
-        ${generateBottomStats(stats)}
+        ${generateBottomStats(stats, cumulativeScores)}
         ${generateComments(metadata)}
         <div class="school-sign">SCHOOL SIGNATURE AND STAMP</div>
       </div>
@@ -411,6 +420,10 @@ async function generatePreNurseryResultSheet(
 ) {
   const settings = await getSettings();
   const stats = await calculateStatistics(subjectResults, student.currentClass);
+  const cumulativeScores = await calculateCumulativeScores(
+    student._id || student.id,
+    year
+  );
 
   return `
   <div class="resu-back">
@@ -444,7 +457,7 @@ async function generatePreNurseryResultSheet(
       
       <!-- Bottom Section: Statistics & Comments -->
       <div class="bottom">
-        ${generateBottomStats(stats)}
+        ${generateBottomStats(stats, cumulativeScores)}
         ${generateComments(metadata)}
         <div class="school-sign">SCHOOL SIGNATURE AND STAMP</div>
       </div>
@@ -752,7 +765,8 @@ async function generateStudentInfo(
 async function generateSecondaryResultsTable(
   student,
   subjectResults,
-  settings
+  settings,
+  metadata = {}
 ) {
   return `
     <table class="result-table">
@@ -788,16 +802,30 @@ async function generateSecondaryResultsTable(
           <li><strong>AB:</strong> ABSENT</li>
         </ul>
       </div>
-      <div class="table-below-right">
+    <div class="table-below-right">
         <ul class="feat-list">
           <li><strong style="color: #b70d18;">INTUITIVE FEAT GRADE:</strong></li>
-          <li>PUNCTUALITY & LEADERSHIP:</li>
-          <li>ATTENTIVE & ABILITY TO SPEAK IN PUBLIC:</li>
-          <li>NEATNESS & WORKING WITH OTHERS:</li>
-          <li>HELPING & COOPERATION WITH OTHERS:</li>
-          <li>SPEAKING & HONESTY:</li>
-          <li>HONESTY & POLITENESS:</li>
-          <li>PERSEVERANCE:</li>
+          <li>PUNCTUALITY & LEADERSHIP: <span contenteditable="true" class="feat-score" data-field="punctuality">${
+            metadata.intuitiveFeats?.punctuality || ""
+          }</span></li>
+          <li>ATTENTIVE & ABILITY TO SPEAK IN PUBLIC: <span contenteditable="true" class="feat-score" data-field="attentive">${
+            metadata.intuitiveFeats?.attentive || ""
+          }</span></li>
+          <li>NEATNESS & WORKING WITH OTHERS: <span contenteditable="true" class="feat-score" data-field="neatness">${
+            metadata.intuitiveFeats?.neatness || ""
+          }</span></li>
+          <li>HELPING & COOPERATION WITH OTHERS: <span contenteditable="true" class="feat-score" data-field="helping">${
+            metadata.intuitiveFeats?.helping || ""
+          }</span></li>
+          <li>SPEAKING & HONESTY: <span contenteditable="true" class="feat-score" data-field="speaking">${
+            metadata.intuitiveFeats?.speaking || ""
+          }</span></li>
+          <li>HONESTY & POLITENESS: <span contenteditable="true" class="feat-score" data-field="politeness">${
+            metadata.intuitiveFeats?.politeness || ""
+          }</span></li>
+          <li>PERSEVERANCE: <span contenteditable="true" class="feat-score" data-field="perseverance">${
+            metadata.intuitiveFeats?.perseverance || ""
+          }</span></li>
         </ul>
       </div>
     </div>
@@ -844,7 +872,7 @@ async function generateSubjectRows(student, subjectResults, settings) {
   return rows;
 }
 
-function generateBottomStats(stats) {
+function generateBottomStats(stats, cumulativeScores = {}) {
   return `
     <div class="bottom-stat">
       <div class="bt-line">
@@ -872,9 +900,21 @@ function generateBottomStats(stats) {
         <div class="cumscore">
             <span style="font-size: 16px;">CUMULATIVE SCORE:<span>  </span>  </span>
           <div class="terms-grade">
-            <div class="term-grade"><span>1st TERM:</span> <span class="bt-value">-</span></div>
-            <div class="term-grade"><span>2nd TERM:</span> <span class="bt-value">-</span></div>
-            <div class="term-grade"><span>3rd TERM:</span> <span class="bt-value">-</span></div>
+            <div class="term-grade"><span>1st TERM:</span> <span class="bt-value">${
+              cumulativeScores.firstTerm
+                ? cumulativeScores.firstTerm + "%"
+                : "-"
+            }</span></div>
+            <div class="term-grade"><span>2nd TERM:</span> <span class="bt-value">${
+              cumulativeScores.secondTerm
+                ? cumulativeScores.secondTerm + "%"
+                : "-"
+            }</span></div>
+            <div class="term-grade"><span>3rd TERM:</span> <span class="bt-value">${
+              cumulativeScores.thirdTerm
+                ? cumulativeScores.thirdTerm + "%"
+                : "-"
+            }</span></div>
           </div>
         </div>
       </div>
@@ -924,6 +964,50 @@ async function calculateStatistics(subjectResults, classLevel) {
     percentage,
     totalStudents: studentsInClass.length,
   };
+}
+
+// Calculate cumulative scores for all three terms
+async function calculateCumulativeScores(studentId, academicYear) {
+  const terms = ["firstTerm", "secondTerm", "thirdTerm"];
+  const cumulativeScores = {
+    firstTerm: null,
+    secondTerm: null,
+    thirdTerm: null,
+  };
+
+  for (const term of terms) {
+    try {
+      const termResults = await getStudentResults(
+        studentId,
+        academicYear,
+        term
+      );
+
+      if (termResults && termResults.subjects) {
+        let totalObtained = 0;
+        let subjectCount = 0;
+
+        for (let code in termResults.subjects) {
+          const result = termResults.subjects[code];
+          if (result && typeof result.total === "number") {
+            totalObtained += result.total;
+            subjectCount++;
+          }
+        }
+
+        if (subjectCount > 0) {
+          const totalObtainable = subjectCount * 100;
+          const percentage = (totalObtained / totalObtainable) * 100;
+          cumulativeScores[term] = percentage.toFixed(2);
+        }
+      }
+    } catch (error) {
+      console.log(`No results found for ${term}:`, error.message);
+      // Keep as null if no results
+    }
+  }
+
+  return cumulativeScores;
 }
 
 export function getResultStyles() {
@@ -1184,6 +1268,14 @@ export function getResultStyles() {
     }
 
     .feat-list { text-align: right; }
+    
+    .feat-score {
+       display: inline-block; 
+       min-width: 30px; 
+       padding: 0 5px;
+       color: #000;
+       font-weight: bold;
+    }
 
     .bottom-stat {
       width: 100%;

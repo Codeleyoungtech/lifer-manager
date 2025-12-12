@@ -48,6 +48,16 @@ const resultMetadataSchema = mongoose.Schema(
       type: String,
       default: "Excellent performance.",
     },
+    // Intuitive Feats (Secondary)
+    intuitiveFeats: {
+      punctuality: { type: String, default: "" },
+      attentive: { type: String, default: "" },
+      neatness: { type: String, default: "" },
+      helping: { type: String, default: "" },
+      speaking: { type: String, default: "" },
+      politeness: { type: String, default: "" },
+      perseverance: { type: String, default: "" },
+    },
   },
   {
     timestamps: true,

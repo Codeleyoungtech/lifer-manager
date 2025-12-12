@@ -3,10 +3,18 @@ import { api } from "./client.js";
 export default {
   // Get result metadata (conventional performance + comments)
   async getResultMetadata(studentId, term, year) {
-    const response = await api.get(
-      `/results/metadata/${studentId}?term=${term}&year=${year}`
+    console.log("Service: Calling GET with params:", { studentId, term, year });
+
+    const data = await api.get(
+      `/results/metadata/${studentId}?term=${encodeURIComponent(
+        term
+      )}&year=${encodeURIComponent(year)}`
     );
-    return response.data;
+
+    console.log("Service: Received data:", data);
+    console.log("Has intuitiveFeats?:", !!data?.intuitiveFeats);
+
+    return data;
   },
 
   // Save result metadata
