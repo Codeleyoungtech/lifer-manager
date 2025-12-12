@@ -1,14 +1,10 @@
 const Result = require("./result.model");
 const Student = require("../students/student.model");
-<<<<<<< HEAD
 const {
   calculateGrade,
   calculateRemarks,
   calculatePrimaryRemarks,
 } = require("./result.utils");
-=======
-const { calculateGrade, calculateRemarks } = require("./result.utils");
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
 
 // @desc    Get results (filter by student, year, term, class)
 // @route   GET /api/results
@@ -69,7 +65,6 @@ const saveResult = async (req, res, next) => {
     } = req.body;
 
     // Calculate total, grade, remarks
-<<<<<<< HEAD
     // Calculate total, grade, remarks
     const total = (weeklyTest || 0) + (midTerm || 0) + (exam || 0);
     const grade = calculateGrade(total);
@@ -86,11 +81,6 @@ const saveResult = async (req, res, next) => {
     } else {
       remarks = calculatePrimaryRemarks(total);
     }
-=======
-    const total = (weeklyTest || 0) + (midTerm || 0) + (exam || 0);
-    const grade = calculateGrade(total);
-    const remarks = calculateRemarks(total);
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
 
     // Upsert result
     const result = await Result.findOneAndUpdate(
@@ -124,7 +114,6 @@ const batchSaveResults = async (req, res, next) => {
       throw new Error("Invalid results data");
     }
 
-<<<<<<< HEAD
     // Fetch all students involved to check their class
     const studentIds = results.map((r) => r.studentId);
     const students = await Student.find({ _id: { $in: studentIds } });
@@ -133,13 +122,10 @@ const batchSaveResults = async (req, res, next) => {
       studentMap[s._id.toString()] = s;
     });
 
-=======
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
     const operations = results.map((item) => {
       const total =
         (item.weeklyTest || 0) + (item.midTerm || 0) + (item.exam || 0);
       const grade = calculateGrade(total);
-<<<<<<< HEAD
 
       let remarks;
       const student = studentMap[item.studentId];
@@ -152,9 +138,6 @@ const batchSaveResults = async (req, res, next) => {
       } else {
         remarks = calculatePrimaryRemarks(total);
       }
-=======
-      const remarks = calculateRemarks(total);
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
 
       return {
         updateOne: {
@@ -206,7 +189,6 @@ const calculatePositions = async (req, res, next) => {
       subjectCode,
     }).sort({ total: -1 });
 
-<<<<<<< HEAD
     // Update positions AND Grades/Remarks (to enforce new grading system)
     const isSecondary =
       classLevel.startsWith("JSS") || classLevel.startsWith("SS");
@@ -229,15 +211,6 @@ const calculatePositions = async (req, res, next) => {
         },
       };
     });
-=======
-    // Update positions
-    const operations = results.map((result, index) => ({
-      updateOne: {
-        filter: { _id: result._id },
-        update: { position: index + 1 },
-      },
-    }));
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
 
     if (operations.length > 0) {
       await Result.bulkWrite(operations);

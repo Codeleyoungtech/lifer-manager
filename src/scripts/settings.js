@@ -1,16 +1,9 @@
-<<<<<<< HEAD
 import { getSettings, getAllSubjects } from "./storage.js";
-=======
-import { getSettings } from "./storage.js";
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
 import settingsService from "./api/settings.service.js";
 
 let currentClasses = [];
 let currentDepartments = [];
-<<<<<<< HEAD
 let allSubjects = [];
-=======
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
 
 window.addEventListener("DOMContentLoaded", async function () {
   await loadSettings();
@@ -50,11 +43,8 @@ async function loadSettings() {
       settings.currentTerm || "firstTerm";
     document.getElementById("dateOfVacation").value =
       settings.dateOfVacation || "";
-<<<<<<< HEAD
     document.getElementById("maxAttendance").value =
       settings.maxAttendance || "";
-=======
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
     document.getElementById("dateOfResumption").value =
       settings.dateOfResumption || "";
 
@@ -63,16 +53,12 @@ async function loadSettings() {
     currentDepartments = settings.departments || [];
 
     renderClassesList();
-<<<<<<< HEAD
     renderClassesList();
     renderDepartmentsList();
 
     // Load Subject Orders
     allSubjects = await getAllSubjects();
     renderSubjectOrders(settings.subjectOrders || {});
-=======
-    renderDepartmentsList();
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
   } catch (error) {
     console.error("Error loading settings:", error);
     showNotification("Failed to load settings", "error");
@@ -159,7 +145,6 @@ function setupEventListeners() {
     .getElementById("settingsForm")
     .addEventListener("submit", async function (e) {
       e.preventDefault();
-<<<<<<< HEAD
       e.preventDefault();
       await saveSettings();
     });
@@ -172,10 +157,6 @@ function setupEventListeners() {
       await saveSettings();
     });
   }
-=======
-      await saveSettings();
-    });
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
 }
 
 // Make these functions globally available
@@ -201,7 +182,6 @@ async function saveSettings() {
       currentTerm: document.getElementById("currentTerm").value,
       dateOfVacation: document.getElementById("dateOfVacation").value, // Store as YYYY-MM-DD
       dateOfResumption: document.getElementById("dateOfResumption").value, // Store as YYYY-MM-DD
-<<<<<<< HEAD
       maxAttendance:
         parseInt(document.getElementById("maxAttendance").value) || 0,
       classes: currentClasses,
@@ -213,10 +193,6 @@ async function saveSettings() {
         jss: getOrderFromContainer("container-jss"),
         ss: getOrderFromContainer("container-ss"),
       },
-=======
-      classes: currentClasses,
-      departments: currentDepartments,
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
     };
 
     // Validation
@@ -291,7 +267,6 @@ function showNotification(message, type = "success") {
     setTimeout(() => notification.remove(), 300);
   }, 4000);
 }
-<<<<<<< HEAD
 const validClassPatterns = {
   prenursery: /^(NURSERY\s*1|KG)/i,
   primary: /^(NURSERY\s*2|PRIMARY|BASIC)/i,
@@ -444,5 +419,3 @@ function getOrderFromContainer(containerId) {
   const items = container.querySelectorAll(".sortable-item");
   return Array.from(items).map((item) => item.dataset.code);
 }
-=======
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f

@@ -2,7 +2,6 @@ import {
   getSettings,
   getAllSubjects,
   addSubject,
-<<<<<<< HEAD
   updateSubject,
   deleteSubject,
   getSubjectByCode,
@@ -22,19 +21,12 @@ let allClasses = [];
 let isEditing = false;
 let editingSubjectCode = null;
 
-=======
-  deleteSubject,
-} from "./storage.js";
-import { generateSubjectCode } from "./utils/utils.js";
-
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
 window.addEventListener("DOMContentLoaded", async function () {
   await loadDepartments();
 
   await loadClassOptions();
 
   await loadSubjectsTable();
-<<<<<<< HEAD
 
   // Expose handler globally
   window.handleCategoryChange = handleCategoryChange;
@@ -53,10 +45,6 @@ function handleCategoryChange() {
   }
 }
 
-=======
-});
-
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
 async function loadDepartments() {
   try {
     const settings = await getSettings();
@@ -82,13 +70,9 @@ async function loadClassOptions() {
 
     classContainer.innerHTML = "";
 
-<<<<<<< HEAD
     allClasses = settings.classes || [];
 
     allClasses.forEach((className) => {
-=======
-    settings.classes.forEach((className) => {
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
       const div = document.createElement("div");
       div.style.display = "inline-block";
       div.style.marginRight = "15px";
@@ -139,16 +123,12 @@ async function loadSubjectsTable() {
         <td style="padding: 1rem; border: 1px solid #ddd;">${subject.code}</td>
         <td style="padding: 1rem; border: 1px solid #ddd;">${subject.name}</td>
         <td style="padding: 1rem; border: 1px solid #ddd;">${subject.department}</td>
-<<<<<<< HEAD
         <td style="padding: 1rem; border: 1px solid #ddd; display: flex; gap: 10px;">
           <button 
             onclick="editSubjectClick('${subject.code}')" 
             style="padding: 5px 15px; background: #ff9800; color: white; border: none; border-radius: 4px; cursor: pointer;">
             Edit
           </button>
-=======
-        <td style="padding: 1rem; border: 1px solid #ddd;">
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
           <button 
             onclick="deleteSubjectClick('${subject.code}')" 
             style="padding: 5px 15px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;">
@@ -167,7 +147,6 @@ async function loadSubjectsTable() {
 window.saveSubject = async function () {
   const name = document.getElementById("subjectName").value.trim();
   const department = document.getElementById("departmentSelect").value;
-<<<<<<< HEAD
   const code =
     document.getElementById("subjectCode").value.trim() ||
     generateSubjectCode(name);
@@ -206,20 +185,6 @@ window.saveSubject = async function () {
     alert("No classes selected for this subject or category empty.");
     return;
   }
-=======
-  const code = generateSubjectCode(name);
-
-  if (!name) return;
-  if (!department) return;
-
-  const selectedClasses = [];
-  const checkboxes = document.querySelectorAll(".class-checkbox:checked");
-  checkboxes.forEach((checkbox) => {
-    selectedClasses.push(checkbox.value);
-  });
-
-  if (selectedClasses.length === 0) return;
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
 
   const subjectData = {
     code: code,
@@ -228,7 +193,6 @@ window.saveSubject = async function () {
     classes: selectedClasses,
   };
 
-<<<<<<< HEAD
   let success = false;
 
   if (isEditing) {
@@ -323,24 +287,6 @@ function resetForm() {
     .forEach((cb) => (cb.checked = false));
 }
 
-=======
-  const success = await addSubject(subjectData);
-
-  if (success) {
-    document.getElementById("subjectCode").value = "";
-    document.getElementById("subjectName").value = "";
-    document.getElementById("departmentSelect").value = "";
-
-    document
-      .querySelectorAll(".class-checkbox")
-      .forEach((cb) => (cb.checked = false));
-
-    await loadSubjectsTable();
-    alert("Subject added successfully!");
-  }
-};
-
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
 window.deleteSubjectClick = async function (code) {
   const confirmed = confirm("Are you sure you want to delete this subject?");
 

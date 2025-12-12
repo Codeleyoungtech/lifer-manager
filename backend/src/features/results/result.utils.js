@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 // Secondary School Grading System (WAEC/NECO Standard)
 const calculateGrade = (total) => {
   if (total >= 85) return "A1";
@@ -38,27 +37,4 @@ module.exports = {
   calculateGrade,
   calculateRemarks,
   calculatePrimaryRemarks,
-=======
-const calculateGrade = (total) => {
-  if (total >= 80) return "A";
-  if (total >= 70) return "B";
-  if (total >= 60) return "C";
-  if (total >= 50) return "D";
-  if (total >= 40) return "E";
-  return "F";
-};
-
-const calculateRemarks = (total) => {
-  if (total >= 80) return "Excellent";
-  if (total >= 70) return "Very Good";
-  if (total >= 60) return "Good";
-  if (total >= 50) return "Pass";
-  if (total >= 40) return "Weak Pass";
-  return "Fail";
-};
-
-module.exports = {
-  calculateGrade,
-  calculateRemarks,
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
 };

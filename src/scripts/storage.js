@@ -29,7 +29,6 @@ export async function addStudent(studentData) {
   return newStudent.studentId;
 }
 
-<<<<<<< HEAD
 export async function updateStudent(id, studentData) {
   await studentService.update(id, studentData);
 }
@@ -38,8 +37,6 @@ export async function deleteStudent(id) {
   await studentService.delete(id);
 }
 
-=======
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
 export async function getAllSubjects() {
   return await subjectService.getAll();
 }
@@ -100,7 +97,6 @@ export async function getSubjectsForStudent(studentId) {
   }
 }
 
-<<<<<<< HEAD
 export async function getSubjectByCode(code) {
   try {
     return await subjectService.getByCode(code);
@@ -110,8 +106,6 @@ export async function getSubjectByCode(code) {
   }
 }
 
-=======
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
 export async function addSubject(subjectData) {
   try {
     await subjectService.create(subjectData);
@@ -122,7 +116,6 @@ export async function addSubject(subjectData) {
   }
 }
 
-<<<<<<< HEAD
 export async function updateSubject(code, subjectData) {
   try {
     await subjectService.update(code, subjectData);
@@ -133,8 +126,6 @@ export async function updateSubject(code, subjectData) {
   }
 }
 
-=======
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
 export async function deleteSubject(code) {
   await subjectService.delete(code);
 }

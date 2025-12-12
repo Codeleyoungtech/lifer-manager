@@ -641,11 +641,7 @@ table {
 }
 th,
 td {
-<<<<<<< HEAD
   /* padding: 5px 5px; */
-=======
-  padding: 5px 8px;
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
   overflow: hidden;
   /* max-width: 100%; */
   border: black 1px solid;

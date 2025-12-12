@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import {
   getSettings,
   addStudent,
@@ -8,9 +7,6 @@ import {
   updateStudent,
   deleteStudent,
 } from "./storage.js";
-=======
-import { getSettings, addStudent, generateStudentId } from "./storage.js";
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
 
 window.addEventListener("DOMContentLoaded", function () {
   displayNextStudentId();
@@ -18,7 +14,6 @@ window.addEventListener("DOMContentLoaded", function () {
   loadClassLevels();
 
   setupFormSubmit();
-<<<<<<< HEAD
   setupTabs();
   setupSearch();
 });
@@ -54,10 +49,6 @@ function setupTabs() {
   // leaving empty or removing listener logic as onclick handles it
 }
 
-=======
-});
-
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
 function displayNextStudentId() {
   const nextId = generateStudentId();
   document.getElementById("studentid").value = nextId;
@@ -76,7 +67,6 @@ async function loadClassLevels() {
       option.textContent = className;
       classSelect.appendChild(option);
     });
-<<<<<<< HEAD
 
     // Also populate filter dropdown in Manage tab
     const filterSelect = document.getElementById("filterClass");
@@ -89,8 +79,6 @@ async function loadClassLevels() {
         filterSelect.appendChild(option);
       });
     }
-=======
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
   } catch (error) {
     console.error("Error loading class levels:", error);
   }
@@ -196,10 +184,7 @@ function setupFormSubmit() {
 }
 
 // Show notification function
-<<<<<<< HEAD
 // Show notification function
-=======
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
 function showNotification(message, type = "success") {
   // Remove existing notifications
   const existing = document.querySelector(".notification");
@@ -245,17 +230,12 @@ function showNotification(message, type = "success") {
 function handleClassChange(classLevel) {
   const departmentField = document.getElementById("departmentField");
 
-<<<<<<< HEAD
   if (classLevel && classLevel.startsWith("SS")) {
-=======
-  if (classLevel.startsWith("SS")) {
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
     departmentField.style.display = "block";
   } else {
     departmentField.style.display = "none";
   }
 }
-<<<<<<< HEAD
 
 // Manage Tab Logic
 let allStudentsCache = [];
@@ -651,5 +631,3 @@ window.deleteStudentClick = async function (id) {
     }
   }
 };
-=======
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f

@@ -48,7 +48,6 @@ const settingsSchema = mongoose.Schema(
       type: String,
       default: "",
     },
-<<<<<<< HEAD
     maxAttendance: {
       type: Number,
       default: 0,
@@ -59,8 +58,6 @@ const settingsSchema = mongoose.Schema(
       jss: { type: [String], default: [] },
       ss: { type: [String], default: [] },
     },
-=======
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
   },
   {
     timestamps: true,

@@ -6,10 +6,7 @@ let currentClass = "";
 let currentTerm = "firstTerm";
 let currentYear = "";
 let students = [];
-<<<<<<< HEAD
 let settings = {};
-=======
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
 
 window.addEventListener("DOMContentLoaded", async function () {
   await loadSettings();
@@ -18,11 +15,7 @@ window.addEventListener("DOMContentLoaded", async function () {
 
 async function loadSettings() {
   try {
-<<<<<<< HEAD
     settings = await getSettings();
-=======
-    const settings = await getSettings();
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
 
     // Populate academic year
     currentYear = settings.currentAcademicYear || "";
@@ -161,12 +154,7 @@ async function saveAttendance() {
     return;
   }
 
-<<<<<<< HEAD
   const maxAttendance = parseInt(settings.maxAttendance) || 0;
-=======
-  const maxAttendance =
-    parseInt(document.getElementById("maxAttendance").value) || 0;
->>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
 
   // Collect all attendance data from inputs
   const attendanceRecords = [];
