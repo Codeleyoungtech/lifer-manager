@@ -3,12 +3,353 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Subject Registration</title>
+    <title>Subject Management</title>
     <link rel="stylesheet" href="../assets/index.css" />
     <link
       href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined"
       rel="stylesheet"
     />
+    <style>
+      /* Modal Styles */
+      .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        z-index: 1000;
+        backdrop-filter: blur(4px);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+
+      .modal-overlay.active {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 1;
+      }
+
+      .modal {
+        background: white;
+        border-radius: 12px;
+        width: 90%;
+        max-width: 700px;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        transform: scale(0.9);
+        transition: transform 0.3s ease;
+      }
+
+      .modal-overlay.active .modal {
+        transform: scale(1);
+      }
+
+      .modal-header {
+        padding: 1.5rem;
+        border-bottom: 1px solid #e0e0e0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .modal-header h2 {
+        margin: 0;
+        font-size: 1.5rem;
+        color: #333;
+      }
+
+      .close-modal {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: #666;
+        padding: 0.5rem;
+        border-radius: 50%;
+        transition: all 0.2s;
+      }
+
+      .close-modal:hover {
+        background: #f5f5f5;
+        color: #333;
+      }
+
+      .modal-body {
+        padding: 1.5rem;
+      }
+
+      .form-group {
+        margin-bottom: 1.25rem;
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: #333;
+        font-size: 0.95rem;
+      }
+
+      .form-group input,
+      .form-group select {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 0.95rem;
+        transition: border-color 0.2s;
+      }
+
+      .form-group input:focus,
+      .form-group select:focus {
+        outline: none;
+        border-color: #007cba;
+        box-shadow: 0 0 0 3px rgba(0, 124, 186, 0.1);
+      }
+
+      .form-row {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 1rem;
+      }
+
+      .class-category-radio {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-bottom: 0.75rem;
+      }
+
+      .class-category-radio label {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+        font-weight: normal;
+      }
+
+      .class-checkboxes {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 0.75rem;
+        padding: 1rem;
+        background: #f9f9f9;
+        border-radius: 6px;
+        border: 1px solid #e0e0e0;
+      }
+
+      .class-checkboxes label {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+        font-weight: normal;
+      }
+
+      .modal-footer {
+        padding: 1rem 1.5rem;
+        border-top: 1px solid #e0e0e0;
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.75rem;
+      }
+
+      .btn {
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.95rem;
+        font-weight: 600;
+        transition: all 0.2s;
+      }
+
+      .btn-primary {
+        background: #007cba;
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background: #005f8f;
+      }
+
+      .btn-secondary {
+        background: #6c757d;
+        color: white;
+      }
+
+      .btn-secondary:hover {
+        background: #5a6268;
+      }
+
+      .btn-add {
+        background: #28a745;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        font-size: 0.95rem;
+        font-weight: 600;
+        transition: all 0.2s;
+      }
+
+      .btn-add:hover {
+        background: #218838;
+      }
+
+      /* Search & Filter Bar */
+      .toolbar {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+
+      .search-box {
+        flex: 1;
+        min-width: 250px;
+        position: relative;
+      }
+
+      .search-box input {
+        width: 100%;
+        padding: 0.75rem 1rem 0.75rem 2.5rem;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 0.95rem;
+      }
+
+      .search-box .material-symbols-outlined {
+        position: absolute;
+        left: 0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #666;
+        font-size: 1.25rem;
+      }
+
+      .filter-group {
+        display: flex;
+        gap: 0.75rem;
+        align-items: center;
+      }
+
+      .filter-group select {
+        padding: 0.75rem 1rem;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 0.95rem;
+        cursor: pointer;
+      }
+
+      /* Table Styles */
+      .subjects-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .subjects-table thead {
+        background: #f8f9fa;
+      }
+
+      .subjects-table th {
+        padding: 1rem;
+        text-align: left;
+        font-weight: 600;
+        color: #333;
+        border-bottom: 2px solid #e0e0e0;
+      }
+
+      .subjects-table td {
+        padding: 1rem;
+        border-bottom: 1px solid #e0e0e0;
+      }
+
+      .subjects-table tbody tr:hover {
+        background: #f9f9f9;
+      }
+
+      .subject-code {
+        font-weight: 600;
+        color: #007cba;
+      }
+
+      .subject-classes {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.35rem;
+      }
+
+      .class-badge {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        background: #e3f2fd;
+        color: #1976d2;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 500;
+      }
+
+      .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+      }
+
+      .btn-edit {
+        padding: 0.5rem 1rem;
+        background: #ff9800;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.875rem;
+        transition: background 0.2s;
+      }
+
+      .btn-edit:hover {
+        background: #f57c00;
+      }
+
+      .btn-delete {
+        padding: 0.5rem 1rem;
+        background: #dc3545;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.875rem;
+        transition: background 0.2s;
+      }
+
+      .btn-delete:hover {
+        background: #c82333;
+      }
+
+      .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: #666;
+      }
+
+      .empty-state .material-symbols-outlined {
+        font-size: 4rem;
+        color: #ccc;
+        margin-bottom: 1rem;
+      }
+    </style>
   </head>
   <body>
     <aside>
@@ -22,20 +363,20 @@
             <ul>
               <li>
                 <a href="../pages/index.html"
-                  ><span class="material-symbols-outlined">dashboard</span
-                  ><span>Dashboard</span>
+                  ><span class="material-symbols-outlined">dashboard</span>
+                  <span>Dashboard</span>
                 </a>
               </li>
               <li>
                 <a href="../pages/editor.html"
-                  ><span class="material-symbols-outlined">description</span
-                  ><span>Legacy Editor</span>
+                  ><span class="material-symbols-outlined">description</span>
+                  <span>Legacy Editor</span>
                 </a>
               </li>
               <li>
                 <a href="../pages/student.html"
-                  ><span class="material-symbols-outlined">group</span
-                  ><span>Students</span>
+                  ><span class="material-symbols-outlined">group</span>
+                  <span>Students</span>
                 </a>
               </li>
               <li>
@@ -53,14 +394,14 @@
               </li>
               <li>
                 <a href="../pages/subject.html" class="active"
-                  ><span class="material-symbols-outlined">school</span
-                  ><span>Classes & Subjects</span>
+                  ><span class="material-symbols-outlined">school</span>
+                  <span>Classes & Subjects</span>
                 </a>
               </li>
               <li>
                 <a href="../pages/settings.html"
                   ><span class="material-symbols-outlined">settings</span>
-                  ><span>Settings</span>
+                  <span>Settings</span>
                 </a>
               </li>
             </ul>
@@ -74,266 +415,178 @@
         <div class="dashboard-action">
           <div class="dash-greetings">
             <h2>Subject Management</h2>
-            <p>Register and manage subjects</p>
+            <p>Register and manage subjects across all classes</p>
           </div>
+          <button class="btn-add" onclick="openModal()">
+            <span class="material-symbols-outlined">add</span>
+            Add Subject
+          </button>
         </div>
 
-        <div class="editor-page card">
-          <div class="dashboard-action">
-            <h3>Add New Subject</h3>
-
-            <div
-              style="
-                display: flex;
-                flex-direction: column;
-                gap: 1rem;
-                margin: 1rem 0;
-              "
-            >
-              <div style="display: flex; gap: 1rem">
-                <input
-                  type="text"
-                  id="subjectCode"
-                  placeholder="Subject Code (e.g., MATH)"
-                  style="
-                    padding: 0.5rem;
-                    border: 1px solid #ddd;
-                    border-radius: 4px;
-                    width: 150px;
-                  "
-                />
-                <input
-                  type="text"
-                  id="subjectName"
-                  placeholder="Subject Name (e.g., Mathematics)"
-                  style="
-                    padding: 0.5rem;
-                    border: 1px solid #ddd;
-                    border-radius: 4px;
-                    flex: 1;
-                  "
-                />
-              </div>
-
-              <div>
-                <label
-                  style="display: block; margin-bottom: 5px; font-weight: 600"
-                  >Department:</label
-                >
-                <select
-                  id="departmentSelect"
-                  style="
-                    padding: 0.5rem;
-                    border: 1px solid #ddd;
-                    border-radius: 4px;
-                    width: 100%;
-                  "
-                >
-                  <option value="">Select Department</option>
-                </select>
-              </div>
-
-              <!-- Row 3: Class Selection -->
-              <div>
-                <label
-                  style="display: block; margin-bottom: 8px; font-weight: 600"
-                  >Applicable Classes:</label
-                >
-                <div
-                  style="
-                    display: flex;
-                    flex-wrap: wrap;
-                    gap: 15px;
-                    margin-bottom: 10px;
-                  "
-                >
-                  <label
-                    style="
-                      display: flex;
-                      align-items: center;
-                      gap: 5px;
-                      cursor: pointer;
-                    "
-                  >
-                    <input
-                      type="radio"
-                      name="classCategory"
-                      value="all"
-                      checked
-                      onchange="handleCategoryChange()"
-                    />
-                    All Classes
-                  </label>
-                  <label
-                    style="
-                      display: flex;
-                      align-items: center;
-                      gap: 5px;
-                      cursor: pointer;
-                    "
-                  >
-                    <input
-                      type="radio"
-                      name="classCategory"
-                      value="prenursery"
-                      onchange="handleCategoryChange()"
-                    />
-                    Pre-Nursery
-                  </label>
-                  <label
-                    style="
-                      display: flex;
-                      align-items: center;
-                      gap: 5px;
-                      cursor: pointer;
-                    "
-                  >
-                    <input
-                      type="radio"
-                      name="classCategory"
-                      value="primary"
-                      onchange="handleCategoryChange()"
-                    />
-                    Primary
-                  </label>
-                  <label
-                    style="
-                      display: flex;
-                      align-items: center;
-                      gap: 5px;
-                      cursor: pointer;
-                    "
-                  >
-                    <input
-                      type="radio"
-                      name="classCategory"
-                      value="jss"
-                      onchange="handleCategoryChange()"
-                    />
-                    JSS
-                  </label>
-                  <label
-                    style="
-                      display: flex;
-                      align-items: center;
-                      gap: 5px;
-                      cursor: pointer;
-                    "
-                  >
-                    <input
-                      type="radio"
-                      name="classCategory"
-                      value="ss"
-                      onchange="handleCategoryChange()"
-                    />
-                    SS
-                  </label>
-                  <label
-                    style="
-                      display: flex;
-                      align-items: center;
-                      gap: 5px;
-                      cursor: pointer;
-                    "
-                  >
-                    <input
-                      type="radio"
-                      name="classCategory"
-                      value="specific"
-                      onchange="handleCategoryChange()"
-                    />
-                    Specific
-                  </label>
-                </div>
-
-                <!-- Specific Classes Container (Hidden by default) -->
-                <div
-                  id="specificClassContainer"
-                  style="
-                    display: none;
-                    padding: 10px;
-                    border: 1px solid #ddd;
-                    border-radius: 4px;
-                    background: #f9f9f9;
-                    margin-top: 5px;
-                  "
-                >
-                  <p style="margin: 0 0 10px 0; font-size: 13px; color: #666">
-                    Select specific classes:
-                  </p>
-                  <div id="classCheckboxes"></div>
-                </div>
-              </div>
-
-              <div>
-                <button
-                  onclick="saveSubject()"
-                  style="
-                    padding: 0.7rem 2rem;
-                    background: #007cba;
-                    color: white;
-                    border: none;
-                    border-radius: 4px;
-                    cursor: pointer;
-                    font-size: 16px;
-                  "
-                >
-                  Save Subject
-                </button>
-              </div>
+        <div class="card" style="margin-top: 2rem">
+          <!-- Toolbar: Search & Filters -->
+          <div class="toolbar">
+            <div class="search-box">
+              <span class="material-symbols-outlined">search</span>
+              <input
+                type="text"
+                id="searchInput"
+                placeholder="Search subjects..."
+                oninput="filterSubjects()"
+              />
+            </div>
+            <div class="filter-group">
+              <select id="departmentFilter" onchange="filterSubjects()">
+                <option value="">All Departments</option>
+              </select>
+              <select id="classFilter" onchange="filterSubjects()">
+                <option value="">All Classes</option>
+              </select>
             </div>
           </div>
 
           <!-- Subjects Table -->
-          <div class="table" style="margin-top: 2rem">
-            <h3 style="margin-bottom: 1rem">All Subjects</h3>
-            <table style="width: 100%; border-collapse: collapse">
-              <thead>
-                <tr style="background: #f8f9fa">
-                  <th
-                    style="
-                      padding: 1rem;
-                      border: 1px solid #ddd;
-                      text-align: left;
-                    "
-                  >
-                    Code
-                  </th>
-                  <th
-                    style="
-                      padding: 1rem;
-                      border: 1px solid #ddd;
-                      text-align: left;
-                    "
-                  >
-                    Subject Name
-                  </th>
-                  <th
-                    style="
-                      padding: 1rem;
-                      border: 1px solid #ddd;
-                      text-align: left;
-                    "
-                  >
-                    Department
-                  </th>
-                  <th
-                    style="
-                      padding: 1rem;
-                      border: 1px solid #ddd;
-                      text-align: left;
-                    "
-                  >
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody id="subjectsTable"></tbody>
-            </table>
-          </div>
+          <table class="subjects-table">
+            <thead>
+              <tr>
+                <th style="width: 100px">Code</th>
+                <th>Subject Name</th>
+                <th style="width: 150px">Department</th>
+                <th style="width: 250px">Classes</th>
+                <th style="width: 150px">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="subjectsTable"></tbody>
+          </table>
         </div>
       </section>
     </main>
+
+    <!-- Modal -->
+    <div
+      id="subjectModal"
+      class="modal-overlay"
+      onclick="closeModalOnOverlay(event)"
+    >
+      <div class="modal">
+        <div class="modal-header">
+          <h2 id="modalTitle">Add New Subject</h2>
+          <button class="close-modal" onclick="closeModal()">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="subjectCode">Code</label>
+              <input
+                type="text"
+                id="subjectCode"
+                placeholder="e.g., MATH"
+                readonly
+                style="background: #f5f5f5"
+              />
+            </div>
+            <div class="form-group">
+              <label for="subjectName">Subject Name*</label>
+              <input
+                type="text"
+                id="subjectName"
+                placeholder="e.g., Mathematics"
+                oninput="autoGenerateCode()"
+              />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="departmentSelect">Department*</label>
+            <select id="departmentSelect">
+              <option value="">Select Department</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Applicable Classes*</label>
+            <div class="class-category-radio">
+              <label>
+                <input
+                  type="radio"
+                  name="classCategory"
+                  value="all"
+                  checked
+                  onchange="handleCategoryChange()"
+                />
+                All Classes
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="classCategory"
+                  value="prenursery"
+                  onchange="handleCategoryChange()"
+                />
+                Pre-Nursery
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="classCategory"
+                  value="primary"
+                  onchange="handleCategoryChange()"
+                />
+                Primary
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="classCategory"
+                  value="jss"
+                  onchange="handleCategoryChange()"
+                />
+                JSS
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="classCategory"
+                  value="ss"
+                  onchange="handleCategoryChange()"
+                />
+                SS
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="classCategory"
+                  value="specific"
+                  onchange="handleCategoryChange()"
+                />
+                Specific
+              </label>
+            </div>
+
+            <div
+              id="specificClassContainer"
+              style="display: none; margin-top: 0.75rem"
+            >
+              <div id="classCheckboxes" class="class-checkboxes"></div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closeModal()">
+            Cancel
+          </button>
+          <button
+            class="btn btn-primary"
+            id="saveButton"
+            onclick="saveSubject()"
+          >
+            Save Subject
+          </button>
+        </div>
+      </div>
+    </div>
 
     <script type="module" src="../scripts/auth-guard.js"></script>
     <script type="module" src="../scripts/subject.js"></script>

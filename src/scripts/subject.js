@@ -18,32 +18,80 @@ const classPatterns = {
 };
 
 let allClasses = [];
+let allSubjects = [];
 let isEditing = false;
 let editingSubjectCode = null;
 
 window.addEventListener("DOMContentLoaded", async function () {
   await loadDepartments();
-
   await loadClassOptions();
-
   await loadSubjectsTable();
+  await loadFilterOptions();
 
-  // Expose handler globally
+  // Expose handlers globally
   window.handleCategoryChange = handleCategoryChange;
+  window.openModal = openModal;
+  window.closeModal = closeModal;
+  window.closeModalOnOverlay = closeModalOnOverlay;
+  window.saveSubject = saveSubject;
+  window.editSubjectClick = editSubjectClick;
+  window.deleteSubjectClick = deleteSubjectClick;
+  window.filterSubjects = filterSubjects;
+  window.autoGenerateCode = autoGenerateCode;
 });
 
-function handleCategoryChange() {
-  const category = document.querySelector(
-    'input[name="classCategory"]:checked'
-  ).value;
-  const container = document.getElementById("specificClassContainer");
+// ==================== MODAL FUNCTIONS ====================
 
-  if (category === "specific") {
-    container.style.display = "block";
+function openModal(subjectCode = null) {
+  const modal = document.getElementById("subjectModal");
+  const title = document.getElementById("modalTitle");
+  const saveBtn = document.getElementById("saveButton");
+
+  if (subjectCode) {
+    // Edit mode
+    editSubjectClick(subjectCode);
   } else {
-    container.style.display = "none";
+    // Add mode
+    isEditing = false;
+    editingSubjectCode = null;
+    title.textContent = "Add New Subject";
+    saveBtn.textContent = "Save Subject";
+    resetForm();
+  }
+
+  modal.classList.add("active");
+  document.body.style.overflow = "hidden";
+}
+
+function closeModal() {
+  const modal = document.getElementById("subjectModal");
+  modal.classList.remove("active");
+  document.body.style.overflow = "auto";
+  resetForm();
+}
+
+function closeModalOnOverlay(event) {
+  if (event.target.id === "subjectModal") {
+    closeModal();
   }
 }
+
+// ==================== AUTO-GENERATE CODE ====================
+
+function autoGenerateCode() {
+  if (!isEditing) {
+    const name = document.getElementById("subjectName").value.trim();
+    const code = generateSubjectCode(name);
+    document.getElementById("subjectCode").value = code;
+  } else {
+    // When editing, also update code based on name
+    const name = document.getElementById("subjectName").value.trim();
+    const newCode = generateSubjectCode(name);
+    document.getElementById("subjectCode").value = newCode;
+  }
+}
+
+// ==================== LOAD FUNCTIONS ====================
 
 async function loadDepartments() {
   try {
@@ -69,13 +117,10 @@ async function loadClassOptions() {
     const classContainer = document.getElementById("classCheckboxes");
 
     classContainer.innerHTML = "";
-
     allClasses = settings.classes || [];
 
     allClasses.forEach((className) => {
-      const div = document.createElement("div");
-      div.style.display = "inline-block";
-      div.style.marginRight = "15px";
+      const label = document.createElement("label");
 
       const checkbox = document.createElement("input");
       checkbox.type = "checkbox";
@@ -83,73 +128,149 @@ async function loadClassOptions() {
       checkbox.id = `class_${className}`;
       checkbox.className = "class-checkbox";
 
-      const label = document.createElement("label");
-      label.htmlFor = `class_${className}`;
-      label.textContent = className;
-      label.style.marginLeft = "5px";
+      const text = document.createTextNode(` ${className}`);
 
-      div.appendChild(checkbox);
-      div.appendChild(label);
-
-      classContainer.appendChild(div);
+      label.appendChild(checkbox);
+      label.appendChild(text);
+      classContainer.appendChild(label);
     });
   } catch (error) {
     console.error("Error loading class options:", error);
   }
 }
 
+async function loadFilterOptions() {
+  try {
+    const settings = await getSettings();
+
+    // Load department filter
+    const deptFilter = document.getElementById("departmentFilter");
+    deptFilter.innerHTML = '<option value="">All Departments</option>';
+    settings.departments.forEach((dept) => {
+      const option = document.createElement("option");
+      option.value = dept;
+      option.textContent = dept;
+      deptFilter.appendChild(option);
+    });
+
+    // Load class filter
+    const classFilter = document.getElementById("classFilter");
+    classFilter.innerHTML = '<option value="">All Classes</option>';
+    allClasses.forEach((className) => {
+      const option = document.createElement("option");
+      option.value = className;
+      option.textContent = className;
+      classFilter.appendChild(option);
+    });
+  } catch (error) {
+    console.error("Error loading filters:", error);
+  }
+}
+
 async function loadSubjectsTable() {
   try {
-    const subjects = await getAllSubjects();
-    const tableBody = document.getElementById("subjectsTable");
-
-    tableBody.innerHTML = "";
-
-    if (subjects.length === 0) {
-      tableBody.innerHTML = `
-        <tr>
-          <td colspan="4" style="text-align: center; padding: 20px; color: #666;">
-            No subjects added yet. Add your first subject above.
-          </td>
-        </tr>
-      `;
-      return;
-    }
-
-    subjects.forEach((subject) => {
-      const row = document.createElement("tr");
-
-      row.innerHTML = `
-        <td style="padding: 1rem; border: 1px solid #ddd;">${subject.code}</td>
-        <td style="padding: 1rem; border: 1px solid #ddd;">${subject.name}</td>
-        <td style="padding: 1rem; border: 1px solid #ddd;">${subject.department}</td>
-        <td style="padding: 1rem; border: 1px solid #ddd; display: flex; gap: 10px;">
-          <button 
-            onclick="editSubjectClick('${subject.code}')" 
-            style="padding: 5px 15px; background: #ff9800; color: white; border: none; border-radius: 4px; cursor: pointer;">
-            Edit
-          </button>
-          <button 
-            onclick="deleteSubjectClick('${subject.code}')" 
-            style="padding: 5px 15px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;">
-            Delete
-          </button>
-        </td>
-      `;
-
-      tableBody.appendChild(row);
-    });
+    allSubjects = await getAllSubjects();
+    renderSubjectsTable(allSubjects);
   } catch (error) {
     console.error("Error loading subjects table:", error);
   }
 }
 
-window.saveSubject = async function () {
+function renderSubjectsTable(subjects) {
+  const tableBody = document.getElementById("subjectsTable");
+  tableBody.innerHTML = "";
+
+  if (subjects.length === 0) {
+    tableBody.innerHTML = `
+      <tr>
+        <td colspan="5" class="empty-state">
+          <span class="material-symbols-outlined">school</span>
+          <p>No subjects found. Add your first subject to get started!</p>
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  subjects.forEach((subject) => {
+    const row = document.createElement("tr");
+
+    // Format classes as badges
+    const classesBadges = (subject.classes || [])
+      .map((cls) => `<span class="class-badge">${cls}</span>`)
+      .join("");
+
+    row.innerHTML = `
+      <td><span class="subject-code">${subject.code}</span></td>
+      <td>${subject.name}</td>
+      <td>${subject.department}</td>
+      <td><div class="subject-classes">${classesBadges || "None"}</div></td>
+      <td>
+        <div class="action-buttons">
+          <button class="btn-edit" onclick="openModal('${subject.code}')">
+            Edit
+          </button>
+          <button class="btn-delete" onclick="deleteSubjectClick('${
+            subject.code
+          }')">
+            Delete
+          </button>
+        </div>
+      </td>
+    `;
+
+    tableBody.appendChild(row);
+  });
+}
+
+// ==================== FILTER & SEARCH ====================
+
+function filterSubjects() {
+  const searchTerm = document.getElementById("searchInput").value.toLowerCase();
+  const deptFilter = document.getElementById("departmentFilter").value;
+  const classFilter = document.getElementById("classFilter").value;
+
+  const filtered = allSubjects.filter((subject) => {
+    // Search filter
+    const matchesSearch =
+      subject.name.toLowerCase().includes(searchTerm) ||
+      subject.code.toLowerCase().includes(searchTerm);
+
+    // Department filter
+    const matchesDept = !deptFilter || subject.department === deptFilter;
+
+    // Class filter
+    const matchesClass =
+      !classFilter ||
+      (subject.classes && subject.classes.includes(classFilter));
+
+    return matchesSearch && matchesDept && matchesClass;
+  });
+
+  renderSubjectsTable(filtered);
+}
+
+// ==================== CATEGORY CHANGE ====================
+
+function handleCategoryChange() {
+  const category = document.querySelector(
+    'input[name="classCategory"]:checked'
+  ).value;
+  const container = document.getElementById("specificClassContainer");
+
+  if (category === "specific") {
+    container.style.display = "block";
+  } else {
+    container.style.display = "none";
+  }
+}
+
+// ==================== SAVE SUBJECT ====================
+
+async function saveSubject() {
   const name = document.getElementById("subjectName").value.trim();
   const department = document.getElementById("departmentSelect").value;
-  const code =
-    document.getElementById("subjectCode").value.trim() ||
-    generateSubjectCode(name);
+  const code = document.getElementById("subjectCode").value.trim();
 
   if (!name) {
     alert("Please enter a subject name");
@@ -157,6 +278,10 @@ window.saveSubject = async function () {
   }
   if (!department) {
     alert("Please select a department");
+    return;
+  }
+  if (!code) {
+    alert("Subject code is required");
     return;
   }
 
@@ -195,52 +320,55 @@ window.saveSubject = async function () {
 
   let success = false;
 
-  if (isEditing) {
-    // If editing, we use the original code (editingSubjectCode) to identify the record
-    // But we pass the possibly NEW code if user changed it
-    // Note: Changing primary key (code) might need specific backend handling or delete+create
-    // For now assuming update endpoint handles body update
-    // If user changed code, we might need to handle ID change differently, but let's try direct update
-    // Actually, update typically assumes ID in URL is immutable, body has changes
-    // If we want to change code, we might fail if backend uses code as ID.
-    // Let's assume code is immutable for now or handled by backend.
-    success = await updateSubject(editingSubjectCode, subjectData);
-  } else {
-    success = await addSubject(subjectData);
-  }
+  try {
+    if (isEditing) {
+      // When editing and code changes, we need to handle it specially
+      if (code !== editingSubjectCode) {
+        // Code changed - need to delete old and create new
+        await deleteSubject(editingSubjectCode);
+        success = await addSubject(subjectData);
+      } else {
+        // Code unchanged - normal update
+        success = await updateSubject(editingSubjectCode, subjectData);
+      }
+    } else {
+      success = await addSubject(subjectData);
+    }
 
-  if (success) {
-    resetForm();
-    await loadSubjectsTable();
-    alert(
-      isEditing
-        ? "Subject updated successfully!"
-        : "Subject added successfully!"
-    );
+    if (success) {
+      closeModal();
+      await loadSubjectsTable();
+      alert(
+        isEditing
+          ? "Subject updated successfully!"
+          : "Subject added successfully!"
+      );
+    }
+  } catch (error) {
+    console.error("Error saving subject:", error);
+    alert("Failed to save subject. Please try again.");
   }
-};
+}
 
-window.editSubjectClick = async function (code) {
+// ==================== EDIT SUBJECT ====================
+
+async function editSubjectClick(code) {
   const subject = await getSubjectByCode(code);
   if (!subject) return;
 
   isEditing = true;
   editingSubjectCode = code;
 
-  // Update UI text
-  const header = document.querySelector(".dashboard-action h3");
-  if (header) header.textContent = "Edit Subject";
-
-  const btn = document.querySelector("button[onclick='saveSubject()']");
-  if (btn) btn.textContent = "Update Subject";
+  // Update modal UI
+  document.getElementById("modalTitle").textContent = "Edit Subject";
+  document.getElementById("saveButton").textContent = "Update Subject";
 
   // Populate fields
   document.getElementById("subjectCode").value = subject.code;
   document.getElementById("subjectName").value = subject.name;
   document.getElementById("departmentSelect").value = subject.department;
 
-  // Handle classes
-  // Default to Specific to show exactly what's selected
+  // Handle classes - show in specific mode
   const categoryRadio = document.querySelector(
     'input[name="classCategory"][value="specific"]'
   );
@@ -255,9 +383,32 @@ window.editSubjectClick = async function (code) {
     cb.checked = subjectClasses.includes(cb.value);
   });
 
-  // Scroll to top
-  window.scrollTo({ top: 0, behavior: "smooth" });
-};
+  // Show modal
+  const modal = document.getElementById("subjectModal");
+  modal.classList.add("active");
+  document.body.style.overflow = "hidden";
+}
+
+// ==================== DELETE SUBJECT ====================
+
+async function deleteSubjectClick(code) {
+  const confirmed = confirm(
+    "Are you sure you want to delete this subject?\n\nThis action cannot be undone."
+  );
+
+  if (confirmed) {
+    try {
+      await deleteSubject(code);
+      await loadSubjectsTable();
+      alert("Subject deleted successfully!");
+    } catch (error) {
+      console.error("Error deleting subject:", error);
+      alert("Failed to delete subject. Please try again.");
+    }
+  }
+}
+
+// ==================== RESET FORM ====================
 
 function resetForm() {
   isEditing = false;
@@ -266,12 +417,6 @@ function resetForm() {
   document.getElementById("subjectCode").value = "";
   document.getElementById("subjectName").value = "";
   document.getElementById("departmentSelect").value = "";
-
-  const header = document.querySelector(".dashboard-action h3");
-  if (header) header.textContent = "Add New Subject";
-
-  const btn = document.querySelector("button[onclick='saveSubject()']");
-  if (btn) btn.textContent = "Save Subject";
 
   // Reset to "All" by default
   const allRadio = document.querySelector(
@@ -286,15 +431,3 @@ function resetForm() {
     .querySelectorAll(".class-checkbox")
     .forEach((cb) => (cb.checked = false));
 }
-
-window.deleteSubjectClick = async function (code) {
-  const confirmed = confirm("Are you sure you want to delete this subject?");
-
-  if (confirmed) {
-    await deleteSubject(code);
-
-    await loadSubjectsTable();
-
-    alert("Subject deleted successfully!");
-  }
-};
