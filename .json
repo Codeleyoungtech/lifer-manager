@@ -1,0 +1,48 @@
+{
+  "students": {
+    "MLC/ADM/2025/0001": {
+      "name": "kwkdk llll",
+      "dateOfBirth": "2025-11-01",
+      "gender": "male",
+      "department": "GENERAL",
+      "religion": "CHRISTIANITY",
+      "contactEmail": "",
+      "contactPhone": "",
+      "guardianName": "",
+      "address": "",
+      "dateRegistered": "2025-11-14T18:43:48.809Z"
+    }
+  },
+  "classes": ["JSS1", "JSS2", "JSS3", "SS1", "SS2", "SS3"],
+  "subjects": {
+    "MATH": { "code": "MATH", "name": "Mathematics" },
+    "ENGL": { "code": "ENGL", "name": "English Language" },
+    "INTS": { "code": "INTS", "name": "Integrated Science" },
+    "ISLM": { "code": "ISLM", "name": "Islamic Studies" },
+    "CRS": { "code": "CRS", "name": "Christain Religious Studies" }
+  },
+  "enrollments": {
+    "ENR_MLC/ADM/2025/0001_2024-2025_firstTerm": {
+      "studentId": "MLC/ADM/2025/0001",
+      "classLevel": "JSS1",
+      "academicYear": "2024-2025",
+      "term": "firstTerm",
+      "enrollmentDate": "2025-11-14T18:43:48.810Z"
+    },
+    "ENR_MLC/ADM/2025/0001_2024-2025_secondTerm": {
+      "studentId": "MLC/ADM/2025/0001",
+      "classLevel": "JSS1",
+      "academicYear": "2024-2025",
+      "term": "secondTerm",
+      "enrollmentDate": "2025-11-14T18:43:48.810Z"
+    },
+    "ENR_MLC/ADM/2025/0001_2024-2025_thirdTerm": {
+      "studentId": "MLC/ADM/2025/0001",
+      "classLevel": "JSS1",
+      "academicYear": "2024-2025",
+      "term": "thirdTerm",
+      "enrollmentDate": "2025-11-14T18:43:48.810Z"
+    }
+  },
+  "results": {}
+}

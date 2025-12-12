@@ -1,0 +1,17 @@
+{
+  "total_students": 1300,
+  "active_spreadsheets": 27,
+  "top_performers": 20,
+  "recent": [
+    {
+      "title": "New spreadsheet created",
+      "author": "Eleazar",
+      "when": "1 hour ago"
+    },
+    {
+      "title": "Exam results updated",
+      "author": "Admin",
+      "when": "2 hours ago"
+    }
+  ]
+}

@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Result Manager - Lifer School</title>
+    <link rel="stylesheet" href="../assets/index.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined"
+      rel="stylesheet"
+    />
+    <!-- html2pdf CDN -->
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"
+      integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <style>
+      /* Result Manager Specific Styles */
+      .dashboard-page {
+        padding: 20px;
+        overflow-y: auto;
+      }
+
+      /* Split View Layout */
+      .result-manager-container {
+        display: flex;
+        height: calc(100vh - 250px);
+        gap: 20px;
+        margin-top: 20px;
+      }
+
+      .student-list-sidebar {
+        width: 320px;
+        background: white;
+        border-radius: 8px;
+        border: 1px solid #e0e0e0;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      .student-search-box {
+        padding: 15px;
+        border-bottom: 1px solid #eee;
+      }
+
+      .student-search-box input {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        outline: none;
+        font-family: inherit;
+      }
+
+      .student-list {
+        flex: 1;
+        overflow-y: auto;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      .student-item {
+        padding: 14px 16px;
+        border-bottom: 1px solid #f5f5f5;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .student-item:hover {
+        background: #f8f9fa;
+      }
+
+      .student-item.active {
+        background: #e7f3ff;
+        border-left: 4px solid #007cba;
+        padding-left: 12px;
+      }
+
+      .student-avatar {
+        width: 36px;
+        height: 36px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 14px;
+        font-weight: bold;
+        flex-shrink: 0;
+      }
+
+      .student-info {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .student-name {
+        font-weight: 600;
+        font-size: 14px;
+        color: #333;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .student-id {
+        font-size: 12px;
+        color: #888;
+        margin-top: 2px;
+      }
+
+      .result-preview-area {
+        flex: 1;
+        background: #f8f9fa;
+        border-radius: 8px;
+        overflow: auto;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        border: 1px solid #e0e0e0;
+      }
+
+      .preview-header {
+        width: 100%;
+        max-width: 950px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        background: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        position: sticky;
+        top: 0;
+        z-index: 10;
+      }
+
+      /* Controls Section */
+      .controls-section {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        border: 1px solid #e0e0e0;
+        display: flex;
+        gap: 15px;
+        align-items: flex-end;
+        flex-wrap: wrap;
+        margin-bottom: 10px;
+      }
+
+      .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .form-group label {
+        font-weight: 600;
+        font-size: 13px;
+        color: #555;
+      }
+
+      .form-control {
+        padding: 9px 12px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        min-width: 160px;
+        font-family: inherit;
+        font-size: 14px;
+      }
+
+      .btn {
+        padding: 10px 18px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 500;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s;
+        font-family: inherit;
+      }
+
+      .btn:hover {
+        opacity: 0.9;
+        transform: translateY(-1px);
+      }
+
+      .btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .btn-primary {
+        background: #000;
+        color: white;
+      }
+
+      .btn-success {
+        background: #28a745;
+        color: white;
+      }
+
+      .btn-warning {
+        background: #ffc107;
+        color: #333;
+      }
+
+      /* Loading Overlay */
+      .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.9);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        display: none;
+      }
+
+      .spinner {
+        width: 50px;
+        height: 50px;
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #000;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Hide sidebar when printing */
+      @media print {
+        aside,
+        .controls-section,
+        .navigation {
+          display: none !important;
+        }
+        .result-manager-container {
+          display: block;
+          height: auto;
+          margin: 0;
+        }
+        .result-preview-area {
+          background: white;
+          padding: 0;
+          overflow: visible;
+          border: none;
+        }
+        .preview-header {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+      <div class="spinner"></div>
+      <p
+        style="margin-top: 15px; font-weight: 600; color: #555; font-size: 16px"
+        id="loadingText"
+      >
+        Processing...
+      </p>
+    </div>
+
+    <!-- Sidebar -->
+    <aside>
+      <div class="sidebar-wrapper">
+        <div class="sidebar-header">
+          <h3>Lifer's Results</h3>
+          <p class="gray-medium">Management Platform</p>
+        </div>
+        <div class="sd-parent">
+          <nav class="links-wrapper">
+            <ul>
+              <li>
+                <a href="../pages/index.html">
+                  <span class="material-symbols-outlined">dashboard</span>
+                  <span>Dashboard</span>
+                </a>
+              </li>
+              <li>
+                <a href="../pages/editor.html">
+                  <span class="material-symbols-outlined">description</span>
+                  <span>Legacy Editor</span>
+                </a>
+              </li>
+              <li>
+                <a href="../pages/student.html">
+                  <span class="material-symbols-outlined">group</span>
+                  <span>Students</span>
+                </a>
+              </li>
+              <li>
+                <a href="../pages/result-manager.html" class="active">
+                  <span class="material-symbols-outlined">assignment</span>
+                  <span>Student Results</span>
+                </a>
+              </li>
+              <li>
+                <a href="../pages/attendance.html">
+                  <span class="material-symbols-outlined">calendar_month</span>
+                  <span>Attendance</span>
+                </a>
+              </li>
+              <li>
+                <a href="../pages/subject.html">
+                  <span class="material-symbols-outlined">school</span>
+                  <span>Classes & Subjects</span>
+                </a>
+              </li>
+              <li>
+                <a href="../pages/settings.html">
+                  <span class="material-symbols-outlined">settings</span>
+                  <span>Settings</span>
+                </a>
+              </li>
+            </ul>
+          </nav>
+
+          <div class="sidebar-footer">
+            <span class="user-name">Admin User</span>
+            <span class="user-type">Super_admin</span>
+            <a href="#">
+              <span class="material-symbols-outlined">logout</span>
+              <span>Logout</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main>
+      <section class="dashboard-page">
+        <div class="dashboard-action">
+          <div class="dash-greetings">
+            <h2>Result Manager</h2>
+            <p>Load and manage student result sheets for any class and term</p>
+          </div>
+        </div>
+
+        <!-- Top Controls -->
+        <div class="controls-section">
+          <div class="form-group">
+            <label>Academic Year</label>
+            <select id="academicYear" class="form-control"></select>
+          </div>
+          <div class="form-group">
+            <label>Class</label>
+            <select id="classLevel" class="form-control">
+              <option value="">Select Class</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Term</label>
+            <select id="termSelect" class="form-control">
+              <option value="firstTerm">First Term</option>
+              <option value="secondTerm">Second Term</option>
+              <option value="thirdTerm">Third Term</option>
+            </select>
+          </div>
+          <button id="loadResults" class="btn btn-primary">
+            <span class="material-symbols-outlined">refresh</span>
+            Load Students
+          </button>
+          <div style="flex: 1"></div>
+          <button id="downloadAllBtn" class="btn btn-success" disabled>
+            <span class="material-symbols-outlined">picture_as_pdf</span>
+            Download All PDF
+          </button>
+        </div>
+
+        <!-- Split View Area -->
+        <div class="result-manager-container">
+          <!-- Left Sidebar: Student List -->
+          <div class="student-list-sidebar">
+            <div class="student-search-box">
+              <input
+                type="text"
+                id="studentSearch"
+                placeholder="🔍 Search student by name or ID..."
+                disabled
+              />
+            </div>
+            <ul class="student-list" id="studentList">
+              <li style="padding: 30px 20px; text-align: center; color: #999">
+                <span
+                  class="material-symbols-outlined"
+                  style="font-size: 48px; opacity: 0.3"
+                  >group</span
+                >
+                <p style="margin-top: 10px">Load a class to see students</p>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Right Area: Preview -->
+          <div class="result-preview-area" id="previewArea">
+            <div class="preview-header">
+              <h4 id="previewTitle" style="margin: 0; font-size: 16px">
+                Result Preview
+              </h4>
+<<<<<<< HEAD
+              <div style="display: flex; gap: 10px">
+                <button id="saveChangesBtn" class="btn btn-success" disabled>
+                  <span class="material-symbols-outlined">save</span>
+                  Save Changes
+                </button>
+                <button id="printCurrentBtn" class="btn btn-warning" disabled>
+                  <span class="material-symbols-outlined">print</span>
+                  Print Current
+                </button>
+              </div>
+=======
+              <button id="printCurrentBtn" class="btn btn-warning" disabled>
+                <span class="material-symbols-outlined">print</span>
+                Print Current
+              </button>
+>>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
+            </div>
+
+            <div id="resultSheetContainer">
+              <!-- Result Sheet will be injected here -->
+              <div style="text-align: center; padding: 80px 20px; color: #aaa">
+                <span
+                  class="material-symbols-outlined"
+                  style="font-size: 72px; opacity: 0.3"
+                  >description</span
+                >
+                <p style="margin-top: 15px; font-size: 16px">
+                  Select a student from the list to view their result
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script type="module" src="../scripts/auth-guard.js"></script>
+    <script type="module" src="../scripts/result-manager.js"></script>
+    <script src="../scripts/sidebar-toggle.js"></script>
+  </body>
+</html>

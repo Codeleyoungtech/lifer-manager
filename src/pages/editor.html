@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Grade Entry - Lifer's Results</title>
+    <link rel="stylesheet" href="../assets/index.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined"
+      rel="stylesheet"
+    />
+    <style>
+      .score-input:focus {
+        outline: 2px solid #007cba;
+        border-color: #007cba;
+      }
+
+      .total-display {
+        font-size: 18px;
+        color: #007cba;
+      }
+
+      .remarks-display {
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      .spreadsheet-container {
+        overflow-x: auto;
+      }
+
+      .spreadsheet {
+        min-width: 900px;
+      }
+    </style>
+  </head>
+  <body>
+    <aside>
+      <div class="sidebar-wrapper">
+        <div class="sidebar-header">
+          <h3>Lifer's Results</h3>
+          <p class="gray-medium">Management Platform</p>
+        </div>
+        <div class="sd-parent">
+          <nav class="links-wrapper">
+            <ul>
+              <li>
+                <a href="../pages/index.html"
+                  ><span class="material-symbols-outlined">dashboard</span
+                  ><span>Dashboard</span>
+                </a>
+              </li>
+              <li>
+                <a href="../pages/editor.html" class="active"
+                  ><span class="material-symbols-outlined">description</span
+                  ><span>Legacy Editor</span>
+                </a>
+              </li>
+              <li>
+                <a href="../pages/student.html"
+                  ><span class="material-symbols-outlined">group</span
+                  ><span>Students</span>
+                </a>
+              </li>
+              <li>
+                <a href="../pages/result-manager.html"
+                  ><span class="material-symbols-outlined">article</span> ><span
+                    >Student Results</span
+                  >
+                </a>
+              </li>
+              <li>
+                <a href="../pages/attendance.html"
+                  ><span class="material-symbols-outlined">calendar_month</span>
+                  <span>Attendance</span>
+                </a>
+              </li>
+              <li>
+                <a href="../pages/subject.html"
+                  ><span class="material-symbols-outlined">school</span
+                  ><span>Classes & Subjects</span>
+                </a>
+              </li>
+              <li>
+                <a href="../pages/settings.html"
+                  ><span class="material-symbols-outlined">settings</span>
+                  ><span>Settings</span>
+                </a>
+              </li>
+            </ul>
+          </nav>
+
+          <div class="sidebar-footer">
+            <span class="user-name">Eleazar Ogoyemi Jesusemilogo</span>
+            <span class="user-type">Super_admin</span>
+            <a href="#"
+              ><span class="material-symbols-outlined"> logout </span>
+              <span>Logout</span></a
+            >
+          </div>
+        </div>
+      </div>
+    </aside>
+    <main>
+      <section class="dashboard-page">
+        <div class="dashboard-action">
+          <div class="dash-greetings">
+            <h2>Grade Entry</h2>
+            <p>
+              Enter exam scores for students. Total and grades are calculated
+              automatically.
+            </p>
+          </div>
+          <div class="dash-action-group">
+            <button class="dash-new-spreadsheet" onclick="saveAllResults()">
+              <span class="material-symbols-outlined"> save </span
+              ><span>Save All Results</span>
+            </button>
+            <button class="dash-export-data" onclick="exportToCSV()">
+              <span class="material-symbols-outlined"> download </span
+              ><span>Export to CSV</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="selection">
+          <div>
+            <label>Session:</label>
+            <select id="resultYear">
+              <option value="2024-2025">2024-2025</option>
+            </select>
+          </div>
+
+          <div>
+            <label>Class:</label>
+            <select id="resultClass">
+              <option value="">Select Class</option>
+            </select>
+          </div>
+
+          <div>
+            <label>Subject:</label>
+            <select id="resultSubject">
+              <option value="">Select Subject</option>
+            </select>
+          </div>
+
+          <div>
+            <label>Term:</label>
+            <select id="resultTerm">
+              <option value="firstTerm">1st Term</option>
+              <option value="secondTerm">2nd Term</option>
+              <option value="thirdTerm">3rd Term</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="editor-page card">
+          <div class="dashboard-action">
+            <div class="dash-greetings">
+              <h2>
+                <span id="subjectTitle">No Subject Selected</span> Exam Results
+                <span id="termInfo"></span> (<span id="classInfo"></span>)
+              </h2>
+              <p style="font-size: 14px; color: #666; margin-top: 5px">
+                📝 Enter scores, then click "Save All Results". Position is
+                calculated automatically per subject.
+              </p>
+            </div>
+          </div>
+
+          <div class="table spreadsheet-container">
+            <table class="table spreadsheet" id="gradesTable">
+              <thead>
+                <tr style="background: #f8f9fa">
+                  <th style="padding: 12px; border: 1px solid #ddd">#</th>
+                  <th
+                    style="
+                      padding: 12px;
+                      border: 1px solid #ddd;
+                      text-align: left;
+                    "
+                  >
+                    Student Information
+                  </th>
+                  <th
+                    style="
+                      padding: 12px;
+                      border: 1px solid #ddd;
+                      text-align: center;
+                    "
+                  >
+                    Weekly Test<br />
+                    <small style="font-weight: normal; color: #666"
+                      >(Max: 10)</small
+                    >
+                  </th>
+                  <th
+                    style="
+                      padding: 12px;
+                      border: 1px solid #ddd;
+                      text-align: center;
+                    "
+                  >
+                    Mid-Term Test<br />
+                    <small style="font-weight: normal; color: #666"
+                      >(Max: 20)</small
+                    >
+                  </th>
+                  <th
+                    style="
+                      padding: 12px;
+                      border: 1px solid #ddd;
+                      text-align: center;
+                    "
+                  >
+                    Exam<br />
+                    <small style="font-weight: normal; color: #666"
+                      >(Max: 70)</small
+                    >
+                  </th>
+                  <th
+                    style="
+                      padding: 12px;
+                      border: 1px solid #ddd;
+                      text-align: center;
+                    "
+                  >
+                    Total
+                  </th>
+                  <th
+                    style="
+                      padding: 12px;
+                      border: 1px solid #ddd;
+                      text-align: center;
+                    "
+                  >
+                    Remarks
+                  </th>
+                </tr>
+              </thead>
+              <tbody id="spreadsheetBody">
+                <tr>
+                  <td
+                    colspan="7"
+                    style="text-align: center; padding: 40px; color: #666"
+                  >
+                    <h3>📋 Select a Class and Subject</h3>
+                    <p>Choose filters above to start entering grades.</p>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+    <script type="module" src="../scripts/auth-guard.js"></script>
+    <script type="module" src="../scripts/editor.js"></script>
+    <script src="../scripts/sidebar-toggle.js"></script>
+  </body>
+</html>

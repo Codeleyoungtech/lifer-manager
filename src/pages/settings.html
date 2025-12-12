@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>System Settings</title>
+    <link rel="stylesheet" href="../assets/index.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined"
+      rel="stylesheet"
+    />
+    <style>
+      /* Tabs */
+      .tabs-container {
+        background: white;
+        border-bottom: 1px solid #e0e0e0;
+      }
+
+      .tabs {
+        display: flex;
+        gap: 8px;
+        padding: 0 40px;
+      }
+
+      .tab {
+        padding: 14px 20px;
+        cursor: pointer;
+        color: #666;
+        font-size: 14px;
+        font-weight: 500;
+        border-bottom: 2px solid transparent;
+        transition: all 0.2s;
+        background: none;
+        border-top: none;
+        border-left: none;
+        border-right: none;
+      }
+
+      .tab:hover {
+        color: #0066ff;
+      }
+
+      .tab.active {
+        color: #0066ff;
+        border-bottom-color: #0066ff;
+      }
+
+      /* Content */
+      .content {
+        padding: 40px;
+        max-width: 1200px;
+      }
+
+      .tab-content {
+        display: none;
+      }
+
+      .tab-content.active {
+        display: block;
+      }
+
+      .settings-section {
+        background: white;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        margin-bottom: 24px;
+      }
+
+      .section-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 8px;
+      }
+
+      .section-header h2 {
+        font-size: 18px;
+        font-weight: 600;
+        color: #1a1a1a;
+      }
+
+      .section-subtitle {
+        color: #666;
+        font-size: 13px;
+        margin-bottom: 24px;
+      }
+
+      .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 24px;
+      }
+
+      .form-group-full {
+        grid-column: 1 / -1;
+      }
+
+      .form-group label {
+        display: block;
+        font-size: 13px;
+        font-weight: 500;
+        color: #333;
+        margin-bottom: 8px;
+      }
+
+      .form-group input,
+      .form-group select,
+      .form-group textarea {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 14px;
+        font-family: inherit;
+        transition: border-color 0.2s;
+      }
+
+      .form-group input:focus,
+      .form-group select:focus,
+      .form-group textarea:focus {
+        outline: none;
+        border-color: #0066ff;
+      }
+
+      .form-group textarea {
+        resize: vertical;
+        min-height: 80px;
+      }
+
+      /* List Manager */
+      .list-manager {
+        background: #f9f9f9;
+        padding: 20px;
+        border-radius: 6px;
+        border: 1px solid #e0e0e0;
+      }
+
+      .add-item {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 16px;
+      }
+
+      .add-item input {
+        flex: 1;
+      }
+
+      .items-list {
+        list-style: none;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .items-list li {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 12px;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 20px;
+        font-size: 13px;
+      }
+
+      .items-list button {
+        background: none;
+        border: none;
+        color: #999;
+        cursor: pointer;
+        padding: 0;
+        display: flex;
+        align-items: center;
+      }
+
+      .items-list button:hover {
+        color: #f44336;
+      }
+
+      .items-list .material-symbols-outlined {
+        font-size: 16px;
+      }
+
+      /* Buttons */
+      .form-actions {
+        display: flex;
+        gap: 12px;
+        padding-top: 24px;
+        border-top: 1px solid #e0e0e0;
+      }
+
+      .btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s;
+      }
+
+      .btn-primary {
+        background: #0066ff;
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background: #0052cc;
+      }
+
+      .btn-secondary {
+        background: #f5f5f5;
+        color: #666;
+        border: 1px solid #ddd;
+      }
+
+      .btn-secondary:hover {
+        background: #e8e8e8;
+      }
+
+      .btn-small {
+        padding: 6px 14px;
+        font-size: 13px;
+      }
+
+      .section-header .material-symbols-outlined {
+        font-size: 18px;
+      }
+    </style>
+  </head>
+  <body>
+    <aside>
+      <div class="sidebar-wrapper">
+        <div class="sidebar-header">
+          <h3>Lifer's Results</h3>
+          <p class="gray-medium">Management Platform</p>
+        </div>
+        <div class="sd-parent">
+          <nav class="links-wrapper">
+            <ul>
+              <li>
+                <a href="../pages/index.html">
+                  <span class="material-symbols-outlined">dashboard</span>
+                  <span>Dashboard</span>
+                </a>
+              </li>
+              <li>
+                <a href="../pages/editor.html">
+                  <span class="material-symbols-outlined">description</span>
+                  <span>Legacy Editor</span>
+                </a>
+              </li>
+              <li>
+                <a href="../pages/student.html">
+                  <span class="material-symbols-outlined">group</span>
+                  <span>Students</span>
+                </a>
+              </li>
+              <li>
+                <a href="../pages/result-manager.html">
+                  <span class="material-symbols-outlined">article</span>
+                  <span>Student Results</span>
+                </a>
+              </li>
+              <li>
+                <a href="../pages/attendance.html">
+                  <span class="material-symbols-outlined">calendar_month</span>
+                  <span>Attendance</span>
+                </a>
+              </li>
+              <li>
+                <a href="../pages/subject.html">
+                  <span class="material-symbols-outlined">school</span>
+                  <span>Classes & Subjects</span>
+                </a>
+              </li>
+              <li>
+                <a href="../pages/settings.html" class="active">
+                  <span class="material-symbols-outlined">settings</span>
+                  <span>Settings</span>
+                </a>
+              </li>
+            </ul>
+          </nav>
+
+          <div class="sidebar-footer">
+            <span class="user-name">Admin User</span>
+            <span class="user-type">Super_admin</span>
+            <a href="#">
+              <span class="material-symbols-outlined">logout</span>
+              <span>Logout</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <main>
+      <section class="dashboard-page">
+        <div class="dashboard-action">
+          <div class="dash-greetings">
+            <h1>System Settings</h1>
+            <p class="gray-medium">Configure system settings and preferences</p>
+          </div>
+        </div>
+
+        <div class="tabs-container">
+          <div class="tabs">
+            <button class="tab active" data-tab="school">School</button>
+            <button class="tab" data-tab="academic">Academic</button>
+            <button class="tab" data-tab="system">System</button>
+          </div>
+        </div>
+
+        <div class="content">
+          <!-- School Tab -->
+          <div class="tab-content active" id="school-tab">
+            <form id="settingsForm">
+              <div class="settings-section">
+                <div class="section-header">
+                  <span class="material-symbols-outlined">school</span>
+                  <h2>School Information</h2>
+                </div>
+                <p class="section-subtitle">
+                  Manage and update your institutional details
+                </p>
+
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label for="schoolName">School Name</label>
+                    <input
+                      type="text"
+                      id="schoolName"
+                      name="schoolName"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Academic Tab Content -->
+              <div class="settings-section">
+                <div class="section-header">
+                  <span class="material-symbols-outlined">calendar_today</span>
+                  <h2>Academic Calendar</h2>
+                </div>
+                <p class="section-subtitle">
+                  Set academic session and important dates
+                </p>
+
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label for="academicYear">Academic Year</label>
+                    <input
+                      type="text"
+                      id="academicYear"
+                      name="currentAcademicYear"
+                      required
+                      placeholder="e.g., 2024-2025"
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label for="currentTerm">Current Term</label>
+                    <select id="currentTerm" name="currentTerm" required>
+                      <option value="firstTerm">First Term</option>
+                      <option value="secondTerm">Second Term</option>
+                      <option value="thirdTerm">Third Term</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="dateOfVacation">Date of Vacation</label>
+                    <input
+                      type="date"
+                      id="dateOfVacation"
+                      name="dateOfVacation"
+                    />
+                  </div>
+                  <div class="form-group">
+<<<<<<< HEAD
+                    <label for="maxAttendance">Max Attendance (days)</label>
+                    <input
+                      type="number"
+                      id="maxAttendance"
+                      name="maxAttendance"
+                      min="0"
+                      placeholder="e.g. 120"
+                    />
+                  </div>
+                  <div class="form-group">
+=======
+>>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
+                    <label for="dateOfResumption">Date of Resumption</label>
+                    <input
+                      type="date"
+                      id="dateOfResumption"
+                      name="dateOfResumption"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Classes & Departments -->
+              <div class="settings-section">
+                <div class="section-header">
+                  <span class="material-symbols-outlined">list</span>
+                  <h2>Classes & Departments</h2>
+                </div>
+                <p class="section-subtitle">
+                  Manage class levels and department categories
+                </p>
+
+                <div class="form-grid">
+                  <div class="form-group form-group-full">
+                    <label>Class Levels</label>
+                    <div class="list-manager">
+                      <div class="add-item">
+                        <input
+                          type="text"
+                          id="newClass"
+                          placeholder="Add new class (e.g., JSS1, Primary1)"
+                        />
+                        <button
+                          type="button"
+                          id="addClassBtn"
+                          class="btn btn-secondary btn-small"
+                        >
+                          <span class="material-symbols-outlined">add</span>
+                          Add
+                        </button>
+                      </div>
+                      <ul id="classesList" class="items-list"></ul>
+                    </div>
+                  </div>
+
+                  <div class="form-group form-group-full">
+                    <label>Departments</label>
+                    <div class="list-manager">
+                      <div class="add-item">
+                        <input
+                          type="text"
+                          id="newDepartment"
+                          placeholder="Add department (e.g., SCIENCE)"
+                        />
+                        <button
+                          type="button"
+                          id="addDeptBtn"
+                          class="btn btn-secondary btn-small"
+                        >
+                          <span class="material-symbols-outlined">add</span>
+                          Add
+                        </button>
+                      </div>
+                      <ul id="departmentsList" class="items-list"></ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="settings-section">
+                <div class="form-actions">
+                  <button type="submit" class="btn btn-primary">
+                    <span class="material-symbols-outlined">save</span>
+                    Save Changes
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-secondary"
+                    onclick="location.reload()"
+                  >
+                    <span class="material-symbols-outlined">refresh</span>
+                    Reset to Defaults
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+
+          <!-- Academic Tab -->
+          <div class="tab-content" id="academic-tab">
+<<<<<<< HEAD
+            <form id="academicSettingsForm">
+              <div class="settings-section">
+                <div class="section-header">
+                  <span class="material-symbols-outlined">sort</span>
+                  <h2>Subject Ordering</h2>
+                </div>
+                <p class="section-subtitle">
+                  Define the order of subjects for result sheets. Enter Subject
+                  Codes separated by commas (e.g. MATH, ENG, BIO).
+                </p>
+
+                <div class="form-grid">
+                  <div class="form-group form-group-full">
+                    <label>Pre-Nursery Order</label>
+                    <div id="container-prenursery" class="sortable-list">
+                      <p
+                        class="gray-medium"
+                        style="font-size: 12px; margin-bottom: 5px"
+                      >
+                        Loading subjects...
+                      </p>
+                    </div>
+                  </div>
+                  <div class="form-group form-group-full">
+                    <label>Primary Order</label>
+                    <div id="container-primary" class="sortable-list">
+                      <p
+                        class="gray-medium"
+                        style="font-size: 12px; margin-bottom: 5px"
+                      >
+                        Loading subjects...
+                      </p>
+                    </div>
+                  </div>
+                  <div class="form-group form-group-full">
+                    <label>Junior Secondary (JSS) Order</label>
+                    <div id="container-jss" class="sortable-list">
+                      <p
+                        class="gray-medium"
+                        style="font-size: 12px; margin-bottom: 5px"
+                      >
+                        Loading subjects...
+                      </p>
+                    </div>
+                  </div>
+                  <div class="form-group form-group-full">
+                    <label>Senior Secondary (SS) Order</label>
+                    <div id="container-ss" class="sortable-list">
+                      <p
+                        class="gray-medium"
+                        style="font-size: 12px; margin-bottom: 5px"
+                      >
+                        Loading subjects...
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <style>
+                  .sortable-list {
+                    border: 1px solid #ddd;
+                    border-radius: 6px;
+                    padding: 10px;
+                    background: #f9f9f9;
+                    min-height: 50px;
+                    max-height: 300px;
+                    overflow-y: auto;
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 8px;
+                  }
+                  .sortable-item {
+                    background: white;
+                    border: 1px solid #ccc;
+                    border-radius: 4px;
+                    padding: 6px 12px;
+                    cursor: grab;
+                    font-size: 13px;
+                    display: flex;
+                    align-items: center;
+                    gap: 5px;
+                    user-select: none;
+                  }
+                  .sortable-item:active {
+                    cursor: grabbing;
+                    background: #eef;
+                  }
+                  .sortable-item.dragging {
+                    opacity: 0.5;
+                  }
+                  .sortable-item .code {
+                    font-weight: bold;
+                    color: #333;
+                  }
+                  .sortable-item .name {
+                    color: #666;
+                    font-size: 12px;
+                  }
+                </style>
+
+                <div class="form-actions">
+                  <button type="submit" class="btn btn-primary">
+                    <span class="material-symbols-outlined">save</span>
+                    Save Subject Orders
+                  </button>
+                </div>
+              </div>
+            </form>
+=======
+            <div class="settings-section">
+              <p style="color: #666">Academic settings coming soon...</p>
+            </div>
+>>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
+          </div>
+
+          <!-- System Tab -->
+          <div class="tab-content" id="system-tab">
+            <div class="settings-section">
+              <p style="color: #666">System settings coming soon...</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script type="module" src="../scripts/settings.js"></script>
+    <script src="../scripts/sidebar-toggle.js"></script>
+  </body>
+</html>

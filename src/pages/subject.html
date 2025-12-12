@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Subject Registration</title>
+    <link rel="stylesheet" href="../assets/index.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <aside>
+      <div class="sidebar-wrapper">
+        <div class="sidebar-header">
+          <h3>Lifer's Results</h3>
+          <p class="gray-medium">Management Platform</p>
+        </div>
+        <div class="sd-parent">
+          <nav class="links-wrapper">
+            <ul>
+              <li>
+                <a href="../pages/index.html"
+                  ><span class="material-symbols-outlined">dashboard</span
+                  ><span>Dashboard</span>
+                </a>
+              </li>
+              <li>
+                <a href="../pages/editor.html"
+                  ><span class="material-symbols-outlined">description</span
+                  ><span>Legacy Editor</span>
+                </a>
+              </li>
+              <li>
+                <a href="../pages/student.html"
+                  ><span class="material-symbols-outlined">group</span
+                  ><span>Students</span>
+                </a>
+              </li>
+              <li>
+                <a href="../pages/result-manager.html"
+                  ><span class="material-symbols-outlined">article</span> ><span
+                    >Student Results</span
+                  >
+                </a>
+              </li>
+              <li>
+                <a href="../pages/attendance.html"
+                  ><span class="material-symbols-outlined">calendar_month</span>
+                  <span>Attendance</span>
+                </a>
+              </li>
+              <li>
+                <a href="../pages/subject.html" class="active"
+                  ><span class="material-symbols-outlined">school</span
+                  ><span>Classes & Subjects</span>
+                </a>
+              </li>
+              <li>
+                <a href="../pages/settings.html"
+                  ><span class="material-symbols-outlined">settings</span>
+                  ><span>Settings</span>
+                </a>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+    </aside>
+
+    <main>
+      <section class="dashboard-page">
+        <div class="dashboard-action">
+          <div class="dash-greetings">
+            <h2>Subject Management</h2>
+            <p>Register and manage subjects</p>
+          </div>
+        </div>
+
+        <div class="editor-page card">
+          <div class="dashboard-action">
+            <h3>Add New Subject</h3>
+
+            <div
+              style="
+                display: flex;
+                flex-direction: column;
+                gap: 1rem;
+                margin: 1rem 0;
+              "
+            >
+              <div style="display: flex; gap: 1rem">
+                <input
+                  type="text"
+                  id="subjectCode"
+                  placeholder="Subject Code (e.g., MATH)"
+                  style="
+                    padding: 0.5rem;
+                    border: 1px solid #ddd;
+                    border-radius: 4px;
+                    width: 150px;
+                  "
+                />
+                <input
+                  type="text"
+                  id="subjectName"
+                  placeholder="Subject Name (e.g., Mathematics)"
+                  style="
+                    padding: 0.5rem;
+                    border: 1px solid #ddd;
+                    border-radius: 4px;
+                    flex: 1;
+                  "
+                />
+              </div>
+
+              <div>
+                <label
+                  style="display: block; margin-bottom: 5px; font-weight: 600"
+                  >Department:</label
+                >
+                <select
+                  id="departmentSelect"
+                  style="
+                    padding: 0.5rem;
+                    border: 1px solid #ddd;
+                    border-radius: 4px;
+                    width: 100%;
+                  "
+                >
+                  <option value="">Select Department</option>
+                </select>
+              </div>
+
+<<<<<<< HEAD
+              <!-- Row 3: Class Selection -->
+              <div>
+                <label
+                  style="display: block; margin-bottom: 8px; font-weight: 600"
+                  >Applicable Classes:</label
+                >
+                <div
+                  style="
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 15px;
+                    margin-bottom: 10px;
+                  "
+                >
+                  <label
+                    style="
+                      display: flex;
+                      align-items: center;
+                      gap: 5px;
+                      cursor: pointer;
+                    "
+                  >
+                    <input
+                      type="radio"
+                      name="classCategory"
+                      value="all"
+                      checked
+                      onchange="handleCategoryChange()"
+                    />
+                    All Classes
+                  </label>
+                  <label
+                    style="
+                      display: flex;
+                      align-items: center;
+                      gap: 5px;
+                      cursor: pointer;
+                    "
+                  >
+                    <input
+                      type="radio"
+                      name="classCategory"
+                      value="prenursery"
+                      onchange="handleCategoryChange()"
+                    />
+                    Pre-Nursery
+                  </label>
+                  <label
+                    style="
+                      display: flex;
+                      align-items: center;
+                      gap: 5px;
+                      cursor: pointer;
+                    "
+                  >
+                    <input
+                      type="radio"
+                      name="classCategory"
+                      value="primary"
+                      onchange="handleCategoryChange()"
+                    />
+                    Primary
+                  </label>
+                  <label
+                    style="
+                      display: flex;
+                      align-items: center;
+                      gap: 5px;
+                      cursor: pointer;
+                    "
+                  >
+                    <input
+                      type="radio"
+                      name="classCategory"
+                      value="jss"
+                      onchange="handleCategoryChange()"
+                    />
+                    JSS
+                  </label>
+                  <label
+                    style="
+                      display: flex;
+                      align-items: center;
+                      gap: 5px;
+                      cursor: pointer;
+                    "
+                  >
+                    <input
+                      type="radio"
+                      name="classCategory"
+                      value="ss"
+                      onchange="handleCategoryChange()"
+                    />
+                    SS
+                  </label>
+                  <label
+                    style="
+                      display: flex;
+                      align-items: center;
+                      gap: 5px;
+                      cursor: pointer;
+                    "
+                  >
+                    <input
+                      type="radio"
+                      name="classCategory"
+                      value="specific"
+                      onchange="handleCategoryChange()"
+                    />
+                    Specific
+                  </label>
+                </div>
+
+                <!-- Specific Classes Container (Hidden by default) -->
+                <div
+                  id="specificClassContainer"
+                  style="
+                    display: none;
+=======
+              <!-- Row 3: Classes (Checkboxes) -->
+              <div>
+                <label
+                  style="display: block; margin-bottom: 5px; font-weight: 600"
+                  >Classes (select all that apply):</label
+                >
+                <div
+                  id="classCheckboxes"
+                  style="
+>>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
+                    padding: 10px;
+                    border: 1px solid #ddd;
+                    border-radius: 4px;
+                    background: #f9f9f9;
+<<<<<<< HEAD
+                    margin-top: 5px;
+                  "
+                >
+                  <p style="margin: 0 0 10px 0; font-size: 13px; color: #666">
+                    Select specific classes:
+                  </p>
+                  <div id="classCheckboxes"></div>
+                </div>
+=======
+                  "
+                ></div>
+>>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
+              </div>
+
+              <div>
+                <button
+                  onclick="saveSubject()"
+                  style="
+                    padding: 0.7rem 2rem;
+                    background: #007cba;
+                    color: white;
+                    border: none;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    font-size: 16px;
+                  "
+                >
+                  Save Subject
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Subjects Table -->
+          <div class="table" style="margin-top: 2rem">
+            <h3 style="margin-bottom: 1rem">All Subjects</h3>
+            <table style="width: 100%; border-collapse: collapse">
+              <thead>
+                <tr style="background: #f8f9fa">
+                  <th
+                    style="
+                      padding: 1rem;
+                      border: 1px solid #ddd;
+                      text-align: left;
+                    "
+                  >
+                    Code
+                  </th>
+                  <th
+                    style="
+                      padding: 1rem;
+                      border: 1px solid #ddd;
+                      text-align: left;
+                    "
+                  >
+                    Subject Name
+                  </th>
+                  <th
+                    style="
+                      padding: 1rem;
+                      border: 1px solid #ddd;
+                      text-align: left;
+                    "
+                  >
+                    Department
+                  </th>
+                  <th
+                    style="
+                      padding: 1rem;
+                      border: 1px solid #ddd;
+                      text-align: left;
+                    "
+                  >
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody id="subjectsTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script type="module" src="../scripts/auth-guard.js"></script>
+    <script type="module" src="../scripts/subject.js"></script>
+    <script src="../scripts/sidebar-toggle.js"></script>
+  </body>
+</html>

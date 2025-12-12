@@ -1,0 +1,240 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Times New Roman";
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  display: flex;
+  justify-content: center;
+  overflow: auto;
+  /* background-color: #f0f0f0; */
+}
+
+.result-h {
+  width: 794px;
+  height: 1123px;
+  position: fixed;
+}
+
+.result {
+  width: 794px;
+  height: 100%;
+  /* background: url("jss.jpg") no-repeat center center; */
+  background-size: cover;
+  position: fixed;
+}
+
+.subjects-table-container {
+  padding: 0 50px;
+  background: transparent;
+  width: 100%;
+  position: absolute;
+  top: 27.6%;
+  left: 3px;
+}
+
+.subjects-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.subjects-table td {
+  font-size: 17px;
+  vertical-align: middle;
+  height: 20.5px;
+  padding: 1px 2px;
+  font-weight: normal;
+}
+
+.subject-name-col {
+  width: 38%;
+  padding-left: 8px;
+  text-align: left;
+}
+
+.score-col {
+  width: 14%;
+  text-align: center;
+  padding-left: 8px;
+  font-size: 18.4px !important;
+}
+
+.comment-col {
+  width: 18%;
+  text-align: center;
+  padding-left: 3px;
+}
+
+.signature-col {
+  width: 15%;
+  text-align: center;
+}
+
+.name-field {
+  position: absolute;
+  top: 21.3%;
+  left: 130px;
+  width: fit-content;
+  height: 20px;
+  font-size: 25px;
+  font-weight: bold;
+  color: #000;
+  display: flex;
+  align-items: center;
+}
+
+/* Class field */
+.class-field {
+  position: absolute;
+  top: 23.65%;
+  left: 110px;
+  width: 150px;
+  height: 20px;
+  font-size: 20px;
+  font-weight: bold;
+  color: #000;
+  display: flex;
+  align-items: center;
+  font-family: "Libre Baskerville", serif;
+}
+
+/* Term field */
+.term-field {
+  position: absolute;
+  top: 23.65%;
+  left: 310px;
+  width: 150px;
+  height: 20px;
+  font-size: 20px;
+  font-weight: bold;
+  color: #000;
+  display: flex;
+  align-items: center;
+  font-family: "Libre Baskerville", serif;
+}
+
+/* Session field */
+.session-field {
+  position: absolute;
+  top: 23.65%;
+  left: 605px;
+  width: 120px;
+  height: 20px;
+  font-size: 20px;
+  font-weight: bold;
+  color: #000;
+  display: flex;
+  align-items: center;
+  font-family: "Libre Baskerville", serif;
+}
+
+/* Input styling */
+input[type="text"] {
+  border: none;
+  background: transparent;
+  font-family: "Times New Roman", serif;
+  font-size: 16px;
+  font-weight: bold;
+  color: #000;
+  width: 100%;
+  outline: none;
+  padding: 0;
+  margin: 0;
+}
+
+input[type="text"]:focus {
+  background: rgba(255, 255, 0, 0.1);
+}
+
+/* Form container for better organization */
+.form-fields {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+/* Simulate the report card background */
+.result::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, #e8f5e8 0%, #f0f8ff 100%);
+  opacity: 0.2;
+  pointer-events: none;
+}
+/* 
+.teacher-comment-area {
+  position: absolute;
+  top: 70.1%;
+  left: 22px;
+  width: 520px;
+  height: 36px;
+  font-size: 14px;
+  color: #000;
+  line-height: 18px;
+  overflow: hidden;
+} */
+
+.teacher-comment-line1,
+.teacher-comment-line2 {
+  height: 18px;
+  overflow: hidden;
+}
+
+/* .principal-comment-area {
+  position: absolute;
+  top: 81%;
+  left: 220px;
+  width: 670px;
+  height: 36px;
+  font-size: 14px;
+  color: #000;
+  line-height: 18px;
+  overflow: hidden;
+} */
+
+.teacher-comment-line1 {
+  height: 18px;
+  overflow: hidden;
+  position: absolute;
+  top: 77.1%;
+  left: 250px;
+  width: 520px;
+}
+
+.teacher-comment-line2 {
+  height: 18px;
+  overflow: hidden;
+  position: absolute;
+  top: 79.2%;
+  left: 20px;
+  width: 410px;
+}
+.principal-comment-line1 {
+  height: 18px;
+  overflow: hidden;
+  position: absolute;
+  top: 81.3%;
+  left: 210px;
+  width: 570px;
+}
+
+.principal-comment-line2 {
+  height: 18px;
+  overflow: hidden;
+  position: absolute;
+  top: 83.3%;
+  left: 20px;
+  width: 755px;
+}

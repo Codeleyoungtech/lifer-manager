@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Register New Student</title>
+    <link rel="stylesheet" href="../assets/index.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <aside>
+      <div class="sidebar-wrapper">
+        <div class="sidebar-header">
+          <h3>Lifer's Results</h3>
+          <p class="gray-medium">Management Platform</p>
+        </div>
+        <div class="sd-parent">
+          <nav class="links-wrapper">
+            <ul>
+              <li>
+                <a href="../pages/index.html"
+                  ><span class="material-symbols-outlined">dashboard</span
+                  ><span>Dashboard</span>
+                </a>
+              </li>
+              <li>
+                <a href="../pages/editor.html"
+                  ><span class="material-symbols-outlined">description</span
+                  ><span>Legacy Editor</span>
+                </a>
+              </li>
+              <li>
+                <a href="../pages/student.html" class="active"
+                  ><span class="material-symbols-outlined">group</span
+                  ><span>Students</span>
+                </a>
+              </li>
+              <li>
+                <a href="../pages/result-manager.html"
+                  ><span class="material-symbols-outlined">article</span>
+                  <span>Student Results</span>
+                </a>
+              </li>
+              <li>
+                <a href="../pages/attendance.html"
+                  ><span class="material-symbols-outlined">calendar_month</span>
+                  <span>Attendance</span>
+                </a>
+              </li>
+              <li>
+                <a href="../pages/subject.html"
+                  ><span class="material-symbols-outlined">school</span
+                  ><span>Classes & Subjects</span>
+                </a>
+              </li>
+              <li>
+                <a href="../pages/settings.html"
+                  ><span class="material-symbols-outlined">settings</span>
+                  <span>Settings</span>
+                </a>
+              </li>
+            </ul>
+          </nav>
+
+          <div class="sidebar-footer">
+            <span class="user-name">Eleazar Ogoyemi Jesusemilogo</span>
+            <span class="user-type">Super_admin</span>
+            <a href="#"
+              ><span class="material-symbols-outlined"> logout </span>
+              <span>Logout</span></a
+            >
+          </div>
+        </div>
+      </div>
+    </aside>
+    <main>
+      <section class="dashboard-page">
+        <div class="dashboard-action">
+          <div class="dash-greetings">
+<<<<<<< HEAD
+            <h2>Student Management</h2>
+            <p>Register and manage students</p>
+          </div>
+        </div>
+
+        <div class="tabs-container" style="margin-bottom: 20px">
+          <div
+            class="tabs"
+            style="
+              display: flex;
+              gap: 10px;
+              border-bottom: 1px solid #ddd;
+              padding-bottom: 10px;
+            "
+          >
+            <button
+              class="tab active"
+              data-tab="register"
+              onclick="switchTab(this)"
+              style="
+                padding: 10px 20px;
+                border: none;
+                background: none;
+                font-weight: bold;
+                cursor: pointer;
+                color: #007cba;
+                border-bottom: 2px solid #007cba;
+              "
+            >
+              Register New
+            </button>
+            <button
+              class="tab"
+              data-tab="manage"
+              onclick="switchTab(this)"
+              style="
+                padding: 10px 20px;
+                border: none;
+                background: none;
+                font-weight: bold;
+                cursor: pointer;
+                color: #666;
+              "
+            >
+              View & Edit Students
+            </button>
+          </div>
+        </div>
+
+        <div class="content">
+          <!-- Register Tab -->
+          <div class="tab-content active" id="register-tab">
+            <div class="new-student-form-wrapper card">
+              <h2>Register New Student</h2>
+              <form id="studentForm">
+                <div class="form-wrap">
+                  <div class="form-wrap-item">
+                    <label for="Firstname"
+                      >First Name <span style="color: red">*</span></label
+                    >
+                    <input
+                      type="text"
+                      name="Firstname"
+                      id="Firstname"
+                      required
+                    />
+                  </div>
+                  <div class="form-wrap-item">
+                    <label for="Other-Names"
+                      >Other Names <span style="color: red">*</span></label
+                    >
+                    <input
+                      type="text"
+                      name="Othernames"
+                      id="Other-Names"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div class="form-wrap">
+                  <div class="form-wrap-item">
+                    <label for="studentid">Student ID (Auto-generated)</label>
+                    <input
+                      type="text"
+                      name="studentid"
+                      id="studentid"
+                      readonly
+                      style="background: #f0f0f0; cursor: not-allowed"
+                    />
+                  </div>
+                  <div class="form-wrap-item">
+                    <label for="DOB"
+                      >Date of Birth <span style="color: red">*</span></label
+                    >
+                    <input type="date" name="DOB" id="DOB" required />
+                  </div>
+                </div>
+
+                <div class="form-wrap">
+                  <div class="form-wrap-item">
+                    <label for="gender"
+                      >Gender <span style="color: red">*</span></label
+                    >
+                    <select name="gender" id="gender" required>
+                      <option value="">Select gender</option>
+                      <option value="male">Male</option>
+                      <option value="female">Female</option>
+                    </select>
+                  </div>
+                  <div class="form-wrap-item">
+                    <label for="religion"
+                      >Religion <span style="color: red">*</span></label
+                    >
+                    <select name="religion" id="religion" required>
+                      <option value="">Select religion</option>
+                      <option value="ISLAM">Islam</option>
+                      <option value="CHRISTIANITY">Christianity</option>
+                      <option value="OTHER">Other for primary(CRS)</option>
+                    </select>
+                    <small style="color: #666; font-size: 12px">
+                      This helps us assign the correct Religious Studies subject
+                    </small>
+                  </div>
+                </div>
+
+                <div class="form-wrap">
+                  <div class="form-wrap-item">
+                    <label for="clslevel"
+                      >Class Level <span style="color: red">*</span></label
+                    >
+                    <select name="clslevel" id="clslevel" required>
+                      <option value="">Select class level</option>
+                    </select>
+                  </div>
+                  <div
+                    class="form-wrap-item"
+                    id="departmentField"
+                    style="display: none"
+                  >
+                    <label for="department"
+                      >Department <span style="color: red">*</span></label
+                    >
+                    <select name="department" id="department">
+                      <option value="">Select department</option>
+                      <option value="SCIENCE">Science</option>
+                      <option value="ARTS">Arts</option>
+                      <option value="COMMERCIAL">Commercial</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="form-wrap">
+                  <div class="form-wrap-item">
+                    <label for="cntemail">Contact Email</label>
+                    <input
+                      type="email"
+                      name="cntemail"
+                      id="cntemail"
+                      placeholder="parent@example.com"
+                    />
+                  </div>
+                  <div class="form-wrap-item">
+                    <label for="cntphone">Contact Phone</label>
+                    <input
+                      type="tel"
+                      name="cntphone"
+                      id="cntphone"
+                      placeholder="024xxxxxxx"
+                    />
+                  </div>
+                </div>
+
+                <label for="guardianname"
+                  >Parent/Guardian Name <span style="color: red">*</span></label
+                >
+                <input
+                  type="text"
+                  name="guardianname"
+                  id="guardianname"
+                  required
+                />
+
+                <label for="address">Address</label>
+                <textarea
+                  name="address"
+                  id="address"
+                  rows="4"
+                  placeholder="Enter student's home address"
+                ></textarea>
+
+                <button type="submit" style="margin-top: 20px">
+                  Register Student
+                </button>
+              </form>
+            </div>
+          </div>
+
+          <!-- Manage Tab -->
+          <div class="tab-content" id="manage-tab" style="display: none">
+            <div class="card">
+              <div style="display: flex; gap: 15px; margin-bottom: 20px">
+                <input
+                  type="text"
+                  id="searchInput"
+                  placeholder="Search by name or ID..."
+                  style="
+                    padding: 10px;
+                    border: 1px solid #ddd;
+                    border-radius: 4px;
+                    flex: 1;
+                  "
+                />
+                <select
+                  id="filterClass"
+            <div style="display: flex; gap: 20px; align-items: flex-start;">
+              
+              <!-- Sidebar -->
+              <div class="card" style="width: 250px; padding: 0; overflow: hidden; flex-shrink: 0;">
+                <div style="padding: 15px; background: #f8f9fa; border-bottom: 1px solid #eee; font-weight: bold;">
+                  Classes
+                </div>
+                <div id="classSidebar" style="max-height: 600px; overflow-y: auto;">
+                  <!-- Class list populated here -->
+                  <div style="padding: 15px; text-align: center; color: #666;">Loading...</div>
+                </div>
+              </div>
+
+              <!-- Main Content -->
+              <div class="card" style="flex: 1; min-height: 400px;">
+                <!-- Advanced Filters -->
+                <div style="display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; align-items: center;">
+                   <div style="flex: 1; min-width: 200px; position: relative;">
+                      <span class="material-symbols-outlined" style="position: absolute; left: 10px; top: 10px; color: #999;">search</span>
+                      <input type="text" id="searchInput" placeholder="Search students..." style="width: 100%; padding: 10px 10px 10px 40px; border: 1px solid #ddd; border-radius: 4px;">
+                   </div>
+                   
+                   <!-- Removed Class Filter (Moved to Sidebar) -->
+                   
+                   <select id="filterGender" style="padding: 10px; border: 1px solid #ddd; border-radius: 4px; min-width: 120px;">
+                     <option value="">Gender: All</option>
+                     <option value="male">Male</option>
+                     <option value="female">Female</option>
+                   </select>
+  
+                   <select id="filterStatus" style="padding: 10px; border: 1px solid #ddd; border-radius: 4px; min-width: 120px;">
+                     <option value="">Status: All</option>
+                     <option value="active">Active</option>
+                     <option value="left">Left</option>
+                   </select>
+  
+                   <!-- View Toggle -->
+                   <div style="margin-left: auto; display: flex; border: 1px solid #ddd; border-radius: 4px; overflow: hidden;">
+                      <button class="view-btn" onclick="toggleView('table')" data-view="table" style="padding: 8px 12px; border: none; background: #fff; cursor: pointer;"><span class="material-symbols-outlined" style="font-size: 20px;">table_chart</span></button>
+                      <button class="view-btn active" onclick="toggleView('grid')" data-view="grid" style="padding: 8px 12px; border: none; background: #eee; cursor: pointer;"><span class="material-symbols-outlined" style="font-size: 20px;">grid_view</span></button>
+                   </div>
+                </div>
+  
+                <!-- Table View -->
+                <div id="tableView" class="table-wrapper" style="display: none;">
+                  <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                      <tr style="background: #f8f9fa; border-bottom: 2px solid #ddd;">
+                        <th style="padding: 12px; text-align: left;">ID</th>
+                        <th style="padding: 12px; text-align: left;">Name</th>
+                        <th style="padding: 12px; text-align: center;">Class</th>
+                        <th style="padding: 12px; text-align: center;">Gender</th>
+                        <th style="padding: 12px; text-align: center;">Guardian</th>
+                        <th style="padding: 12px; text-align: right;">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody id="studentsTableBody">
+                       <tr><td colspan="6" style="padding: 20px; text-align: center; color: #666;">Loading students...</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+                
+                <!-- Grid View Container -->
+                <div id="studentsGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;">
+                  <!-- Grid items will be injected here -->
+                </div>
+
+                <div id="emptyState" style="display:none; text-align: center; padding: 40px; color: #666;">
+                   <span class="material-symbols-outlined" style="font-size: 48px; color: #ddd; margin-bottom: 10px;">group_off</span>
+                   <p>No students found matching current filters.</p>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- Edit Modal (Hidden) -->
+            <div
+              id="editModal"
+              style="
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 1000;
+              "
+            >
+              <div
+                style="
+                  background: white;
+                  width: 90%;
+                  max-width: 600px;
+                  margin: 50px auto;
+                  padding: 30px;
+                  border-radius: 8px;
+                  max-height: 90vh;
+                  overflow-y: auto;
+                "
+              >
+                <div
+                  style="
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 20px;
+                  "
+                >
+                  <h2>Edit Student</h2>
+                  <button
+                    type="button"
+                    onclick="closeEditModal()"
+                    style="
+                      border: none;
+                      background: none;
+                      font-size: 24px;
+                      cursor: pointer;
+                    "
+                  >
+                    &times;
+                  </button>
+                </div>
+                <div id="editFormContainer"></div>
+              </div>
+            </div>
+          </div>
+=======
+            <h2>Student Registration</h2>
+            <p>Register new students into the system</p>
+          </div>
+        </div>
+        <div class="new-student-form-wrapper card">
+          <h2>Register New Student</h2>
+          <form id="studentForm">
+            <div class="form-wrap">
+              <div class="form-wrap-item">
+                <label for="Firstname"
+                  >First Name <span style="color: red">*</span></label
+                >
+                <input type="text" name="Firstname" id="Firstname" required />
+              </div>
+              <div class="form-wrap-item">
+                <label for="Other-Names"
+                  >Other Names <span style="color: red">*</span></label
+                >
+                <input
+                  type="text"
+                  name="Othernames"
+                  id="Other-Names"
+                  required
+                />
+              </div>
+            </div>
+
+            <div class="form-wrap">
+              <div class="form-wrap-item">
+                <label for="studentid">Student ID (Auto-generated)</label>
+                <input
+                  type="text"
+                  name="studentid"
+                  id="studentid"
+                  readonly
+                  style="background: #f0f0f0; cursor: not-allowed"
+                />
+              </div>
+              <div class="form-wrap-item">
+                <label for="DOB"
+                  >Date of Birth <span style="color: red">*</span></label
+                >
+                <input type="date" name="DOB" id="DOB" required />
+              </div>
+            </div>
+
+            <div class="form-wrap">
+              <div class="form-wrap-item">
+                <label for="gender"
+                  >Gender <span style="color: red">*</span></label
+                >
+                <select name="gender" id="gender" required>
+                  <option value="">Select gender</option>
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                </select>
+              </div>
+              <div class="form-wrap-item">
+                <label for="religion"
+                  >Religion <span style="color: red">*</span></label
+                >
+                <select name="religion" id="religion" required>
+                  <option value="">Select religion</option>
+                  <option value="ISLAM">Islam</option>
+                  <option value="CHRISTIANITY">Christianity</option>
+                  <option value="OTHER">Other for primary(CRS)</option>
+                </select>
+                <small style="color: #666; font-size: 12px">
+                  This helps us assign the correct Religious Studies subject
+                </small>
+              </div>
+            </div>
+
+            <div class="form-wrap">
+              <div class="form-wrap-item">
+                <label for="clslevel"
+                  >Class Level <span style="color: red">*</span></label
+                >
+                <select name="clslevel" id="clslevel" required>
+                  <option value="">Select class level</option>
+                </select>
+              </div>
+              <div
+                class="form-wrap-item"
+                id="departmentField"
+                style="display: none"
+              >
+                <label for="department"
+                  >Department <span style="color: red">*</span></label
+                >
+                <select name="department" id="department">
+                  <option value="">Select department</option>
+                  <option value="SCIENCE">Science</option>
+                  <option value="ARTS">Arts</option>
+                  <option value="COMMERCIAL">Commercial</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-wrap">
+              <div class="form-wrap-item">
+                <label for="cntemail">Contact Email</label>
+                <input
+                  type="email"
+                  name="cntemail"
+                  id="cntemail"
+                  placeholder="parent@example.com"
+                />
+              </div>
+              <div class="form-wrap-item">
+                <label for="cntphone">Contact Phone</label>
+                <input
+                  type="tel"
+                  name="cntphone"
+                  id="cntphone"
+                  placeholder="024xxxxxxx"
+                />
+              </div>
+            </div>
+
+            <label for="guardianname"
+              >Parent/Guardian Name <span style="color: red">*</span></label
+            >
+            <input type="text" name="guardianname" id="guardianname" required />
+
+            <label for="address">Address</label>
+            <textarea
+              name="address"
+              id="address"
+              rows="4"
+              placeholder="Enter student's home address"
+            ></textarea>
+
+            <button type="submit" style="margin-top: 20px">
+              Register Student
+            </button>
+          </form>
+>>>>>>> 60453a0d9805bd7b2738c2206efa3acb379fe04f
+        </div>
+      </section>
+    </main>
+
+    <script type="module" src="../scripts/auth-guard.js"></script>
+    <script type="module" src="../scripts/student.js"></script>
+  </body>
+</html>

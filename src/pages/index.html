@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard - Lifer's Results</title>
+    <link rel="stylesheet" href="../assets/index.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <aside>
+      <div class="sidebar-wrapper">
+        <div class="sidebar-header">
+          <h3>Lifer's Results</h3>
+          <p class="gray-medium">Management Platform</p>
+        </div>
+        <div class="sd-parent">
+          <nav class="links-wrapper">
+            <ul>
+              <li>
+                <a href="../pages/index.html" class="active"
+                  ><span class="material-symbols-outlined">dashboard</span
+                  ><span>Dashboard</span>
+                </a>
+              </li>
+              <li>
+                <a href="../pages/editor.html"
+                  ><span class="material-symbols-outlined">description</span
+                  ><span>Legacy Editor</span>
+                </a>
+              </li>
+              <li>
+                <a href="../pages/student.html"
+                  ><span class="material-symbols-outlined">group</span
+                  ><span>Students</span>
+                </a>
+              </li>
+              <li>
+                <a href="../pages/result-manager.html"
+                  ><span class="material-symbols-outlined">article</span
+                  ><span>Student Results</span>
+                </a>
+              </li>
+              <li>
+                <a href="../pages/attendance.html"
+                  ><span class="material-symbols-outlined">calendar_month</span>
+                  <span>Attendance</span>
+                </a>
+              </li>
+              <li>
+                <a href="../pages/subject.html"
+                  ><span class="material-symbols-outlined">school</span
+                  ><span>Classes & Subjects</span>
+                </a>
+              </li>
+              <li>
+                <a href="../pages/settings.html"
+                  ><span class="material-symbols-outlined">settings</span
+                  ><span>Settings</span>
+                </a>
+              </li>
+            </ul>
+          </nav>
+
+          <div class="sidebar-footer">
+            <span class="user-name">Eleazar Ogoyemi Jesusemilogo</span>
+            <span class="user-type">Super_admin</span>
+            <a href="#"
+              ><span class="material-symbols-outlined">logout</span>
+              <span>Logout</span></a
+            >
+          </div>
+        </div>
+      </div>
+    </aside>
+    <main class="test-bg">
+      <section class="dashboard-page">
+        <div class="dashboard-action">
+          <div class="dash-greetings">
+            <h2>Dashboard</h2>
+            <p>Good morning! Here's what's happening in your school today.</p>
+          </div>
+          <div class="dash-action-group">
+            <button
+              class="dash-new-spreadsheet"
+              onclick="window.location.href='../pages/editor.html'"
+            >
+              <span class="material-symbols-outlined">add</span
+              ><span>New Spreadsheet</span>
+            </button>
+            <button class="dash-export-data" onclick="exportData()">
+              <span class="material-symbols-outlined">download</span
+              ><span>Export Data</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="dashboard-stats topmargin">
+          <div class="stats-card">
+            <div class="stats-card-header">
+              <span>Total Students</span>
+              <span class="material-symbols-outlined"> group </span>
+            </div>
+            <div class="stats-card-details">
+              <span id="total_students">0</span>
+            </div>
+            <div class="stats-card-percentile">
+              <span id="total_students_percent">+0</span>% from last month
+            </div>
+          </div>
+
+          <!-- Active Spreadsheets Card -->
+          <div class="stats-card">
+            <div class="stats-card-header">
+              <span>Students with Results</span>
+              <span class="material-symbols-outlined"> description </span>
+            </div>
+            <div class="stats-card-details">
+              <span id="active_spreadsheets">0</span>
+            </div>
+            <div class="stats-card-percentile">
+              <span id="active_sreadsheets_percent">+0</span>% from last month
+            </div>
+          </div>
+
+          <!-- Top Performers Card -->
+          <div class="stats-card">
+            <div class="stats-card-header">
+              <span>Top Performers</span>
+              <span class="material-symbols-outlined"> star </span>
+            </div>
+            <div class="stats-card-details">
+              <span id="top_performers">0</span>
+            </div>
+            <div class="stats-card-percentile">
+              <span id="top_performer">+0</span>% from last month
+            </div>
+          </div>
+        </div>
+
+        <div class="recent-activities card">
+          <div class="recent-activities-header">
+            <h2 class="dark-header">Recent Activities</h2>
+            <p class="">Latest updates from your school</p>
+          </div>
+          <div class="recent-activities-list">
+            <ul>
+              <li>
+                <div class="recent-wrapper">
+                  <p style="text-align: center; color: #666; padding: 20px">
+                    Loading activities...
+                  </p>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script type="module" src="../scripts/auth-guard.js"></script>
+    <script type="module" src="../scripts/dashboard.js"></script>
+    <script src="../scripts/sidebar-toggle.js"></script>
+  </body>
+</html>
