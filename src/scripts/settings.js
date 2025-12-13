@@ -1,14 +1,27 @@
 import { getSettings, getAllSubjects } from "./storage.js";
 import settingsService from "./api/settings.service.js";
+import { showLoading, hideLoading, showNotification } from "./utils/ui.js";
 
 let currentClasses = [];
 let currentDepartments = [];
 let allSubjects = [];
 
 window.addEventListener("DOMContentLoaded", async function () {
-  await loadSettings();
-  setupEventListeners();
+  // Initialize tabs immediately so they are interactive
   setupTabs();
+
+  const container = document.querySelector(".dashboard-page") || document.body;
+  showLoading(container, "Loading settings...");
+
+  try {
+    await loadSettings();
+    setupEventListeners();
+  } catch (error) {
+    console.error("Initialization error:", error);
+    showNotification("Failed to load settings", "error");
+  } finally {
+    hideLoading(container);
+  }
 });
 
 function setupTabs() {
@@ -36,23 +49,32 @@ async function loadSettings() {
     const settings = await getSettings();
 
     // Populate form fields
-    document.getElementById("schoolName").value = settings.schoolName || "";
-    document.getElementById("academicYear").value =
-      settings.currentAcademicYear || "";
-    document.getElementById("currentTerm").value =
-      settings.currentTerm || "firstTerm";
-    document.getElementById("dateOfVacation").value =
-      settings.dateOfVacation || "";
-    document.getElementById("maxAttendance").value =
-      settings.maxAttendance || "";
-    document.getElementById("dateOfResumption").value =
-      settings.dateOfResumption || "";
+    const schoolNameEl = document.getElementById("schoolName");
+    if (schoolNameEl) schoolNameEl.value = settings.schoolName || "";
+
+    const academicYearEl = document.getElementById("academicYear");
+    if (academicYearEl)
+      academicYearEl.value = settings.currentAcademicYear || "";
+
+    const currentTermEl = document.getElementById("currentTerm");
+    if (currentTermEl)
+      currentTermEl.value = settings.currentTerm || "firstTerm";
+
+    const dateOfVacationEl = document.getElementById("dateOfVacation");
+    if (dateOfVacationEl)
+      dateOfVacationEl.value = settings.dateOfVacation || "";
+
+    const maxAttendanceEl = document.getElementById("maxAttendance");
+    if (maxAttendanceEl) maxAttendanceEl.value = settings.maxAttendance || "";
+
+    const dateOfResumptionEl = document.getElementById("dateOfResumption");
+    if (dateOfResumptionEl)
+      dateOfResumptionEl.value = settings.dateOfResumption || "";
 
     // Load classes and departments
     currentClasses = settings.classes || [];
     currentDepartments = settings.departments || [];
 
-    renderClassesList();
     renderClassesList();
     renderDepartmentsList();
 
@@ -67,6 +89,7 @@ async function loadSettings() {
 
 function renderClassesList() {
   const list = document.getElementById("classesList");
+  if (!list) return;
   list.innerHTML = "";
 
   currentClasses.forEach((className, index) => {
@@ -83,6 +106,7 @@ function renderClassesList() {
 
 function renderDepartmentsList() {
   const list = document.getElementById("departmentsList");
+  if (!list) return;
   list.innerHTML = "";
 
   currentDepartments.forEach((deptName, index) => {
@@ -99,55 +123,61 @@ function renderDepartmentsList() {
 
 function setupEventListeners() {
   // Add class button
-  document.getElementById("addClassBtn").addEventListener("click", function () {
-    const input = document.getElementById("newClass");
-    const className = input.value.trim();
+  const addClassBtn = document.getElementById("addClassBtn");
+  if (addClassBtn) {
+    addClassBtn.addEventListener("click", function () {
+      const input = document.getElementById("newClass");
+      const className = input.value.trim();
 
-    if (!className) {
-      showNotification("Please enter a class name", "error");
-      return;
-    }
+      if (!className) {
+        showNotification("Please enter a class name", "error");
+        return;
+      }
 
-    if (currentClasses.includes(className)) {
-      showNotification("Class already exists", "error");
-      return;
-    }
+      if (currentClasses.includes(className)) {
+        showNotification("Class already exists", "error");
+        return;
+      }
 
-    currentClasses.push(className);
-    renderClassesList();
-    input.value = "";
-    showNotification(`Added class: ${className}`, "success");
-  });
+      currentClasses.push(className);
+      renderClassesList();
+      input.value = "";
+      showNotification(`Added class: ${className}`, "success");
+    });
+  }
 
   // Add department button
-  document.getElementById("addDeptBtn").addEventListener("click", function () {
-    const input = document.getElementById("newDepartment");
-    const deptName = input.value.trim().toUpperCase();
+  const addDeptBtn = document.getElementById("addDeptBtn");
+  if (addDeptBtn) {
+    addDeptBtn.addEventListener("click", function () {
+      const input = document.getElementById("newDepartment");
+      const deptName = input.value.trim().toUpperCase();
 
-    if (!deptName) {
-      showNotification("Please enter a department name", "error");
-      return;
-    }
+      if (!deptName) {
+        showNotification("Please enter a department name", "error");
+        return;
+      }
 
-    if (currentDepartments.includes(deptName)) {
-      showNotification("Department already exists", "error");
-      return;
-    }
+      if (currentDepartments.includes(deptName)) {
+        showNotification("Department already exists", "error");
+        return;
+      }
 
-    currentDepartments.push(deptName);
-    renderDepartmentsList();
-    input.value = "";
-    showNotification(`Added department: ${deptName}`, "success");
-  });
+      currentDepartments.push(deptName);
+      renderDepartmentsList();
+      input.value = "";
+      showNotification(`Added department: ${deptName}`, "success");
+    });
+  }
 
   // Form submission
-  document
-    .getElementById("settingsForm")
-    .addEventListener("submit", async function (e) {
-      e.preventDefault();
+  const settingsForm = document.getElementById("settingsForm");
+  if (settingsForm) {
+    settingsForm.addEventListener("submit", async function (e) {
       e.preventDefault();
       await saveSettings();
     });
+  }
 
   // Academic Form submission
   const academicForm = document.getElementById("academicSettingsForm");
@@ -185,7 +215,6 @@ async function saveSettings() {
       maxAttendance:
         parseInt(document.getElementById("maxAttendance").value) || 0,
       classes: currentClasses,
-      classes: currentClasses,
       departments: currentDepartments,
       subjectOrders: {
         prenursery: getOrderFromContainer("container-prenursery"),
@@ -211,6 +240,8 @@ async function saveSettings() {
       return;
     }
 
+    showLoading(document.body, "Saving settings...");
+
     // Save to backend
     await settingsService.updateSettings(formData);
 
@@ -223,50 +254,11 @@ async function saveSettings() {
   } catch (error) {
     console.error("Error saving settings:", error);
     showNotification("❌ Failed to save settings. Please try again.", "error");
+  } finally {
+    hideLoading(document.body);
   }
 }
 
-function showNotification(message, type = "success") {
-  // Remove existing notifications
-  const existing = document.querySelector(".notification");
-  if (existing) {
-    existing.remove();
-  }
-
-  const notification = document.createElement("div");
-  notification.className = `notification notification-${type}`;
-  notification.textContent = message;
-
-  const styles = `
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    padding: 15px 25px;
-    border-radius: 8px;
-    font-weight: bold;
-    z-index: 10000;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    animation: slideIn 0.3s ease-out;
-  `;
-
-  notification.style.cssText = styles;
-
-  if (type === "success") {
-    notification.style.backgroundColor = "#4CAF50";
-    notification.style.color = "white";
-  } else {
-    notification.style.backgroundColor = "#f44336";
-    notification.style.color = "white";
-  }
-
-  document.body.appendChild(notification);
-
-  // Auto remove after 4 seconds
-  setTimeout(() => {
-    notification.style.animation = "slideOut 0.3s ease-in";
-    setTimeout(() => notification.remove(), 300);
-  }, 4000);
-}
 const validClassPatterns = {
   prenursery: /^(NURSERY\s*1|KG)/i,
   primary: /^(NURSERY\s*2|PRIMARY|BASIC)/i,
@@ -305,7 +297,6 @@ function filterSubjectsForCategory(category) {
 
   return allSubjects.filter((subject) => {
     // If subject has no classes defined, show it everywhere (fallback)
-    // Or maybe we should hide it? Let's keep existing behavior of 'true' but be careful.
     if (!subject.classes || subject.classes.length === 0) return true;
 
     return subject.classes.some((cls) => pattern.test(cls));
@@ -375,14 +366,7 @@ function setupDragAndDrop() {
       e.preventDefault();
       const afterElement = getDragAfterElement(container, e.clientY);
       const draggable = document.querySelector(".dragging");
-      // Only allow dropping if draggable is from the SAME container (or allowed to move between?
-      // For now, let's assume strict ordering within the category,
-      // but maybe we shouldn't restrict if they want to move things around?
-      // Actually, if we move between containers, we might mess up the filtering.
-      // Let's restrict to same container for safety, or just let it be open.
-      // The prompt is "finish ordering", so reordering within the list is key.
-      // If I drag from Primary to SS, does that make sense? Probably not if the subject isn't 'in' SS.
-      // But checking parent might be complex. Let's just allow reordering for now.
+
       if (!draggable) return;
 
       if (afterElement == null) {

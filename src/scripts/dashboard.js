@@ -1,10 +1,22 @@
 import { getSettings, getAllStudents } from "./storage.js";
+import { showLoading, hideLoading, showNotification } from "./utils/ui.js";
 
 let studentsChart = null;
 let genderChart = null;
 
 window.addEventListener("DOMContentLoaded", async function () {
-  await loadDashboardData();
+  const container = document.querySelector(".dashboard-page") || document.body;
+  showLoading(container, "Updating dashboard...");
+
+  try {
+    await loadDashboardData();
+  } catch (error) {
+    console.error("Dashboard error:", error);
+    showNotification("Failed to load dashboard data", "error");
+  } finally {
+    hideLoading(container);
+  }
+
   window.exportData = exportData;
 });
 
@@ -287,7 +299,5 @@ function updateInsights(students, settings) {
 // ==================== EXPORT DATA ====================
 
 function exportData() {
-  alert(
-    "Export feature coming soon!\n\nThis will allow you to export:\n• Student data\n• Results\n• Attendance records\n• Reports"
-  );
+  showNotification("Export feature coming soon!", "info");
 }

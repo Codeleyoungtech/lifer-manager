@@ -8,6 +8,12 @@ import {
 } from "./storage.js";
 
 import { generateSubjectCode } from "./utils/utils.js";
+import {
+  showLoading,
+  hideLoading,
+  setBtnLoading,
+  showNotification,
+} from "./utils/ui.js";
 
 // Class patterns for auto-selection
 const classPatterns = {
@@ -23,10 +29,20 @@ let isEditing = false;
 let editingSubjectCode = null;
 
 window.addEventListener("DOMContentLoaded", async function () {
-  await loadDepartments();
-  await loadClassOptions();
-  await loadSubjectsTable();
-  await loadFilterOptions();
+  const container = document.querySelector(".dashboard-page") || document.body;
+  showLoading(container, "Loading subjects...");
+
+  try {
+    await loadDepartments();
+    await loadClassOptions();
+    await loadSubjectsTable();
+    await loadFilterOptions();
+  } catch (error) {
+    console.error("Initialization error:", error);
+    showNotification("Failed to load initial data", "error");
+  } finally {
+    hideLoading(container);
+  }
 
   // Expose handlers globally
   window.handleCategoryChange = handleCategoryChange;
@@ -273,31 +289,26 @@ async function saveSubject() {
   const code = document.getElementById("subjectCode").value.trim();
 
   if (!name) {
-    alert("Please enter a subject name");
+    showNotification("Please enter a subject name", "error");
     return;
   }
   if (!department) {
-    alert("Please select a department");
+    showNotification("Please select a department", "error");
     return;
   }
   if (!code) {
-    alert("Subject code is required");
+    showNotification("Subject code is required", "error");
     return;
   }
 
-  // Check for duplicate subject code (only if adding new or code changed)
+  // Check for duplicate subject code
   if (!isEditing || (isEditing && code !== editingSubjectCode)) {
     const existingSubject = allSubjects.find(
       (s) => s.code.toUpperCase() === code.toUpperCase()
     );
 
     if (existingSubject) {
-      alert(
-        `Subject code "${code}" already exists!\n\n` +
-          `It's used by: ${existingSubject.name}\n\n` +
-          `Please edit the code field to use a different unique code.`
-      );
-      // Focus on the code field for user to edit
+      showNotification(`Subject code "${code}" already exists!`, "error");
       document.getElementById("subjectCode").focus();
       document.getElementById("subjectCode").select();
       return;
@@ -326,7 +337,7 @@ async function saveSubject() {
   }
 
   if (selectedClasses.length === 0) {
-    alert("No classes selected for this subject or category empty.");
+    showNotification("No classes selected for this subject", "error");
     return;
   }
 
@@ -337,17 +348,17 @@ async function saveSubject() {
     classes: selectedClasses,
   };
 
-  let success = false;
+  const saveBtn = document.getElementById("saveButton");
+  setBtnLoading(saveBtn, true, isEditing ? "Updating..." : "Saving...");
 
   try {
+    let success = false;
+
     if (isEditing) {
-      // When editing and code changes, we need to handle it specially
       if (code !== editingSubjectCode) {
-        // Code changed - need to delete old and create new
         await deleteSubject(editingSubjectCode);
         success = await addSubject(subjectData);
       } else {
-        // Code unchanged - normal update
         success = await updateSubject(editingSubjectCode, subjectData);
       }
     } else {
@@ -357,15 +368,18 @@ async function saveSubject() {
     if (success) {
       closeModal();
       await loadSubjectsTable();
-      alert(
+      showNotification(
         isEditing
           ? "Subject updated successfully!"
-          : "Subject added successfully!"
+          : "Subject added successfully!",
+        "success"
       );
     }
   } catch (error) {
     console.error("Error saving subject:", error);
-    alert("Failed to save subject. Please try again.");
+    showNotification("Failed to save subject. Please try again.", "error");
+  } finally {
+    setBtnLoading(saveBtn, false);
   }
 }
 
@@ -416,13 +430,16 @@ async function deleteSubjectClick(code) {
   );
 
   if (confirmed) {
+    showLoading(document.body, "Deleting subject...");
     try {
       await deleteSubject(code);
       await loadSubjectsTable();
-      alert("Subject deleted successfully!");
+      showNotification("Subject deleted successfully!", "success");
     } catch (error) {
       console.error("Error deleting subject:", error);
-      alert("Failed to delete subject. Please try again.");
+      showNotification("Failed to delete subject. Please try again.", "error");
+    } finally {
+      hideLoading(document.body);
     }
   }
 }

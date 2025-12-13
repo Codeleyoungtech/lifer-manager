@@ -1,4 +1,5 @@
 import { authService } from "./api/auth.service.js";
+import { setBtnLoading, showNotification } from "./utils/ui.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   const loginForm = document.querySelector(".login-details");
@@ -10,11 +11,9 @@ document.addEventListener("DOMContentLoaded", () => {
       const email = document.getElementById("email").value;
       const password = document.getElementById("password").value;
       const button = loginForm.querySelector("button");
-      const originalText = button.textContent;
 
       try {
-        button.textContent = "Signing in...";
-        button.disabled = true;
+        setBtnLoading(button, true, "Signing in...");
 
         await authService.login(email, password);
 
@@ -24,9 +23,11 @@ document.addEventListener("DOMContentLoaded", () => {
         window.location.href = "src/pages/index.html";
       } catch (error) {
         console.error("Login failed:", error);
-        alert(error.message || "Login failed. Please check your credentials.");
-        button.textContent = originalText;
-        button.disabled = false;
+        showNotification(
+          error.message || "Login failed. Please check your credentials.",
+          "error"
+        );
+        setBtnLoading(button, false);
       }
     });
   }

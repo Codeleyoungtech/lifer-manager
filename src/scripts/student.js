@@ -6,6 +6,12 @@ import {
   updateStudent,
   deleteStudent,
 } from "./storage.js";
+import {
+  showLoading,
+  hideLoading,
+  setBtnLoading,
+  showNotification,
+} from "./utils/ui.js";
 
 let allStudents = [];
 let selectedClass = null;
@@ -25,10 +31,20 @@ window.editStudentClick = editStudentClick;
 window.deleteStudentClick = deleteStudentClick;
 
 window.addEventListener("DOMContentLoaded", async function () {
-  await loadClassLevels();
-  await loadClassSidebar();
-  await loadStudents();
-  setupEventListeners();
+  const container = document.querySelector(".dashboard-page") || document.body;
+  showLoading(container, "Loading students...");
+
+  try {
+    await loadClassLevels();
+    await loadClassSidebar();
+    await loadStudents();
+    setupEventListeners();
+  } catch (error) {
+    console.error("Initialization error:", error);
+    showNotification("Failed to load initial data", "error");
+  } finally {
+    hideLoading(container);
+  }
 });
 
 // ==================== LOAD DATA ====================
@@ -218,7 +234,11 @@ async function saveStudent() {
     status,
   };
 
+  const saveBtn = document.getElementById("saveButton");
+
   try {
+    setBtnLoading(saveBtn, true, isEditing ? "Updating..." : "Saving...");
+
     if (isEditing) {
       // Update existing student
       await updateStudent(editingStudentId, studentData);
@@ -245,6 +265,8 @@ async function saveStudent() {
       `❌ ${error.message || "Failed to save student."}`,
       "error"
     );
+  } finally {
+    setBtnLoading(saveBtn, false);
   }
 }
 
@@ -508,6 +530,7 @@ async function deleteStudentClick(studentId) {
   );
 
   if (confirmed) {
+    showLoading(document.body, "Deleting student...");
     try {
       await deleteStudent(studentId);
       showNotification("🗑️ Student deleted successfully", "success");
@@ -522,6 +545,8 @@ async function deleteStudentClick(studentId) {
         "❌ Failed to delete student. Please try again.",
         "error"
       );
+    } finally {
+      hideLoading(document.body);
     }
   }
 }
@@ -539,74 +564,4 @@ function capitalizeFirst(str) {
   return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
 }
 
-function showNotification(message, type = "success") {
-  // Remove existing notifications
-  const existing = document.querySelector(".notification");
-  if (existing) {
-    existing.remove();
-  }
-
-  const notification = document.createElement("div");
-  notification.className = `notification notification-${type}`;
-  notification.textContent = message;
-
-  const styles = `
-    position: fixed;
-    top: 24px;
-    right: 24px;
-    padding: 1rem 1.5rem;
-    border-radius: 12px;
-    font-weight: 600;
-    font-size: 0.95rem;
-    z-index: 10000;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-    animation: slideIn 0.3s ease-out;
-    max-width: 400px;
-  `;
-
-  notification.style.cssText = styles;
-
-  if (type === "success") {
-    notification.style.background =
-      "linear-gradient(135deg, #667eea 0%, #764ba2 100%)";
-    notification.style.color = "white";
-  } else {
-    notification.style.background = "#e53e3e";
-    notification.style.color = "white";
-  }
-
-  document.body.appendChild(notification);
-
-  // Auto remove after 4 seconds
-  setTimeout(() => {
-    notification.style.animation = "slideOut 0.3s ease-in";
-    setTimeout(() => notification.remove(), 300);
-  }, 4000);
-}
-
-// Add CSS animations
-const style = document.createElement("style");
-style.textContent = `
-  @keyframes slideIn {
-    from {
-      transform: translateX(400px);
-      opacity: 0;
-    }
-    to {
-      transform: translateX(0);
-      opacity: 1;
-    }
-  }
-
-  @keyframes slideOut {
-    from {
-      transform: translateX(0);
-      opacity: 1;
-    }
-    to {
-      transform: translateX(400px);
-      opacity: 0;
-    }
-  }
-`;
-document.head.appendChild(style);
+// Helper functions like getInitials and capitalizeFirst remain

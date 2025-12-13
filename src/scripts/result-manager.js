@@ -5,6 +5,7 @@ import {
 } from "./storage.js";
 import { generateResultSheet, getResultStyles } from "./result-templates.js";
 import resultMetadataService from "./api/result-metadata.service.js";
+import { showLoading, hideLoading, showNotification } from "./utils/ui.js";
 
 // State
 let currentStudents = [];
@@ -77,16 +78,7 @@ function setupEventListeners() {
     .addEventListener("click", () => saveMetadataChanges(false));
 }
 
-function showLoading(show, text = "Processing...") {
-  const overlay = document.getElementById("loadingOverlay");
-  const loadingText = document.getElementById("loadingText");
-  if (show) {
-    loadingText.textContent = text;
-    overlay.style.display = "flex";
-  } else {
-    overlay.style.display = "none";
-  }
-}
+// Local showLoading removed in favor of UI utils
 
 async function loadStudents() {
   const classLevel = document.getElementById("classLevel").value;
@@ -94,11 +86,11 @@ async function loadStudents() {
   const year = document.getElementById("academicYear").value;
 
   if (!classLevel) {
-    alert("Please select a class!");
+    showNotification("Please select a class!", "error");
     return;
   }
 
-  showLoading(true, "Loading Students...");
+  showLoading(document.body, "Loading Students...");
 
   try {
     currentClass = classLevel;
@@ -116,15 +108,15 @@ async function loadStudents() {
       currentStudents.length === 0;
 
     if (currentStudents.length === 0) {
-      alert("No students found in this class.");
+      showNotification("No students found in this class.", "info");
     } else {
       selectStudent(currentStudents[0]);
     }
   } catch (error) {
     console.error("Error loading students:", error);
-    alert("Failed to load students.");
+    showNotification("Failed to load students.", "error");
   } finally {
-    showLoading(false);
+    hideLoading(document.body);
   }
 }
 
@@ -257,9 +249,9 @@ async function printCurrentResult() {
 
   try {
     // Auto-save any changes before printing
-    showLoading(true, "Saving changes before printing...");
-    await saveMetadataChanges(true); // Pass true to skip alert
-    showLoading(false);
+    showLoading(document.body, "Saving changes before printing...");
+    await saveMetadataChanges(true); // Pass true to skip notification
+    hideLoading(document.body);
   } catch (error) {
     console.error("Error saving before print:", error);
   }
@@ -335,7 +327,7 @@ async function downloadAllPDF() {
   )
     return;
 
-  showLoading(true, "Generating Batch PDF...");
+  showLoading(document.body, "Generating Batch PDF...");
 
   try {
     // Wait for fonts to load
@@ -352,9 +344,10 @@ async function downloadAllPDF() {
     for (let i = 0; i < currentStudents.length; i++) {
       const student = currentStudents[i];
 
-      document.getElementById("loadingText").textContent = `Processing ${
-        i + 1
-      }/${currentStudents.length}: ${student.firstName}`;
+      showLoading(
+        document.body,
+        `Processing ${i + 1}/${currentStudents.length}: ${student.firstName}`
+      );
 
       const termResults = await getStudentResults(
         student._id,
@@ -362,7 +355,7 @@ async function downloadAllPDF() {
         currentTerm
       );
 
-      // Load metadata (conventional performance + comments) for each student
+      // Load metadata
       let metadata = {};
       try {
         metadata = await resultMetadataService.getResultMetadata(
@@ -379,7 +372,7 @@ async function downloadAllPDF() {
         termResults.subjects || {},
         currentTerm,
         currentYear,
-        metadata // Pass metadata for each student
+        metadata
       );
 
       const wrapper = document.createElement("div");
@@ -427,9 +420,9 @@ async function downloadAllPDF() {
     await html2pdf().set(opt).from(batchContainer).save();
   } catch (error) {
     console.error("Error generating batch PDF:", error);
-    alert("Failed to generate batch PDF.");
+    showNotification("Failed to generate batch PDF.", "error");
   } finally {
-    showLoading(false);
+    hideLoading(document.body);
   }
 }
 
@@ -442,12 +435,12 @@ async function saveMetadataChanges(silent = false) {
   const studentId = container.dataset.studentId;
 
   if (!studentId) {
-    if (!silent) alert("Please select a student first");
+    if (!silent) showNotification("Please select a student first", "error");
     return;
   }
 
   try {
-    if (!silent) showLoading(true, "Saving changes...");
+    if (!silent) showLoading(document.body, "Saving changes...");
 
     // Collect conventional performance data (Pre-nursery only)
     const conventionalPerformance = {
@@ -504,8 +497,8 @@ async function saveMetadataChanges(silent = false) {
     );
 
     if (!silent) {
-      showLoading(false);
-      alert("✅ Changes saved successfully!");
+      hideLoading(document.body);
+      showNotification("✅ Changes saved successfully!", "success");
       // Reload the result to show saved data
       if (currentStudent) {
         await selectStudent(currentStudent);
@@ -514,8 +507,8 @@ async function saveMetadataChanges(silent = false) {
   } catch (error) {
     console.error("Error saving metadata:", error);
     if (!silent) {
-      showLoading(false);
-      alert("❌ Failed to save changes. Please try again.");
+      hideLoading(document.body);
+      showNotification("❌ Failed to save changes. Please try again.", "error");
     }
   }
 }

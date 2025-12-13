@@ -6,6 +6,7 @@ import {
   getResultsByClass,
   calculatePositions,
 } from "./storage.js";
+import { showLoading, hideLoading, showNotification } from "./utils/ui.js";
 
 let currentClass = "";
 let currentYear = "";
@@ -142,6 +143,7 @@ async function loadSubjectOptions() {
     }
   } catch (error) {
     console.error("Error loading subjects:", error);
+    showNotification("Failed to load subjects", "error");
   }
 }
 
@@ -182,10 +184,12 @@ async function loadGradeSheet() {
     return;
   }
 
+  const container =
+    document.querySelector(".spreadsheet-container") || document.body;
+  showLoading(container, "Loading grade sheet...");
+
   try {
     const students = await getStudentsByClass(currentClass);
-    console.log(`📚 Loading students for class: ${currentClass}`);
-    console.log(`👥 Found ${students.length} students`);
 
     if (students.length === 0) {
       showNoStudentsMessage();
@@ -206,13 +210,6 @@ async function loadGradeSheet() {
       .toUpperCase();
     document.getElementById("classInfo").textContent = currentClass;
 
-    console.log(`🔍 Fetching results for:`, {
-      class: currentClass,
-      subject: currentSubject,
-      year: currentYear,
-      term: currentTerm,
-    });
-
     const resultsMap = await getResultsByClass(
       currentClass,
       currentSubject,
@@ -220,16 +217,12 @@ async function loadGradeSheet() {
       currentTerm
     );
 
-    console.log(
-      `📊 Results fetched:`,
-      Object.keys(resultsMap).length,
-      "students with results"
-    );
-
     buildGradeTable(students, subject, resultsMap);
   } catch (error) {
     console.error("Error loading grade sheet:", error);
-    alert("Failed to load grade sheet. Please try again.");
+    showNotification("Failed to load grade sheet. Please try again.", "error");
+  } finally {
+    hideLoading(container);
   }
 }
 
@@ -372,9 +365,11 @@ function calculateRowTotal(row) {
 
 window.saveAllResults = async function () {
   if (!currentClass || !currentSubject) {
-    alert("Please select a class and subject first!");
+    showNotification("Please select a class and subject first!", "error");
     return;
   }
+
+  showLoading(document.body, "Saving results...");
 
   const rows = document.querySelectorAll("#spreadsheetBody tr");
   let savedCount = 0;
@@ -420,11 +415,16 @@ window.saveAllResults = async function () {
       currentTerm
     );
 
-    alert(`✅ Successfully saved results for ${savedCount} students!`);
+    showNotification(
+      `✅ Successfully saved results for ${savedCount} students!`,
+      "success"
+    );
     await loadGradeSheet();
   } catch (error) {
     console.error("Error saving results:", error);
-    alert("Failed to save results. Please try again.");
+    showNotification("Failed to save results. Please try again.", "error");
+  } finally {
+    hideLoading(document.body);
   }
 };
 
@@ -459,7 +459,7 @@ function showNoStudentsMessage() {
 
 window.exportToCSV = async function () {
   if (!currentClass || !currentSubject) {
-    alert("Please select a class and subject first!");
+    showNotification("Please select a class and subject first!", "error");
     return;
   }
 
@@ -499,6 +499,6 @@ window.exportToCSV = async function () {
     alert("✅ Results exported to CSV!");
   } catch (error) {
     console.error("Error exporting to CSV:", error);
-    alert("Failed to export results.");
+    showNotification("Failed to export results.", "error");
   }
 };

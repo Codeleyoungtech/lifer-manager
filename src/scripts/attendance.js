@@ -1,6 +1,7 @@
 import { getSettings } from "./storage.js";
 import { getStudentsByClass } from "./storage.js";
 import attendanceService from "./api/attendance.service.js";
+import { showLoading, hideLoading, showNotification } from "./utils/ui.js";
 
 let currentClass = "";
 let currentTerm = "firstTerm";
@@ -144,6 +145,10 @@ async function loadStudents() {
     return;
   }
 
+  const container =
+    document.getElementById("attendanceTableCard") || document.body;
+  showLoading(container, "Loading students & attendance...");
+
   try {
     // Fetch students in the class
     students = await getStudentsByClass(currentClass);
@@ -165,7 +170,17 @@ async function loadStudents() {
     // Create a map for quick lookup
     const attendanceMap = {};
     attendanceRecords.forEach((record) => {
-      attendanceMap[record.studentId._id || record.studentId] = record;
+      // Handle populated studentId or raw ID string, checking for null/undefined
+      const id =
+        record.studentId &&
+        typeof record.studentId === "object" &&
+        record.studentId._id
+          ? record.studentId._id
+          : record.studentId;
+
+      if (id) {
+        attendanceMap[id] = record;
+      }
     });
 
     // Populate table
@@ -202,6 +217,8 @@ async function loadStudents() {
   } catch (error) {
     console.error("Error loading students:", error);
     showNotification("Failed to load students", "error");
+  } finally {
+    hideLoading(container);
   }
 }
 
@@ -302,6 +319,8 @@ async function saveAttendance() {
     });
   });
 
+  showLoading(document.body, "Saving attendance...");
+
   try {
     await attendanceService.bulkSaveAttendance({
       classLevel: currentClass,
@@ -315,45 +334,9 @@ async function saveAttendance() {
   } catch (error) {
     console.error("Error saving attendance:", error);
     showNotification("❌ Failed to save attendance", "error");
+  } finally {
+    hideLoading(document.body);
   }
 }
 
-function showNotification(message, type = "success") {
-  const existing = document.querySelector(".notification");
-  if (existing) {
-    existing.remove();
-  }
-
-  const notification = document.createElement("div");
-  notification.className = `notification notification-${type}`;
-  notification.textContent = message;
-
-  const styles = `
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    padding: 15px 25px;
-    border-radius: 8px;
-    font-weight: bold;
-    z-index: 10000;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    animation: slideIn 0.3s ease-out;
-  `;
-
-  notification.style.cssText = styles;
-
-  if (type === "success") {
-    notification.style.backgroundColor = "#4CAF50";
-    notification.style.color = "white";
-  } else {
-    notification.style.backgroundColor = "#f44336";
-    notification.style.color = "white";
-  }
-
-  document.body.appendChild(notification);
-
-  setTimeout(() => {
-    notification.style.animation = "slideOut 0.3s ease-in";
-    setTimeout(() => notification.remove(), 300);
-  }, 4000);
-}
+// Local showNotification removed in favor of ui.js
