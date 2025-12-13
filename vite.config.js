@@ -1,7 +1,26 @@
 import { defineConfig } from "vite";
 import { resolve } from "path";
+import { viteStaticCopy } from "vite-plugin-static-copy";
 
 export default defineConfig({
+  plugins: [
+    viteStaticCopy({
+      targets: [
+        {
+          src: "src/assets/fonts",
+          dest: "assets",
+        },
+        {
+          src: "src/public/*",
+          dest: "public", // or '' if they are root public assets
+        },
+        {
+          src: "src/res",
+          dest: "src",
+        },
+      ],
+    }),
+  ],
   build: {
     rollupOptions: {
       input: {

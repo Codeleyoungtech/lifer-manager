@@ -307,7 +307,7 @@ async function printCurrentResult() {
         style.textContent = `
           @font-face {
             font-family: "ITC";
-            src: url(../assets/fonts/ITC-Machine-Medium.otf);
+            src: url(/assets/fonts/ITC-Machine-Medium.otf);
           }
         `;
         clonedDoc.head.appendChild(style);
@@ -409,7 +409,7 @@ async function downloadAllPDF() {
           style.textContent = `
             @font-face {
               font-family: "ITC";
-              src: url(../assets/fonts/ITC-Machine-Medium.otf);
+              src: url(/assets/fonts/ITC-Machine-Medium.otf);
             }
           `;
           clonedDoc.head.appendChild(style);

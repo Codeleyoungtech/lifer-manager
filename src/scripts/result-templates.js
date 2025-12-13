@@ -1020,12 +1020,12 @@ export function getResultStyles() {
 
     @font-face {
       font-family: "ITC";
-      src: url(../assets/fonts/ITC-Machine-Medium.otf);
+      src: url(/assets/fonts/ITC-Machine-Medium.otf);
     }
     
     @font-face {
       font-family: "book-antiqua";
-      src: url(../assets/fonts/book-antiqua-bold.ttf);
+      src: url(/assets/fonts/book-antiqua-bold.ttf);
     }
     
     @font-face {
