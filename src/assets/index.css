@@ -11,6 +11,18 @@ img.dashboard {
   color: red;
 }
 
+/* Hide scrollbar for Chrome, Safari and Opera */
+::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+html,
+body {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
 body {
   /* background-color: aliceblue; */
   background-color: #fff;
@@ -1017,3 +1029,212 @@ span.material-symbols-outlined {
     color: red;
   }
 } */
+/* ==================== RESPONSIVE UTILITIES & OVERRIDES ==================== */
+
+/* Global Main Content Adjustments */
+@media (max-width: 768px) {
+  body {
+    grid-template-columns: 1fr; /* Remove sidebar column from grid */
+    overflow-x: hidden;
+  }
+
+  main {
+    padding-top: 60px; /* Space for the mobile menu button */
+    width: 100%;
+    margin: 0 !important;
+    overflow: visible; /* Allow content to flow and scroll on mobile */
+    height: auto;
+  }
+
+  .dashboard-page {
+    padding: 15px;
+    height: auto;
+    overflow-y: visible; /* Let body handle scroll on mobile */
+  }
+
+  /* Header Actions Stacking */
+  .dashboard-action {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .dash-action-group {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .dash-action-group button,
+  .dash-action-group a {
+    flex: 1; /* Stretch buttons on mobile */
+    justify-content: center;
+  }
+}
+
+/* Responsive Grid/Flex Utilities */
+@media (max-width: 768px) {
+  .responsive-stack {
+    flex-direction: column !important;
+  }
+
+  .responsive-full-width {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    flex-basis: auto !important;
+  }
+
+  .hide-on-mobile {
+    display: none !important;
+  }
+}
+
+/* Table Responsiveness */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-bottom: 1rem;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+}
+
+.table-responsive table {
+  margin-bottom: 0;
+  border: none;
+}
+
+/* Form Responsiveness */
+@media (max-width: 600px) {
+  .form-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr !important;
+  }
+
+  .search-box,
+  .search-container {
+    min-width: 100% !important;
+  }
+}
+
+/* Specific Page Fixes */
+
+/* Student Page & Result Manager Layouts */
+@media (max-width: 900px) {
+  /* Fix for sidebar-in-content layout */
+  .content-with-sidebar {
+    flex-direction: column !important;
+  }
+
+  .inner-sidebar {
+    width: 100% !important;
+    margin-bottom: 20px;
+  }
+
+  /* Result Manager Split View */
+  .result-manager-container {
+    flex-direction: column;
+    height: auto !important;
+  }
+
+  .student-list-sidebar {
+    width: 100% !important;
+    height: 300px; /* Fixed height for list on mobile */
+    margin-bottom: 20px;
+  }
+
+  .result-preview-area {
+    height: auto;
+    min-height: 500px;
+  }
+}
+
+/* Modal Responsiveness */
+@media (max-width: 768px) {
+  .modal {
+    width: 95% !important;
+    margin: 10px;
+    max-height: 95vh;
+  }
+
+  .modal-body {
+    padding: 1rem;
+  }
+}
+
+/* Sidebar Toggle Fix */
+.menu-toggle {
+  display: flex !important; /* Ensure it's visible if script adds it */
+  background: white;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Settings Tabs Scroll */
+.tabs-container {
+  overflow-x: auto;
+}
+
+.tabs {
+  min-width: fit-content;
+}
+
+/* ==================== EDITOR PAGE MOBILE OPTIMIZATIONS ==================== */
+@media (max-width: 768px) {
+  /* Selection Filters: Stack vertically for better touch targets */
+  .selection {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+
+  /* Maximize table space by reducing card padding */
+  .editor-page.card {
+    padding: 10px;
+    margin-top: 15px;
+    border-radius: 8px; /* Slightly smaller radius */
+  }
+
+  /* Sticky Student Name Column */
+  /* This creates a 'frozen pane' effect common in spreadsheet apps */
+  .spreadsheet th:nth-child(2),
+  .spreadsheet td:nth-child(2) {
+    position: sticky;
+    left: 0;
+    background-color: white; /* Opaque background to cover scrolling content */
+    z-index: 5;
+    border-right: 2px solid #e0e0e0;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05); /* Subtle shadow for depth */
+    max-width: 150px; /* Limit width */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Ensure the row index number (#) is hidden to save space */
+  .spreadsheet th:nth-child(1),
+  .spreadsheet td:nth-child(1) {
+    display: none;
+  }
+
+  /* Fix header z-index to stay above the sticky column when scrolling vertically */
+  .spreadsheet thead th:nth-child(2) {
+    z-index: 15; /* Higher than content sticky column */
+    left: 0;
+    position: sticky;
+    /* Fix for when parent container scrolls */
+  }
+
+  /* Improve input touch targets */
+  .spreadsheet input[type="number"] {
+    min-width: 70px;
+    padding: 10px 5px; /* Larger tap area */
+    font-size: 16px; /* Prevent zoom on iOS */
+  }
+
+  /* Adjust table cell padding */
+  .spreadsheet td,
+  .spreadsheet th {
+    padding: 10px 5px;
+  }
+}

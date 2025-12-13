@@ -649,10 +649,10 @@
         </div>
 
         <!-- Main Layout: Sidebar + Content -->
-        <div style="display: flex; gap: 1.5rem; align-items: flex-start">
+        <div class="content-with-sidebar" style="display: flex; gap: 1.5rem; align-items: flex-start">
           <!-- Class Sidebar -->
           <div
-            class="students-card"
+            class="students-card inner-sidebar"
             style="width: 280px; flex-shrink: 0; padding: 1rem"
           >
             <div
@@ -747,6 +747,7 @@
 
               <!-- Table View for Active -->
               <div id="activeTableView" style="display: none">
+                <div class="table-responsive">
                 <table class="students-table">
                   <thead>
                     <tr>
@@ -758,6 +759,7 @@
                   </thead>
                   <tbody id="activeTableBody"></tbody>
                 </table>
+                </div>
               </div>
 
               <!-- Empty State for Active -->
@@ -794,6 +796,7 @@
 
               <!-- Table View for Left -->
               <div id="leftTableView" style="display: none">
+                <div class="table-responsive">
                 <table class="students-table">
                   <thead>
                     <tr>
