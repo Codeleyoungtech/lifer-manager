@@ -34,6 +34,42 @@
       .spreadsheet {
         min-width: 900px;
       }
+
+      .toggle-container {
+        margin-bottom: 24px;
+        text-align: center;
+      }
+
+      .toggle-wrapper {
+        display: inline-flex;
+        background: #f1f5f9;
+        border-radius: 12px;
+        padding: 4px;
+        border: 1px solid #e2e8f0;
+      }
+
+      .toggle-btn {
+        border: none;
+        background: transparent;
+        padding: 8px 24px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 500;
+        color: #64748b;
+        transition: all 0.2s ease;
+        font-size: 14px;
+      }
+
+      .toggle-btn:hover {
+        color: #334155;
+      }
+
+      .toggle-btn.active {
+        background: #fff !important;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        color: #007cba;
+        font-weight: 600;
+      }
     </style>
   </head>
   <body>
@@ -125,6 +161,25 @@
           </div>
         </div>
 
+        <div class="toggle-container">
+          <div class="toggle-wrapper">
+            <button
+              class="toggle-btn active"
+              id="modeSubject"
+              onclick="switchMode('subject')"
+            >
+              Enter by Subject
+            </button>
+            <button
+              class="toggle-btn"
+              id="modeStudent"
+              onclick="switchMode('student')"
+            >
+              Enter by Student
+            </button>
+          </div>
+        </div>
+
         <div class="selection">
           <div>
             <label>Session:</label>
@@ -140,10 +195,17 @@
             </select>
           </div>
 
-          <div>
+          <div id="subjectSelectContainer">
             <label>Subject:</label>
             <select id="resultSubject">
               <option value="">Select Subject</option>
+            </select>
+          </div>
+
+          <div id="studentSelectContainer" style="display: none">
+            <label>Student:</label>
+            <select id="resultStudent">
+              <option value="">Select Student</option>
             </select>
           </div>
 

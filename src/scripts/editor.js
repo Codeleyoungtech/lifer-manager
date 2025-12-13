@@ -5,6 +5,8 @@ import {
   saveResult,
   getResultsByClass,
   calculatePositions,
+  getSubjectsForStudent,
+  getStudentResults,
 } from "./storage.js";
 import { showLoading, hideLoading, showNotification } from "./utils/ui.js";
 
@@ -12,14 +14,62 @@ let currentClass = "";
 let currentYear = "";
 let currentTerm = "";
 let currentSubject = "";
+let currentStudent = "";
+let currentMode = "subject"; // 'subject' or 'student'
 
 window.addEventListener("DOMContentLoaded", async function () {
   await loadYearOptions();
   await loadClassOptions();
   await loadTermOptions();
 
+  // Default mode UI setup
+  updateModeUI();
+
   setupChangeListeners();
 });
+
+window.switchMode = function (mode) {
+  currentMode = mode;
+  updateModeUI();
+
+  // Reset specific selections but keep Class/Year/Term
+  currentSubject = "";
+  currentStudent = "";
+  document.getElementById("resultSubject").value = "";
+  document.getElementById("resultStudent").value = "";
+
+  // Clear table
+  document.getElementById("spreadsheetBody").innerHTML = "";
+  document.getElementById("subjectTitle").textContent = "No Selection";
+
+  // Reload options if class is already selected
+  if (currentClass) {
+    if (mode === "subject") {
+      loadSubjectOptions();
+    } else {
+      loadStudentOptions();
+    }
+  }
+};
+
+function updateModeUI() {
+  const subjectBtn = document.getElementById("modeSubject");
+  const studentBtn = document.getElementById("modeStudent");
+  const subjectContainer = document.getElementById("subjectSelectContainer");
+  const studentContainer = document.getElementById("studentSelectContainer");
+
+  if (currentMode === "subject") {
+    subjectBtn.classList.add("active");
+    studentBtn.classList.remove("active");
+    subjectContainer.style.display = "block";
+    studentContainer.style.display = "none";
+  } else {
+    subjectBtn.classList.remove("active");
+    studentBtn.classList.add("active");
+    subjectContainer.style.display = "none";
+    studentContainer.style.display = "block";
+  }
+}
 
 async function loadYearOptions() {
   try {
@@ -152,8 +202,20 @@ function setupChangeListeners() {
     .getElementById("resultClass")
     .addEventListener("change", async function () {
       currentClass = this.value;
-      await loadSubjectOptions();
-      await loadGradeSheet();
+      if (currentMode === "subject") {
+        await loadSubjectOptions();
+      } else {
+        await loadStudentOptions();
+      }
+      // Cannot load sheet yet until subject or student is selected
+      document.getElementById("spreadsheetBody").innerHTML = "";
+    });
+
+  document
+    .getElementById("resultStudent")
+    .addEventListener("change", async function () {
+      currentStudent = this.value;
+      await loadStudentGradeSheet();
     });
 
   document
@@ -226,9 +288,172 @@ async function loadGradeSheet() {
   }
 }
 
+async function loadStudentOptions() {
+  const studentSelect = document.getElementById("resultStudent");
+  studentSelect.innerHTML = '<option value="">Select Student</option>';
+
+  if (!currentClass) return;
+
+  try {
+    const students = await getStudentsByClass(currentClass);
+    students.sort((a, b) => a.firstName.localeCompare(b.firstName));
+
+    students.forEach((student) => {
+      const option = document.createElement("option");
+      // Use _id for value as we need it for saving
+      option.value = student._id;
+      option.textContent = `${student.firstName} ${student.otherNames}`;
+      studentSelect.appendChild(option);
+    });
+  } catch (error) {
+    console.error("Error loading students:", error);
+    showNotification("Failed to load students", "error");
+  }
+}
+
+async function loadStudentGradeSheet() {
+  if (!currentClass || !currentStudent) {
+    // showEmptyMessage(); // Can reuse or adapt
+    return;
+  }
+
+  const container =
+    document.querySelector(".spreadsheet-container") || document.body;
+  showLoading(container, "Loading student subjects...");
+
+  try {
+    // 1. Get Student Details (we might have them in the list, but let's assume we need to fetch or just use what we have if we stored it properly)
+    // For now we just use the ID.
+
+    // 2. Get Subjects for this student
+    const subjects = await getSubjectsForStudent(currentStudent);
+
+    // 3. Get Existing Results for this student across all subjects
+    const resultsData = await getStudentResults(
+      currentStudent,
+      currentYear,
+      currentTerm
+    );
+    const resultsMap = resultsData.subjects || {}; // Keyed by subjectCode
+
+    // Update Header Info
+    const studentSelect = document.getElementById("resultStudent");
+    const studentName = studentSelect.options[studentSelect.selectedIndex].text;
+
+    document.getElementById("subjectTitle").textContent = studentName; // Reusing this ID for Student Name
+    document.getElementById("termInfo").textContent = currentTerm
+      .replace("Term", " TERM")
+      .toUpperCase();
+    document.getElementById("classInfo").textContent = currentClass;
+
+    // Build Table
+    buildStudentGradeTable(subjects, resultsMap);
+  } catch (error) {
+    console.error("Error loading student grade sheet:", error);
+    showNotification("Failed to load student data. Please try again.", "error");
+  } finally {
+    hideLoading(container);
+  }
+}
+
+function buildStudentGradeTable(subjects, resultsMap) {
+  const tableBody = document.getElementById("spreadsheetBody");
+  tableBody.innerHTML = "";
+
+  // Change Header "Student Information" to "Subject"
+  // Note: We are hacking the table header by changing the TH content if needed,
+  // or we can just accept that the second column is "Information"
+  // Let's modify the header text dynamically
+  const headerRow = document.querySelector("#gradesTable thead tr");
+  if (headerRow) {
+    headerRow.children[1].textContent = "Subject Information";
+  }
+
+  if (subjects.length === 0) {
+    tableBody.innerHTML = `
+      <tr>
+        <td colspan="7" style="text-align: center; padding: 40px; color: #666;">
+          <h3>No Subjects Found</h3>
+          <p>This student does not seem to have any subjects registered.</p>
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  subjects.forEach((subject, index) => {
+    const existingResult = resultsMap[subject.code];
+
+    const row = document.createElement("tr");
+    row.dataset.subjectCode = subject.code; // Key for saving
+
+    row.innerHTML = `
+      <td style="padding: 10px; text-align: center;">${index + 1}</td>
+      <td style="padding: 10px;">
+        <div><strong>${subject.name}</strong></div>
+        <div style="font-size: 11px; color: #999;">Code: ${subject.code}</div>
+      </td>
+      <td style="padding: 10px; text-align: center;">
+        <input 
+          type="number" 
+          class="score-input weekly-test"
+          min="0" 
+          max="10" 
+          value="${existingResult?.weeklyTest || ""}"
+          placeholder="0-10"
+          style="width: 80px; padding: 5px; text-align: center; border: 1px solid #ddd; border-radius: 4px;"
+        />
+      </td>
+      <td style="padding: 10px; text-align: center;">
+        <input 
+          type="number" 
+          class="score-input mid-term"
+          min="0" 
+          max="20" 
+          value="${existingResult?.midTerm || ""}"
+          placeholder="0-20"
+          style="width: 80px; padding: 5px; text-align: center; border: 1px solid #ddd; border-radius: 4px;"
+        />
+      </td>
+      <td style="padding: 10px; text-align: center;">
+        <input 
+          type="number" 
+          class="score-input exam"
+          min="0" 
+          max="70" 
+          value="${existingResult?.exam || ""}"
+          placeholder="0-70"
+          style="width: 80px; padding: 5px; text-align: center; border: 1px solid #ddd; border-radius: 4px;"
+        />
+      </td>
+      <td style="padding: 10px; text-align: center;">
+        <strong class="total-display">${existingResult?.total || "-"}</strong>
+      </td>
+      <td style="padding: 10px; text-align: center;">
+        <span class="remarks-display">${existingResult?.remarks || "-"}</span>
+      </td>
+    `;
+
+    tableBody.appendChild(row);
+
+    const inputs = row.querySelectorAll(".score-input");
+    inputs.forEach((input) => {
+      input.addEventListener("input", function () {
+        calculateRowTotal(row);
+      });
+    });
+  });
+}
+
 function buildGradeTable(students, subject, resultsMap) {
   const tableBody = document.getElementById("spreadsheetBody");
   tableBody.innerHTML = "";
+
+  // Restore Header "Subject Information" to "Student Information"
+  const headerRow = document.querySelector("#gradesTable thead tr");
+  if (headerRow) {
+    headerRow.children[1].textContent = "Student Information";
+  }
 
   let eligibleStudents = students;
 
@@ -364,8 +589,12 @@ function calculateRowTotal(row) {
 }
 
 window.saveAllResults = async function () {
-  if (!currentClass || !currentSubject) {
+  if (currentMode === "subject" && (!currentClass || !currentSubject)) {
     showNotification("Please select a class and subject first!", "error");
+    return;
+  }
+  if (currentMode === "student" && (!currentClass || !currentStudent)) {
+    showNotification("Please select a class and a student first!", "error");
     return;
   }
 
@@ -390,8 +619,8 @@ window.saveAllResults = async function () {
 
     promises.push(
       saveResult(
-        studentId,
-        currentSubject,
+        currentMode === "subject" ? studentId : currentStudent,
+        currentMode === "subject" ? currentSubject : row.dataset.subjectCode,
         {
           weeklyTest: weeklyTest,
           midTerm: midTerm,
@@ -416,10 +645,14 @@ window.saveAllResults = async function () {
     );
 
     showNotification(
-      `✅ Successfully saved results for ${savedCount} students!`,
+      `✅ Successfully saved results for ${savedCount} entries!`,
       "success"
     );
-    await loadGradeSheet();
+    if (currentMode === "subject") {
+      await loadGradeSheet();
+    } else {
+      await loadStudentGradeSheet();
+    }
   } catch (error) {
     console.error("Error saving results:", error);
     showNotification("Failed to save results. Please try again.", "error");
