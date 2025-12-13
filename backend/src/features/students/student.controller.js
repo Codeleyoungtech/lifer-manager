@@ -56,7 +56,7 @@ const createStudent = async (req, res, next) => {
     } = req.body;
 
     // Generate Student ID
-    const studentId = await generateStudentId();
+    const studentId = await generateStudentId(currentClass);
 
     const student = await Student.create({
       studentId,
@@ -125,12 +125,24 @@ const deleteStudent = async (req, res, next) => {
 };
 
 // Helper: Generate Student ID
-const generateStudentId = async () => {
+const generateStudentId = async (classLevel) => {
   const year = new Date().getFullYear();
-  // Fetch all existing student IDs for this year to accurately determine the next number
+
+  let prefix = "PFBS"; // Default for Primary/Prenursery
+
+  // Check if class is Secondary (JSS or SS)
+  if (
+    classLevel &&
+    (classLevel.toUpperCase().includes("JSS") ||
+      classLevel.toUpperCase().includes("SS"))
+  ) {
+    prefix = "MMLC";
+  }
+
+  // Fetch all existing student IDs for this year and prefix to accurately determine the next number
   // String sorting in MongoDB fails if formats are mixed (e.g. "9" comes after "0014")
   const students = await Student.find(
-    { studentId: { $regex: `^MMLC/${year}/` } },
+    { studentId: { $regex: `^${prefix}/${year}/` } },
     { studentId: 1 } // Only fetch the ID field
   );
 
@@ -149,7 +161,7 @@ const generateStudentId = async () => {
 
   const nextNum = maxNum + 1;
   const numberStr = String(nextNum).padStart(5, "0");
-  return `MMLC/${year}/${numberStr}`;
+  return `${prefix}/${year}/${numberStr}`;
 };
 
 module.exports = {
