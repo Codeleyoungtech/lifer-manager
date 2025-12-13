@@ -13,22 +13,22 @@ let currentView = "grid"; // grid or table
 let isEditing = false;
 let editingStudentId = null;
 
+// Expose global functions immediately
+window.openModal = openModal;
+window.closeModal = closeModal;
+window.closeModalOnOverlay = closeModalOnOverlay;
+window.saveStudent = saveStudent;
+window.toggleView = toggleView;
+window.filterStudents = filterStudents;
+window.selectClass = selectClass;
+window.editStudentClick = editStudentClick;
+window.deleteStudentClick = deleteStudentClick;
+
 window.addEventListener("DOMContentLoaded", async function () {
   await loadClassLevels();
   await loadClassSidebar();
   await loadStudents();
   setupEventListeners();
-
-  // Expose global functions
-  window.openModal = openModal;
-  window.closeModal = closeModal;
-  window.closeModalOnOverlay = closeModalOnOverlay;
-  window.saveStudent = saveStudent;
-  window.toggleView = toggleView;
-  window.filterStudents = filterStudents;
-  window.selectClass = selectClass;
-  window.editStudentClick = editStudentClick;
-  window.deleteStudentClick = deleteStudentClick;
 });
 
 // ==================== LOAD DATA ====================
@@ -241,7 +241,10 @@ async function saveStudent() {
     }
   } catch (error) {
     console.error("Error saving student:", error);
-    showNotification("❌ Failed to save student. Please try again.", "error");
+    showNotification(
+      `❌ ${error.message || "Failed to save student."}`,
+      "error"
+    );
   }
 }
 

@@ -130,7 +130,7 @@ const generateStudentId = async () => {
   // Fetch all existing student IDs for this year to accurately determine the next number
   // String sorting in MongoDB fails if formats are mixed (e.g. "9" comes after "0014")
   const students = await Student.find(
-    { studentId: { $regex: `^MLC/ADM/${year}/` } },
+    { studentId: { $regex: `^MMLC/${year}/` } },
     { studentId: 1 } // Only fetch the ID field
   );
 
@@ -148,8 +148,8 @@ const generateStudentId = async () => {
   });
 
   const nextNum = maxNum + 1;
-  const numberStr = String(nextNum).padStart(4, "0");
-  return `MLC/ADM/${year}/${numberStr}`;
+  const numberStr = String(nextNum).padStart(5, "0");
+  return `MMLC/${year}/${numberStr}`;
 };
 
 module.exports = {

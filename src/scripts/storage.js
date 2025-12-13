@@ -26,7 +26,8 @@ export function generateStudentId() {
 
 export async function addStudent(studentData) {
   const newStudent = await studentService.create(studentData);
-  return newStudent.studentId;
+  console.log("Add Student Response:", newStudent);
+  return newStudent.studentId || newStudent._id;
 }
 
 export async function updateStudent(id, studentData) {
