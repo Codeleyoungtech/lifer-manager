@@ -26,7 +26,7 @@ const studentSchema = mongoose.Schema(
     },
     religion: {
       type: String,
-      enum: ["ISLAM", "CHRISTIANITY"],
+      enum: ["ISLAM", "CHRISTIANITY", "OTHER"],
       required: [true, "Please select religion"],
     },
     currentClass: {
@@ -47,7 +47,7 @@ const studentSchema = mongoose.Schema(
     address: String,
     status: {
       type: String,
-      enum: ["active", "graduated", "withdrawn"],
+      enum: ["active", "graduated", "withdrawn", "left"],
       default: "active",
     },
     currentAcademicYear: String,

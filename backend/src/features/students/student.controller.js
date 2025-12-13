@@ -127,9 +127,29 @@ const deleteStudent = async (req, res, next) => {
 // Helper: Generate Student ID
 const generateStudentId = async () => {
   const year = new Date().getFullYear();
-  const count = await Student.countDocuments();
-  const number = String(count + 1).padStart(4, "0");
-  return `MLC/ADM/${year}/${number}`;
+  // Fetch all existing student IDs for this year to accurately determine the next number
+  // String sorting in MongoDB fails if formats are mixed (e.g. "9" comes after "0014")
+  const students = await Student.find(
+    { studentId: { $regex: `^MLC/ADM/${year}/` } },
+    { studentId: 1 } // Only fetch the ID field
+  );
+
+  let maxNum = 0;
+
+  students.forEach((s) => {
+    if (s.studentId) {
+      const parts = s.studentId.split("/");
+      const numStr = parts[parts.length - 1];
+      const num = parseInt(numStr, 10);
+      if (!isNaN(num) && num > maxNum) {
+        maxNum = num;
+      }
+    }
+  });
+
+  const nextNum = maxNum + 1;
+  const numberStr = String(nextNum).padStart(4, "0");
+  return `MLC/ADM/${year}/${numberStr}`;
 };
 
 module.exports = {
