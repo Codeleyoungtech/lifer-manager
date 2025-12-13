@@ -117,12 +117,55 @@
                   readonly
                 />
               </div>
+
+              <div class="filter-item">
+                <label>Max Attendance (from Settings)</label>
+                <input
+                  type="text"
+                  id="maxAttendanceDisplay"
+                  class="form-input"
+                  readonly
+                  style="
+                    background-color: #f0f9ff;
+                    font-weight: 600;
+                    color: #2196f3;
+                  "
+                  placeholder="Not set"
+                />
+              </div>
             </div>
 
             <button id="loadStudentsBtn" class="btn-primary">
               <span class="material-symbols-outlined">refresh</span>
               Load Students
             </button>
+
+            <!-- Info Banner -->
+            <div
+              id="infoBanner"
+              style="
+                display: none;
+                margin-top: 15px;
+                padding: 12px 16px;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                border-radius: 8px;
+                color: white;
+                font-size: 14px;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+              "
+            >
+              <span class="material-symbols-outlined" style="font-size: 20px"
+                >info</span
+              >
+              <span
+                >💡 <strong>Tip:</strong> Choose which field to input (Present
+                or Absent) using the radio buttons. The other field will be
+                automatically calculated based on the max attendance
+                setting.</span
+              >
+            </div>
           </div>
 
           <!-- Attendance Table -->
@@ -145,8 +188,39 @@
                   <tr>
                     <th>Student ID</th>
                     <th>Student Name</th>
-                    <th>Time Present</th>
-                    <th>Time Absent</th>
+                    <th>
+                      <div style="display: flex; align-items: center; gap: 8px">
+                        <input
+                          type="radio"
+                          id="inputPresent"
+                          name="inputMode"
+                          value="present"
+                          checked
+                          style="cursor: pointer"
+                        />
+                        <label
+                          for="inputPresent"
+                          style="cursor: pointer; margin: 0"
+                          >Time Present (Input)</label
+                        >
+                      </div>
+                    </th>
+                    <th>
+                      <div style="display: flex; align-items: center; gap: 8px">
+                        <input
+                          type="radio"
+                          id="inputAbsent"
+                          name="inputMode"
+                          value="absent"
+                          style="cursor: pointer"
+                        />
+                        <label
+                          for="inputAbsent"
+                          style="cursor: pointer; margin: 0"
+                          >Time Absent (Input)</label
+                        >
+                      </div>
+                    </th>
                   </tr>
                 </thead>
                 <tbody id="attendanceTableBody">

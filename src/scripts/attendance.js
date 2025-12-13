@@ -36,6 +36,15 @@ async function loadSettings() {
     document.getElementById("termSelect").value =
       settings.currentTerm || "firstTerm";
     currentTerm = settings.currentTerm || "firstTerm";
+
+    // Display max attendance
+    const maxAttendanceDisplay = document.getElementById(
+      "maxAttendanceDisplay"
+    );
+    if (maxAttendanceDisplay) {
+      const maxAtt = settings.maxAttendance || 0;
+      maxAttendanceDisplay.value = maxAtt ? `${maxAtt} days` : "Not configured";
+    }
   } catch (error) {
     console.error("Error loading settings:", error);
     showNotification("Failed to load settings", "error");
@@ -61,6 +70,66 @@ function setupEventListeners() {
   document.getElementById("termSelect").addEventListener("change", (e) => {
     currentTerm = e.target.value;
   });
+}
+
+// Handle input mode switching
+function setupInputModeListeners() {
+  const inputPresentRadio = document.getElementById("inputPresent");
+  const inputAbsentRadio = document.getElementById("inputAbsent");
+
+  if (!inputPresentRadio || !inputAbsentRadio) return;
+
+  inputPresentRadio.addEventListener("change", () => {
+    updateInputMode("present");
+  });
+
+  inputAbsentRadio.addEventListener("change", () => {
+    updateInputMode("absent");
+  });
+}
+
+function updateInputMode(mode) {
+  const maxAttendance = parseInt(settings.maxAttendance) || 0;
+  const presentInputs = document.querySelectorAll(".time-present");
+  const absentInputs = document.querySelectorAll(".time-absent");
+
+  if (mode === "present") {
+    // Enable present inputs, disable and calculate absent
+    presentInputs.forEach((input) => {
+      input.disabled = false;
+      input.style.backgroundColor = "white";
+      input.style.cursor = "text";
+    });
+    absentInputs.forEach((input) => {
+      input.disabled = true;
+      input.style.backgroundColor = "#f5f5f5";
+      input.style.cursor = "not-allowed";
+      // Calculate absent from present
+      const presentInput = document.querySelector(
+        `.time-present[data-student-id="${input.dataset.studentId}"]`
+      );
+      const present = parseInt(presentInput.value) || 0;
+      input.value = Math.max(0, maxAttendance - present);
+    });
+  } else {
+    // Enable absent inputs, disable and calculate present
+    absentInputs.forEach((input) => {
+      input.disabled = false;
+      input.style.backgroundColor = "white";
+      input.style.cursor = "text";
+    });
+    presentInputs.forEach((input) => {
+      input.disabled = true;
+      input.style.backgroundColor = "#f5f5f5";
+      input.style.cursor = "not-allowed";
+      // Calculate present from absent
+      const absentInput = document.querySelector(
+        `.time-absent[data-student-id="${input.dataset.studentId}"]`
+      );
+      const absent = parseInt(absentInput.value) || 0;
+      input.value = Math.max(0, maxAttendance - absent);
+    });
+  }
 }
 
 async function loadStudents() {
@@ -102,9 +171,32 @@ async function loadStudents() {
     // Populate table
     renderAttendanceTable(students, attendanceMap);
 
-    // Show table card
+    // Check if max attendance is configured
+    const maxAttendance = parseInt(settings.maxAttendance) || 0;
+    if (maxAttendance === 0) {
+      showNotification(
+        "⚠️ Max Attendance is not set in Settings. Auto-calculation will not work properly.",
+        "error"
+      );
+      // Show table without setting up input modes
+      document.getElementById("attendanceTableCard").style.display = "block";
+      document.getElementById("emptyState").style.display = "none";
+      return;
+    }
+
+    // Setup input mode listeners after table is rendered
+    setupInputModeListeners();
+
+    // Apply initial input mode (default is "present")
+    updateInputMode("present");
+
+    // Show table card and info banner
     document.getElementById("attendanceTableCard").style.display = "block";
     document.getElementById("emptyState").style.display = "none";
+    const infoBanner = document.getElementById("infoBanner");
+    if (infoBanner) {
+      infoBanner.style.display = "flex";
+    }
 
     showNotification(`Loaded ${students.length} students`, "success");
   } catch (error) {
@@ -116,6 +208,7 @@ async function loadStudents() {
 function renderAttendanceTable(students, attendanceMap) {
   const tbody = document.getElementById("attendanceTableBody");
   tbody.innerHTML = "";
+  const maxAttendance = parseInt(settings.maxAttendance) || 0;
 
   students.forEach((student) => {
     const attendance = attendanceMap[student._id] || {};
@@ -131,6 +224,7 @@ function renderAttendanceTable(students, attendanceMap) {
           data-student-id="${student._id}"
           value="${attendance.timePresent || 0}"
           min="0"
+          max="${maxAttendance}"
         />
       </td>
       <td>
@@ -140,11 +234,48 @@ function renderAttendanceTable(students, attendanceMap) {
           data-student-id="${student._id}"
           value="${attendance.timeAbsent || 0}"
           min="0"
+          max="${maxAttendance}"
         />
       </td>
     `;
 
     tbody.appendChild(row);
+  });
+
+  // Add input event listeners for auto-calculation
+  const presentInputs = document.querySelectorAll(".time-present");
+  const absentInputs = document.querySelectorAll(".time-absent");
+
+  presentInputs.forEach((input) => {
+    input.addEventListener("input", (e) => {
+      const inputMode = document.querySelector(
+        'input[name="inputMode"]:checked'
+      )?.value;
+      if (inputMode === "present") {
+        const studentId = e.target.dataset.studentId;
+        const present = parseInt(e.target.value) || 0;
+        const absentInput = document.querySelector(
+          `.time-absent[data-student-id="${studentId}"]`
+        );
+        absentInput.value = Math.max(0, maxAttendance - present);
+      }
+    });
+  });
+
+  absentInputs.forEach((input) => {
+    input.addEventListener("input", (e) => {
+      const inputMode = document.querySelector(
+        'input[name="inputMode"]:checked'
+      )?.value;
+      if (inputMode === "absent") {
+        const studentId = e.target.dataset.studentId;
+        const absent = parseInt(e.target.value) || 0;
+        const presentInput = document.querySelector(
+          `.time-present[data-student-id="${studentId}"]`
+        );
+        presentInput.value = Math.max(0, maxAttendance - absent);
+      }
+    });
   });
 }
 

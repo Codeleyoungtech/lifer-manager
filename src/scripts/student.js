@@ -2,189 +2,540 @@ import {
   getSettings,
   addStudent,
   generateStudentId,
-  getStudentsByClass,
   getAllStudents,
   updateStudent,
   deleteStudent,
 } from "./storage.js";
 
-window.addEventListener("DOMContentLoaded", function () {
-  displayNextStudentId();
+let allStudents = [];
+let selectedClass = null;
+let currentView = "grid"; // grid or table
+let isEditing = false;
+let editingStudentId = null;
 
-  loadClassLevels();
+window.addEventListener("DOMContentLoaded", async function () {
+  await loadClassLevels();
+  await loadClassSidebar();
+  await loadStudents();
+  setupEventListeners();
 
-  setupFormSubmit();
-  setupTabs();
-  setupSearch();
+  // Expose global functions
+  window.openModal = openModal;
+  window.closeModal = closeModal;
+  window.closeModalOnOverlay = closeModalOnOverlay;
+  window.saveStudent = saveStudent;
+  window.toggleView = toggleView;
+  window.filterStudents = filterStudents;
+  window.selectClass = selectClass;
+  window.editStudentClick = editStudentClick;
+  window.deleteStudentClick = deleteStudentClick;
 });
 
-// Tab switching is now handled via global function for simplicity with inline styles
-window.switchTab = function (selectedTab) {
-  // Reset all tabs
-  document.querySelectorAll(".tab").forEach((tab) => {
-    tab.classList.remove("active");
-    tab.style.color = "#666";
-    tab.style.borderBottom = "none";
-  });
-
-  // Activate selected tab
-  selectedTab.classList.add("active");
-  selectedTab.style.color = "#007cba";
-  selectedTab.style.borderBottom = "2px solid #007cba";
-
-  // Show content
-  const tabId = selectedTab.getAttribute("data-tab");
-  document
-    .querySelectorAll(".tab-content")
-    .forEach((c) => (c.style.display = "none"));
-  document.getElementById(`${tabId}-tab`).style.display = "block";
-
-  if (tabId === "manage") {
-    loadManageTab();
-  }
-};
-
-function setupTabs() {
-  // Initial setup not strictly needed if HTML has onclick, but good for cleanliness
-  // leaving empty or removing listener logic as onclick handles it
-}
-
-function displayNextStudentId() {
-  const nextId = generateStudentId();
-  document.getElementById("studentid").value = nextId;
-}
+// ==================== LOAD DATA ====================
 
 async function loadClassLevels() {
   try {
     const settings = await getSettings();
-    const classSelect = document.getElementById("clslevel");
 
+    // Load in modal form
+    const classSelect = document.getElementById("classLevel");
     classSelect.innerHTML = '<option value="">Select class level</option>';
-
     settings.classes.forEach((className) => {
       const option = document.createElement("option");
       option.value = className;
       option.textContent = className;
       classSelect.appendChild(option);
     });
-
-    // Also populate filter dropdown in Manage tab
-    const filterSelect = document.getElementById("filterClass");
-    if (filterSelect) {
-      filterSelect.innerHTML = '<option value="">Filter by Class</option>';
-      settings.classes.forEach((className) => {
-        const option = document.createElement("option");
-        option.value = className;
-        option.textContent = className;
-        filterSelect.appendChild(option);
-      });
-    }
   } catch (error) {
     console.error("Error loading class levels:", error);
   }
 }
 
-function setupFormSubmit() {
-  const form = document.getElementById("studentForm");
+async function loadClassSidebar() {
+  try {
+    const settings = await getSettings();
+    const sidebar = document.getElementById("classSidebar");
 
-  document.getElementById("clslevel").addEventListener("change", function () {
-    handleClassChange(this.value);
-  });
+    sidebar.innerHTML = "";
 
-  form.addEventListener("submit", function (event) {
-    event.preventDefault();
+    settings.classes.forEach((className) => {
+      const button = document.createElement("button");
+      button.className = "class-sidebar-btn";
+      button.onclick = () => selectClass(className);
 
-    const firstName = document.getElementById("Firstname").value.trim();
-    const otherNames = document.getElementById("Other-Names").value.trim();
-    const dob = document.getElementById("DOB").value;
-    const gender = document.getElementById("gender").value;
-    const religion = document.getElementById("religion").value;
-    const classLevel = document.getElementById("clslevel").value;
-    const contactEmail = document.getElementById("cntemail").value.trim();
-    const contactPhone = document.getElementById("cntphone").value.trim();
-    const guardianName = document.getElementById("guardianname").value.trim();
-    const address = document.getElementById("address").value.trim();
+      button.innerHTML = `
+        <span>${className}</span>
+        <span class="material-symbols-outlined" style="font-size: 1.25rem;">chevron_right</span>
+      `;
 
-    if (!firstName) {
-      //Eleazar change this to a notification
-      return;
-    }
-    if (!otherNames) {
-      //Eleazar change this to a notification
-      return;
-    }
-    if (!dob) {
-      //Eleazar change this to a notification
-      return;
-    }
-    if (!gender || gender === " ") {
-      //Eleazar change this to a notification
-      return;
-    }
-    if (!religion) {
-      //Eleazar change this to a notification
-      return;
-    }
-    if (!classLevel || classLevel === " ") {
-      //Eleazar change this to a notification
-      return;
-    }
+      sidebar.appendChild(button);
+    });
+  } catch (error) {
+    console.error("Error loading class sidebar:", error);
+  }
+}
 
-    let department = "GENERAL";
-    if (classLevel.startsWith("SS")) {
-      department = document.getElementById("department").value;
-      if (!department) {
-        //Eleazar change this to a notification for department
+async function loadStudents() {
+  try {
+    allStudents = await getAllStudents();
+  } catch (error) {
+    console.error("Error loading students:", error);
+  }
+}
 
-        return;
-      }
-    }
+// ==================== EVENT LISTENERS ====================
 
-    if (!guardianName) {
-      alert("Please enter parent/guardian name");
-      return;
-    }
-
-    const studentData = {
-      firstName: firstName,
-      otherNames: otherNames,
-      dateOfBirth: dob,
-      gender: gender,
-      religion: religion,
-      currentClass: classLevel,
-      department: department,
-      contactEmail: contactEmail,
-      contactPhone: contactPhone,
-      guardianName: guardianName,
-      address: address,
-    };
-
-    const newStudentId = addStudent(studentData);
-
-    if (newStudentId) {
-      // Show success notification
-      showNotification(
-        `✅ Student registered successfully! ID: ${newStudentId}`,
-        "success"
-      );
-
-      form.reset();
-
-      document.getElementById("departmentField").style.display = "none";
-
-      displayNextStudentId();
+function setupEventListeners() {
+  // Class level change - show/hide department
+  document.getElementById("classLevel").addEventListener("change", function () {
+    const deptField = document.getElementById("departmentField");
+    if (this.value && this.value.startsWith("SS")) {
+      deptField.style.display = "block";
     } else {
-      // Show error notification
-      showNotification(
-        "❌ Error registering student. Please try again.",
-        "error"
-      );
+      deptField.style.display = "none";
     }
   });
 }
 
-// Show notification function
-// Show notification function
+// ==================== SELECT CLASS ====================
+
+function selectClass(className) {
+  selectedClass = className;
+
+  // Update sidebar button states
+  document.querySelectorAll(".class-sidebar-btn").forEach((btn) => {
+    if (btn.textContent.trim().startsWith(className)) {
+      btn.classList.add("active");
+    } else {
+      btn.classList.remove("active");
+    }
+  });
+
+  // Hide select message
+  document.getElementById("selectClassMessage").style.display = "none";
+
+  // Show student sections
+  document.getElementById("activeStudentsSection").style.display = "block";
+  document.getElementById("leftStudentsSection").style.display = "block";
+
+  // Render students
+  renderStudents();
+}
+
+// ==================== MODAL FUNCTIONS ====================
+
+function openModal(studentId = null) {
+  const modal = document.getElementById("studentModal");
+  const title = document.getElementById("modalTitle");
+  const saveBtn = document.getElementById("saveButton");
+
+  if (studentId) {
+    // Edit mode
+    isEditing = true;
+    editingStudentId = studentId;
+    title.textContent = "Edit Student";
+    saveBtn.textContent = "Update Student";
+    populateFormForEdit(studentId);
+  } else {
+    // Add mode
+    isEditing = false;
+    editingStudentId = null;
+    title.textContent = "Add New Student";
+    saveBtn.textContent = "Save Student";
+    resetForm();
+    // Generate new student ID
+    document.getElementById("studentId").value = generateStudentId();
+  }
+
+  modal.classList.add("active");
+  document.body.style.overflow = "hidden";
+}
+
+function closeModal() {
+  const modal = document.getElementById("studentModal");
+  modal.classList.remove("active");
+  document.body.style.overflow = "auto";
+  resetForm();
+}
+
+function closeModalOnOverlay(event) {
+  if (event.target.id === "studentModal") {
+    closeModal();
+  }
+}
+
+// ==================== FORM FUNCTIONS ====================
+
+async function saveStudent() {
+  const firstName = document.getElementById("firstName").value.trim();
+  const otherNames = document.getElementById("otherNames").value.trim();
+  const dob = document.getElementById("dob").value;
+  const gender = document.getElementById("gender").value;
+  const religion = document.getElementById("religion").value;
+  const classLevel = document.getElementById("classLevel").value;
+  const guardianName = document.getElementById("guardianName").value.trim();
+  const contactEmail = document.getElementById("contactEmail").value.trim();
+  const contactPhone = document.getElementById("contactPhone").value.trim();
+  const address = document.getElementById("address").value.trim();
+  const status = document.getElementById("studentStatus").value;
+
+  // Validation
+  if (
+    !firstName ||
+    !otherNames ||
+    !dob ||
+    !gender ||
+    !religion ||
+    !classLevel ||
+    !guardianName ||
+    !status
+  ) {
+    alert("Please fill in all required fields");
+    return;
+  }
+
+  let department = "GENERAL";
+  if (classLevel.startsWith("SS")) {
+    department = document.getElementById("department").value;
+    if (!department) {
+      alert("Please select a department for SS students");
+      return;
+    }
+  }
+
+  const studentData = {
+    firstName,
+    otherNames,
+    dateOfBirth: dob,
+    gender,
+    religion,
+    currentClass: classLevel,
+    department,
+    guardianName,
+    contactEmail,
+    contactPhone,
+    address,
+    status,
+  };
+
+  try {
+    if (isEditing) {
+      // Update existing student
+      await updateStudent(editingStudentId, studentData);
+      showNotification("✅ Student updated successfully!", "success");
+    } else {
+      // Add new student
+      const newStudentId = await addStudent(studentData);
+      showNotification(
+        `✅ Student registered successfully! ID: ${newStudentId}`,
+        "success"
+      );
+    }
+
+    closeModal();
+    await loadStudents();
+
+    // Refresh current view if a class is selected
+    if (selectedClass) {
+      renderStudents();
+    }
+  } catch (error) {
+    console.error("Error saving student:", error);
+    showNotification("❌ Failed to save student. Please try again.", "error");
+  }
+}
+
+function populateFormForEdit(studentId) {
+  const student = allStudents.find((s) => s._id === studentId);
+  if (!student) return;
+
+  document.getElementById("studentId").value = student.studentId || "";
+  document.getElementById("firstName").value = student.firstName;
+  document.getElementById("otherNames").value = student.otherNames;
+  document.getElementById("dob").value = student.dateOfBirth
+    ? student.dateOfBirth.split("T")[0]
+    : "";
+  document.getElementById("gender").value = student.gender;
+  document.getElementById("religion").value = student.religion;
+  document.getElementById("classLevel").value = student.currentClass;
+  document.getElementById("guardianName").value = student.guardianName || "";
+  document.getElementById("contactEmail").value = student.contactEmail || "";
+  document.getElementById("contactPhone").value = student.contactPhone || "";
+  document.getElementById("address").value = student.address || "";
+  document.getElementById("studentStatus").value = student.status || "active";
+
+  // Handle department
+  const deptField = document.getElementById("departmentField");
+  if (student.currentClass && student.currentClass.startsWith("SS")) {
+    deptField.style.display = "block";
+    document.getElementById("department").value = student.department || "";
+  } else {
+    deptField.style.display = "none";
+  }
+}
+
+function resetForm() {
+  document.getElementById("studentForm").reset();
+  document.getElementById("departmentField").style.display = "none";
+  isEditing = false;
+  editingStudentId = null;
+}
+
+// ==================== VIEW TOGGLE ====================
+
+function toggleView(view) {
+  currentView = view;
+
+  // Update button states
+  document.querySelectorAll(".view-btn").forEach((btn) => {
+    if (btn.dataset.view === view) {
+      btn.classList.add("active");
+    } else {
+      btn.classList.remove("active");
+    }
+  });
+
+  renderStudents();
+}
+
+// ==================== FILTER STUDENTS ====================
+
+function filterStudents() {
+  if (!selectedClass) return;
+  renderStudents();
+}
+
+// ==================== RENDER STUDENTS ====================
+
+function renderStudents() {
+  if (!selectedClass) {
+    // Show select class message
+    document.getElementById("selectClassMessage").style.display = "block";
+    document.getElementById("activeStudentsSection").style.display = "none";
+    document.getElementById("leftStudentsSection").style.display = "none";
+    return;
+  }
+
+  const searchTerm = document.getElementById("searchInput").value.toLowerCase();
+  const genderFilter = document.getElementById("filterGender").value;
+
+  // Filter students for selected class
+  const classStudents = allStudents.filter(
+    (s) => s.currentClass === selectedClass
+  );
+
+  // Apply search and gender filters
+  const filteredStudents = classStudents.filter((student) => {
+    // Search filter
+    const name = `${student.firstName} ${student.otherNames}`.toLowerCase();
+    const id = (student.studentId || "").toLowerCase();
+    const matchesSearch =
+      !searchTerm || name.includes(searchTerm) || id.includes(searchTerm);
+
+    // Gender filter
+    const matchesGender =
+      !genderFilter || student.gender.toLowerCase() === genderFilter;
+
+    return matchesSearch && matchesGender;
+  });
+
+  // Separate active and left students
+  const activeStudents = filteredStudents.filter(
+    (s) => (s.status || "active") === "active"
+  );
+  const leftStudents = filteredStudents.filter((s) => s.status === "left");
+
+  // Render active students
+  renderStudentSection(activeStudents, "active");
+
+  // Render left students
+  renderStudentSection(leftStudents, "left");
+}
+
+function renderStudentSection(students, section) {
+  const prefix = section === "active" ? "active" : "left";
+
+  // Update count
+  document.getElementById(`${prefix}StudentCount`).textContent =
+    students.length;
+
+  if (currentView === "grid") {
+    renderGridSection(students, prefix);
+  } else {
+    renderTableSection(students, prefix);
+  }
+}
+
+function renderGridSection(students, prefix) {
+  const gridView = document.getElementById(`${prefix}GridView`);
+  const tableView = document.getElementById(`${prefix}TableView`);
+  const emptyState = document.getElementById(`${prefix}EmptyState`);
+
+  tableView.style.display = "none";
+
+  if (students.length === 0) {
+    gridView.style.display = "none";
+    emptyState.style.display = "block";
+    return;
+  }
+
+  emptyState.style.display = "none";
+  gridView.style.display = "grid";
+  gridView.innerHTML = "";
+
+  students.forEach((student) => {
+    const card = createStudentCard(student);
+    gridView.appendChild(card);
+  });
+}
+
+function renderTableSection(students, prefix) {
+  const gridView = document.getElementById(`${prefix}GridView`);
+  const tableView = document.getElementById(`${prefix}TableView`);
+  const tableBody = document.getElementById(`${prefix}TableBody`);
+  const emptyState = document.getElementById(`${prefix}EmptyState`);
+
+  gridView.style.display = "none";
+
+  if (students.length === 0) {
+    tableView.style.display = "none";
+    emptyState.style.display = "block";
+    return;
+  }
+
+  emptyState.style.display = "none";
+  tableView.style.display = "block";
+  tableBody.innerHTML = "";
+
+  students.forEach((student) => {
+    const row = createStudentRowSimple(student);
+    tableBody.appendChild(row);
+  });
+}
+
+// ==================== CREATE ELEMENTS ====================
+
+function createStudentCard(student) {
+  const card = document.createElement("div");
+  card.className = "student-card";
+
+  const initials = getInitials(student.firstName, student.otherNames);
+  const name = `${student.firstName} ${student.otherNames}`;
+
+  card.innerHTML = `
+    <div class="student-avatar">${initials}</div>
+    <div class="student-card-name">${name}</div>
+    <div class="student-card-info">
+      <div class="student-card-row">
+        <span class="student-card-label">Gender:</span>
+        <span class="student-card-value">${capitalizeFirst(
+          student.gender
+        )}</span>
+      </div>
+      <div class="student-card-row">
+        <span class="student-card-label">Guardian:</span>
+        <span class="student-card-value">${student.guardianName || "-"}</span>
+      </div>
+    </div>
+    <div class="student-card-actions">
+      <button class="btn-action btn-edit" onclick="editStudentClick('${
+        student._id
+      }')">
+        Edit
+      </button>
+      <button class="btn-action btn-delete" onclick="deleteStudentClick('${
+        student._id
+      }')">
+        Delete
+      </button>
+    </div>
+  `;
+
+  return card;
+}
+
+function createStudentRowSimple(student) {
+  const row = document.createElement("tr");
+  const initials = getInitials(student.firstName, student.otherNames);
+  const name = `${student.firstName} ${student.otherNames}`;
+
+  row.innerHTML = `
+    <td>
+      <div class="student-avatar-cell">
+        <div class="student-avatar">${initials}</div>
+        <div class="student-name-info">
+          <div class="student-name">${name}</div>
+          <div class="student-id-small">${student.studentId || ""}</div>
+        </div>
+      </div>
+    </td>
+    <td>${capitalizeFirst(student.gender)}</td>
+    <td>${student.guardianName || "-"}</td>
+    <td style="text-align: right">
+      <div class="action-buttons">
+        <button class="btn-action btn-edit" onclick="editStudentClick('${
+          student._id
+        }')">
+          Edit
+        </button>
+        <button class="btn-action btn-delete" onclick="deleteStudentClick('${
+          student._id
+        }')">
+          Delete
+        </button>
+      </div>
+    </td>
+  `;
+
+  return row;
+}
+
+// ==================== EDIT & DELETE ====================
+
+async function editStudentClick(studentId) {
+  openModal(studentId);
+}
+
+async function deleteStudentClick(studentId) {
+  const student = allStudents.find((s) => s._id === studentId);
+  if (!student) return;
+
+  const confirmed = confirm(
+    `Are you sure you want to delete ${student.firstName} ${student.otherNames}?\n\nThis action cannot be undone.`
+  );
+
+  if (confirmed) {
+    try {
+      await deleteStudent(studentId);
+      showNotification("🗑️ Student deleted successfully", "success");
+      await loadStudents();
+
+      if (selectedClass) {
+        renderStudents();
+      }
+    } catch (error) {
+      console.error("Error deleting student:", error);
+      showNotification(
+        "❌ Failed to delete student. Please try again.",
+        "error"
+      );
+    }
+  }
+}
+
+// ==================== HELPER FUNCTIONS ====================
+
+function getInitials(firstName, otherNames) {
+  const first = firstName ? firstName[0] : "";
+  const other = otherNames ? otherNames[0] : "";
+  return (first + other).toUpperCase();
+}
+
+function capitalizeFirst(str) {
+  if (!str) return "";
+  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+}
+
 function showNotification(message, type = "success") {
   // Remove existing notifications
   const existing = document.querySelector(".notification");
@@ -198,23 +549,26 @@ function showNotification(message, type = "success") {
 
   const styles = `
     position: fixed;
-    top: 20px;
-    right: 20px;
-    padding: 15px 25px;
-    border-radius: 8px;
-    font-weight: bold;
+    top: 24px;
+    right: 24px;
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.95rem;
     z-index: 10000;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
     animation: slideIn 0.3s ease-out;
+    max-width: 400px;
   `;
 
   notification.style.cssText = styles;
 
   if (type === "success") {
-    notification.style.backgroundColor = "#4CAF50";
+    notification.style.background =
+      "linear-gradient(135deg, #667eea 0%, #764ba2 100%)";
     notification.style.color = "white";
   } else {
-    notification.style.backgroundColor = "#f44336";
+    notification.style.background = "#e53e3e";
     notification.style.color = "white";
   }
 
@@ -227,407 +581,29 @@ function showNotification(message, type = "success") {
   }, 4000);
 }
 
-function handleClassChange(classLevel) {
-  const departmentField = document.getElementById("departmentField");
-
-  if (classLevel && classLevel.startsWith("SS")) {
-    departmentField.style.display = "block";
-  } else {
-    departmentField.style.display = "none";
-  }
-}
-
-// Manage Tab Logic
-let allStudentsCache = [];
-let currentView = "grid"; // Default to Grid
-let selectedClass = "All"; // Default to All, or null if we want to force selection
-
-async function loadManageTab() {
-  // Render Sidebar
-  await renderClassSidebar();
-
-  // Load students
-  // Show loading in main area
-  const gridContainer = document.getElementById("studentsGrid");
-  gridContainer.innerHTML =
-    '<div style="grid-column: 1/-1; text-align: center; color: #666; padding: 20px;">Loading students...</div>';
-
-  try {
-    const students = await getAllStudents();
-    allStudentsCache = students;
-    performSearch(); // This will render based on default view and filters
-  } catch (error) {
-    console.error("Error loading students:", error);
-    gridContainer.innerHTML =
-      '<div style="grid-column: 1/-1; text-align: center; color: red;">Error loading students.</div>';
-  }
-}
-
-async function renderClassSidebar() {
-  const sidebar = document.getElementById("classSidebar");
-  const settings = await getSettings();
-  const classes = settings.classes || [];
-
-  sidebar.innerHTML = "";
-
-  // "All Classes" Option
-  const allItem = document.createElement("div");
-  allItem.textContent = "All Classes";
-  allItem.className = `sidebar-item ${selectedClass === "All" ? "active" : ""}`;
-  allItem.style.cssText = `
-    padding: 10px 15px; 
-    cursor: pointer; 
-    border-left: 3px solid ${
-      selectedClass === "All" ? "#007cba" : "transparent"
-    };
-    background: ${selectedClass === "All" ? "#f0f7fc" : "transparent"};
-    color: ${selectedClass === "All" ? "#007cba" : "#333"};
-  `;
-  allItem.onclick = () => selectClass("All");
-  sidebar.appendChild(allItem);
-
-  // Class List
-  classes.forEach((cls) => {
-    const item = document.createElement("div");
-    item.textContent = cls;
-    item.className = `sidebar-item ${selectedClass === cls ? "active" : ""}`;
-    item.style.cssText = `
-      padding: 10px 15px; 
-      cursor: pointer; 
-      border-left: 3px solid ${
-        selectedClass === cls ? "#007cba" : "transparent"
-      };
-      background: ${selectedClass === cls ? "#f0f7fc" : "transparent"};
-      color: ${selectedClass === cls ? "#007cba" : "#333"};
-    `;
-    item.onclick = () => selectClass(cls);
-    sidebar.appendChild(item);
-  });
-}
-
-window.selectClass = function (cls) {
-  selectedClass = cls;
-  renderClassSidebar(); // Re-render to update active state styling
-  performSearch();
-};
-
-window.toggleView = function (view) {
-  currentView = view;
-
-  // Update buttons
-  document.querySelectorAll(".view-btn").forEach((btn) => {
-    if (btn.dataset.view === view) {
-      btn.classList.add("active");
-      btn.style.background = "#eee";
-    } else {
-      btn.classList.remove("active");
-      btn.style.background = "#fff";
+// Add CSS animations
+const style = document.createElement("style");
+style.textContent = `
+  @keyframes slideIn {
+    from {
+      transform: translateX(400px);
+      opacity: 0;
     }
-  });
-
-  // Toggle containers
-  const table = document.getElementById("tableView");
-  const grid = document.getElementById("studentsGrid");
-
-  if (view === "table") {
-    table.style.display = "block";
-    grid.style.display = "none";
-  } else {
-    table.style.display = "none";
-    grid.style.display = "grid";
-  }
-
-  performSearch(); // Re-render content
-};
-
-function renderStudentsTable(students) {
-  const tableBody = document.getElementById("studentsTableBody");
-  const emptyState = document.getElementById("emptyState");
-  const tableView = document.getElementById("tableView");
-
-  tableBody.innerHTML = "";
-
-  if (students.length === 0) {
-    tableView.style.display = "none";
-    emptyState.style.display = "block";
-    return;
-  }
-
-  emptyState.style.display = "none";
-  tableView.style.display = "block";
-
-  students.forEach((student) => {
-    const row = document.createElement("tr");
-    row.style.borderBottom = "1px solid #eee";
-
-    const displayId = student.studentId || student._id || "-";
-    const name = `${student.firstName} ${student.otherNames}`;
-
-    row.innerHTML = `
-      <td style="padding: 12px; font-weight: 500;">${displayId}</td>
-      <td style="padding: 12px; font-weight: bold; color: #333;">${name}</td>
-      <td style="padding: 12px; text-align: center;"><span style="background: #e3f2fd; color: #1565c0; padding: 2px 8px; border-radius: 12px; font-size: 12px;">${
-        student.currentClass
-      }</span></td>
-      <td style="padding: 12px; text-align: center; text-transform: capitalize;">${
-        student.gender
-      }</td>
-      <td style="padding: 12px; text-align: center;">${
-        student.guardianName || "-"
-      }</td>
-      <td style="padding: 12px; text-align: right;">
-        <button onclick="editStudentClick('${student._id}')" 
-          title="Edit"
-          style="padding: 6px 10px; background: transparent; color: #007cba; border: 1px solid #007cba; border-radius: 4px; cursor: pointer; margin-right: 5px; font-size: 13px; display: inline-flex; align-items: center; gap: 4px;">
-          <span class="material-symbols-outlined" style="font-size: 16px;">edit</span> Edit
-        </button>
-        <button onclick="deleteStudentClick('${student._id}')" 
-          title="Delete"
-          style="padding: 6px 10px; background: transparent; color: #dc3545; border: 1px solid transparent; border-radius: 4px; cursor: pointer; font-size: 13px; display: inline-flex; align-items: center; gap: 4px;">
-          <span class="material-symbols-outlined" style="font-size: 16px;">delete</span> Delete
-        </button>
-      </td>
-    `;
-    tableBody.appendChild(row);
-  });
-}
-
-function renderStudentsGrid(students) {
-  const grid = document.getElementById("studentsGrid");
-  const emptyState = document.getElementById("emptyState");
-
-  grid.innerHTML = "";
-
-  if (students.length === 0) {
-    grid.style.display = "none";
-    emptyState.style.display = "block";
-    return;
-  }
-
-  emptyState.style.display = "none";
-  grid.style.display = "grid";
-
-  students.forEach((student) => {
-    const card = document.createElement("div");
-    card.style.cssText =
-      "background: white; border: 1px solid #eee; border-radius: 8px; padding: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; flex-direction: column; align-items: center; text-align: center; transition: transform 0.2s;";
-    card.onmouseover = () => (card.style.transform = "translateY(-3px)");
-    card.onmouseout = () => (card.style.transform = "translateY(0)");
-
-    const initials = (
-      student.firstName[0] + (student.otherNames[0] || "")
-    ).toUpperCase();
-    const name = `${student.firstName} ${student.otherNames}`;
-
-    card.innerHTML = `
-      <div style="width: 60px; height: 60px; background: #e3f2fd; color: #1565c0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: bold; margin-bottom: 15px;">
-        ${initials}
-      </div>
-      <h3 style="margin: 0 0 5px 0; font-size: 16px; color: #333;">${name}</h3>
-      <span style="background: #f5f5f5; color: #666; padding: 2px 8px; border-radius: 12px; font-size: 12px; margin-bottom: 15px;">${
-        student.currentClass
-      }</span>
-      
-      <div style="width: 100%; border-top: 1px solid #eee; padding-top: 15px; margin-top: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: left; font-size: 13px; color: #555;">
-        <div>
-           <span style="display:block; color: #999; font-size: 11px;">Gender</span>
-           ${student.gender}
-        </div>
-        <div>
-           <span style="display:block; color: #999; font-size: 11px;">Guardian</span>
-           ${student.guardianName || "-"}
-        </div>
-      </div>
-
-      <div style="width: 100%; margin-top: 15px; display: flex; gap: 10px;">
-        <button onclick="editStudentClick('${
-          student._id
-        }')" style="flex: 1; padding: 8px; border: 1px solid #007cba; background: white; color: #007cba; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 600;">Edit</button>
-        <button onclick="deleteStudentClick('${
-          student._id
-        }')" style="flex: 1; padding: 8px; border: 1px solid #ffebee; background: #ffebee; color: #d32f2f; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 600;">Delete</button>
-      </div>
-    `;
-    grid.appendChild(card);
-  });
-}
-
-function setupSearch() {
-  const searchInput = document.getElementById("searchInput");
-  const filterGender = document.getElementById("filterGender");
-  const filterStatus = document.getElementById("filterStatus");
-  // filterClass is removed/replaced by sidebar
-
-  const filters = [searchInput, filterGender, filterStatus];
-
-  filters.forEach((filter) => {
-    if (filter) {
-      filter.addEventListener("input", performSearch);
-      filter.addEventListener("change", performSearch);
-    }
-  });
-}
-
-function performSearch() {
-  const query = document
-    .getElementById("searchInput")
-    .value.toLowerCase()
-    .trim();
-  const selectedGender = document.getElementById("filterGender").value;
-  const selectedStatus = document.getElementById("filterStatus").value;
-
-  const filtered = allStudentsCache.filter((s) => {
-    // 1. Search Query
-    const name = `${s.firstName} ${s.otherNames}`.toLowerCase();
-    const id = (s.studentId || "").toLowerCase();
-    const matchesQuery = !query || name.includes(query) || id.includes(query);
-
-    // 2. Class Filter (Sidebar)
-    const matchesClass =
-      selectedClass === "All" || s.currentClass === selectedClass;
-
-    // 3. Gender Filter
-    const matchesGender =
-      !selectedGender || s.gender.toLowerCase() === selectedGender;
-
-    // 4. Status Filter
-    const studentStatus = (s.status || "active").toLowerCase();
-    const matchesStatus = !selectedStatus || studentStatus === selectedStatus;
-
-    return matchesQuery && matchesClass && matchesGender && matchesStatus;
-  });
-
-  if (currentView === "grid") {
-    renderStudentsGrid(filtered);
-  } else {
-    renderStudentsTable(filtered);
-  }
-}
-
-// Edit Student Logic
-window.editStudentClick = function (id) {
-  const student = allStudentsCache.find(
-    (s) => s._id === id || s.studentId === id
-  );
-  if (!student) {
-    alert("Student not found!");
-    return;
-  }
-
-  const modal = document.getElementById("editModal");
-  const container = document.getElementById("editFormContainer");
-
-  // Clone the registration form to reuse structure
-  // In a real app, I'd extract the form to a reusable component vs cloning
-  const originalForm = document.getElementById("studentForm");
-  const formClone = originalForm.cloneNode(true);
-
-  formClone.id = "editStudentForm";
-  formClone.removeAttribute("onsubmit"); // Remove inline listeners if any
-
-  // Update submit button text
-  const submitBtn = formClone.querySelector("button[type='submit']");
-  submitBtn.textContent = "Update Student";
-
-  container.innerHTML = "";
-  container.appendChild(formClone);
-
-  // Populate Fields
-  formClone.querySelector("#Firstname").value = student.firstName;
-  formClone.querySelector("#Other-Names").value = student.otherNames;
-  formClone.querySelector("#studentid").value = student.studentId || "";
-  formClone.querySelector("#DOB").value = student.dateOfBirth
-    ? student.dateOfBirth.split("T")[0]
-    : "";
-  formClone.querySelector("#gender").value = student.gender;
-  formClone.querySelector("#religion").value = student.religion;
-  formClone.querySelector("#clslevel").value = student.currentClass;
-  formClone.querySelector("#cntemail").value = student.contactEmail || "";
-  formClone.querySelector("#cntphone").value = student.contactPhone || "";
-  formClone.querySelector("#guardianname").value = student.guardianName;
-  formClone.querySelector("#address").value = student.address || "";
-
-  // Handle Department Visibility
-  const deptField = formClone.querySelector("#departmentField");
-  if (student.currentClass && student.currentClass.startsWith("SS")) {
-    deptField.style.display = "block";
-    const deptSelect = formClone.querySelector("#department");
-    if (deptSelect) deptSelect.value = student.department || "";
-  } else {
-    deptField.style.display = "none";
-  }
-
-  // Handle Form Submit
-  formClone.addEventListener("submit", async function (e) {
-    e.preventDefault();
-
-    // Gather updated data
-    const updatedData = {
-      firstName: formClone.querySelector("#Firstname").value.trim(),
-      otherNames: formClone.querySelector("#Other-Names").value.trim(),
-      // studentId is usually immutable, but we send it if needed by backend or just ignore
-      dateOfBirth: formClone.querySelector("#DOB").value,
-      gender: formClone.querySelector("#gender").value,
-      religion: formClone.querySelector("#religion").value,
-      currentClass: formClone.querySelector("#clslevel").value,
-      contactEmail: formClone.querySelector("#cntemail").value.trim(),
-      contactPhone: formClone.querySelector("#cntphone").value.trim(),
-      guardianName: formClone.querySelector("#guardianname").value.trim(),
-      address: formClone.querySelector("#address").value.trim(),
-    };
-
-    if (updatedData.currentClass.startsWith("SS")) {
-      updatedData.department = formClone.querySelector("#department").value;
-    } else {
-      updatedData.department = "GENERAL"; // or null
-    }
-
-    try {
-      await updateStudent(id, updatedData);
-      showNotification("Checking details...", "success"); // Feedback immediately
-
-      // Wait a small bit then refresh
-      setTimeout(() => {
-        showNotification("✅ Student updated successfully", "success");
-        closeEditModal();
-        loadManageTab(); // Refresh the grid/table
-      }, 500);
-    } catch (error) {
-      console.error("Update failed", error);
-      showNotification("❌ Update failed: " + error.message, "error");
-    }
-  });
-
-  // Handle Class Change in Edit Form
-  const classSelect = formClone.querySelector("#clslevel");
-  classSelect.addEventListener("change", function () {
-    if (this.value && this.value.startsWith("SS")) {
-      deptField.style.display = "block";
-    } else {
-      deptField.style.display = "none";
-    }
-  });
-
-  modal.style.display = "block";
-};
-
-window.closeEditModal = function () {
-  document.getElementById("editModal").style.display = "none";
-};
-
-window.deleteStudentClick = async function (id) {
-  if (
-    confirm(
-      "Are you sure you want to delete this student? This action cannot be undone."
-    )
-  ) {
-    try {
-      await deleteStudent(id);
-      showNotification("🗑 Student deleted successfully", "success");
-      loadManageTab(); // Refresh list
-    } catch (error) {
-      console.error("Delete failed", error);
-      showNotification("❌ Delete failed: " + error.message, "error");
+    to {
+      transform: translateX(0);
+      opacity: 1;
     }
   }
-};
+
+  @keyframes slideOut {
+    from {
+      transform: translateX(0);
+      opacity: 1;
+    }
+    to {
+      transform: translateX(400px);
+      opacity: 0;
+    }
+  }
+`;
+document.head.appendChild(style);

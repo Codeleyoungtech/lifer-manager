@@ -14,7 +14,18 @@ connectDB();
 
 // Middleware
 app.use(helmet());
-app.use(cors());
+
+// CORS Configuration
+const corsOptions = {
+  origin:
+    process.env.NODE_ENV === "production"
+      ? process.env.FRONTEND_URL || "*" // In production, set FRONTEND_URL for specific domain
+      : "*", // Allow all origins in development
+  credentials: true,
+  optionsSuccessStatus: 200,
+};
+app.use(cors(corsOptions));
+
 app.use(express.json());
 app.use(morgan("dev"));
 

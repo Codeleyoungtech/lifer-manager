@@ -3,12 +3,578 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Register New Student</title>
+    <title>Student Management</title>
     <link rel="stylesheet" href="../assets/index.css" />
     <link
       href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined"
       rel="stylesheet"
     />
+    <style>
+      /* Premium Page Background */
+
+      /* Two-Row Header */
+      .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 2rem;
+      }
+
+      .page-title-section h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #1a202c;
+        margin: 0 0 0.5rem 0;
+      }
+
+      .page-title-section p {
+        font-size: 1rem;
+        color: #718096;
+        margin: 0;
+      }
+
+      .btn-add-student {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 0.875rem 1.75rem;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 1rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        transition: all 0.3s ease;
+      }
+
+      .btn-add-student:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+      }
+
+      /* Premium Card Wrapper */
+      .students-card {
+        background: white;
+        border-radius: 20px;
+        padding: 1.5rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      }
+
+      /* Class Sidebar Buttons */
+      .class-sidebar-btn {
+        padding: 0.75rem 1rem;
+        border: 1px solid #e2e8f0;
+        background: white;
+        border-radius: 10px;
+        cursor: pointer;
+        text-align: left;
+        font-size: 0.95rem;
+        color: #4a5568;
+        font-weight: 500;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .class-sidebar-btn:hover {
+        background: #f7fafc;
+        border-color: #cbd5e0;
+      }
+
+      .class-sidebar-btn.active {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-color: #667eea;
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+      }
+
+      /* Smart Filter Bar */
+      .smart-filter-bar {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+      }
+
+      .search-container {
+        flex: 1;
+        min-width: 300px;
+        position: relative;
+      }
+
+      .search-container .material-symbols-outlined {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #a0aec0;
+        font-size: 1.25rem;
+      }
+
+      .search-container input {
+        width: 100%;
+        padding: 0.875rem 1rem 0.875rem 3rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        font-size: 0.95rem;
+        transition: all 0.2s;
+      }
+
+      .search-container input:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      }
+
+      .filter-group {
+        display: flex;
+        gap: 0.75rem;
+        align-items: center;
+      }
+
+      .filter-select {
+        padding: 0.875rem 1rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        font-size: 0.95rem;
+        background: white;
+        cursor: pointer;
+        transition: all 0.2s;
+        min-width: 120px;
+      }
+
+      .filter-select:hover {
+        border-color: #cbd5e0;
+      }
+
+      .filter-select:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      }
+
+      /* View Toggle Buttons */
+      .view-toggle {
+        display: flex;
+        background: #f7fafc;
+        border-radius: 10px;
+        padding: 0.25rem;
+        border: 1px solid #e2e8f0;
+      }
+
+      .view-toggle button {
+        padding: 0.5rem 0.875rem;
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        border-radius: 8px;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .view-toggle button.active {
+        background: white;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        color: #667eea;
+      }
+
+      .view-toggle button:not(.active) {
+        color: #a0aec0;
+      }
+
+      /* Section Title */
+      .section-title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: #2d3748;
+        margin-bottom: 1.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .student-count {
+        background: #edf2f7;
+        color: #4a5568;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.875rem;
+        font-weight: 500;
+      }
+
+      /* Premium Table */
+      .students-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+      }
+
+      .students-table thead th {
+        background: #f7fafc;
+        padding: 1rem;
+        text-align: left;
+        font-weight: 600;
+        color: #4a5568;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        border-bottom: 2px solid #e2e8f0;
+      }
+
+      .students-table tbody tr {
+        transition: all 0.2s;
+        border-bottom: 1px solid #f7fafc;
+      }
+
+      .students-table tbody tr:hover {
+        background: #f7fafc;
+      }
+
+      .students-table tbody td {
+        padding: 1rem;
+        vertical-align: middle;
+      }
+
+      /* Avatar with Initials */
+      .student-avatar-cell {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+      }
+
+      .student-avatar {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 1rem;
+        flex-shrink: 0;
+      }
+
+      .student-name-info {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .student-name {
+        font-weight: 600;
+        color: #2d3748;
+        font-size: 0.95rem;
+      }
+
+      .student-id-small {
+        font-size: 0.8rem;
+        color: #a0aec0;
+      }
+
+      /* Status Badge */
+      .status-badge {
+        display: inline-block;
+        padding: 0.35rem 0.875rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: capitalize;
+      }
+
+      .status-active {
+        background: #c6f6d5;
+        color: #22543d;
+      }
+
+      .status-left {
+        background: #fed7d7;
+        color: #742a2a;
+      }
+
+      /* Action Buttons */
+      .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+      }
+
+      .btn-action {
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 0.875rem;
+        font-weight: 500;
+        transition: all 0.2s;
+      }
+
+      .btn-edit {
+        background: #fef5e7;
+        color: #c97d0e;
+      }
+
+      .btn-edit:hover {
+        background: #fce8c3;
+      }
+
+      .btn-delete {
+        background: #fee;
+        color: #e53e3e;
+      }
+
+      .btn-delete:hover {
+        background: #fdd;
+      }
+
+      /* Grid View */
+      .students-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 1.25rem;
+      }
+
+      .student-card {
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 1.5rem;
+        transition: all 0.3s;
+        text-align: center;
+      }
+
+      .student-card:hover {
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+        transform: translateY(-4px);
+        border-color: #667eea;
+      }
+
+      .student-card .student-avatar {
+        width: 72px;
+        height: 72px;
+        margin: 0 auto 1rem;
+        font-size: 1.5rem;
+      }
+
+      .student-card-name {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: #2d3748;
+        margin-bottom: 0.5rem;
+      }
+
+      .student-card-info {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin: 1rem 0;
+        text-align: left;
+      }
+
+      .student-card-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.875rem;
+      }
+
+      .student-card-label {
+        color: #718096;
+        font-weight: 500;
+      }
+
+      .student-card-value {
+        color: #2d3748;
+        font-weight: 600;
+      }
+
+      .student-card-actions {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 1rem;
+      }
+
+      .student-card-actions button {
+        flex: 1;
+      }
+
+      /* Empty State */
+      .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+      }
+
+      .empty-state .material-symbols-outlined {
+        font-size: 5rem;
+        color: #cbd5e0;
+        margin-bottom: 1rem;
+      }
+
+      .empty-state h3 {
+        font-size: 1.25rem;
+        color: #4a5568;
+        margin-bottom: 0.5rem;
+      }
+
+      .empty-state p {
+        color: #a0aec0;
+      }
+
+      /* Modal Styles */
+      .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        z-index: 1000;
+        backdrop-filter: blur(4px);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+
+      .modal-overlay.active {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 1;
+      }
+
+      .modal {
+        background: white;
+        border-radius: 16px;
+        width: 90%;
+        max-width: 700px;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        transform: scale(0.9);
+        transition: transform 0.3s ease;
+      }
+
+      .modal-overlay.active .modal {
+        transform: scale(1);
+      }
+
+      .modal-header {
+        padding: 1.5rem;
+        border-bottom: 1px solid #e2e8f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .modal-header h2 {
+        margin: 0;
+        font-size: 1.5rem;
+        color: #2d3748;
+      }
+
+      .close-modal {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: #a0aec0;
+        padding: 0.5rem;
+        border-radius: 50%;
+        transition: all 0.2s;
+      }
+
+      .close-modal:hover {
+        background: #f7fafc;
+        color: #2d3748;
+      }
+
+      .modal-body {
+        padding: 1.5rem;
+      }
+
+      .form-group {
+        margin-bottom: 1.25rem;
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: #4a5568;
+        font-size: 0.95rem;
+      }
+
+      .form-group input,
+      .form-group select,
+      .form-group textarea {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        font-size: 0.95rem;
+        transition: all 0.2s;
+      }
+
+      .form-group input:focus,
+      .form-group select:focus,
+      .form-group textarea:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      }
+
+      .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+      }
+
+      .modal-footer {
+        padding: 1rem 1.5rem;
+        border-top: 1px solid #e2e8f0;
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.75rem;
+      }
+
+      .btn {
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 0.95rem;
+        font-weight: 600;
+        transition: all 0.2s;
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+      }
+
+      .btn-secondary {
+        background: #e2e8f0;
+        color: #4a5568;
+      }
+
+      .btn-secondary:hover {
+        background: #cbd5e0;
+      }
+
+      /* Required indicator */
+      .required {
+        color: #e53e3e;
+      }
+    </style>
   </head>
   <body>
     <aside>
@@ -22,20 +588,20 @@
             <ul>
               <li>
                 <a href="../pages/index.html"
-                  ><span class="material-symbols-outlined">dashboard</span
-                  ><span>Dashboard</span>
+                  ><span class="material-symbols-outlined">dashboard</span>
+                  <span>Dashboard</span>
                 </a>
               </li>
               <li>
                 <a href="../pages/editor.html"
-                  ><span class="material-symbols-outlined">description</span
-                  ><span>Legacy Editor</span>
+                  ><span class="material-symbols-outlined">description</span>
+                  <span>Legacy Editor</span>
                 </a>
               </li>
               <li>
                 <a href="../pages/student.html" class="active"
-                  ><span class="material-symbols-outlined">group</span
-                  ><span>Students</span>
+                  ><span class="material-symbols-outlined">group</span>
+                  <span>Students</span>
                 </a>
               </li>
               <li>
@@ -52,8 +618,8 @@
               </li>
               <li>
                 <a href="../pages/subject.html"
-                  ><span class="material-symbols-outlined">school</span
-                  ><span>Classes & Subjects</span>
+                  ><span class="material-symbols-outlined">school</span>
+                  <span>Classes & Subjects</span>
                 </a>
               </li>
               <li>
@@ -64,361 +630,193 @@
               </li>
             </ul>
           </nav>
-
-          <div class="sidebar-footer">
-            <span class="user-name">Eleazar Ogoyemi Jesusemilogo</span>
-            <span class="user-type">Super_admin</span>
-            <a href="#"
-              ><span class="material-symbols-outlined"> logout </span>
-              <span>Logout</span></a
-            >
-          </div>
         </div>
       </div>
     </aside>
+
     <main>
       <section class="dashboard-page">
-        <div class="dashboard-action">
-          <div class="dash-greetings">
-            <h2>Student Management</h2>
-            <p>Register and manage students</p>
+        <!-- Two-Row Header -->
+        <div class="page-header">
+          <div class="page-title-section">
+            <h1>Student Management</h1>
+            <p>Manage student enrollment, records & status</p>
           </div>
+          <button class="btn-add-student" onclick="openModal()">
+            <span class="material-symbols-outlined">add</span>
+            Add New Student
+          </button>
         </div>
 
-        <div class="tabs-container" style="margin-bottom: 20px">
+        <!-- Main Layout: Sidebar + Content -->
+        <div style="display: flex; gap: 1.5rem; align-items: flex-start">
+          <!-- Class Sidebar -->
           <div
-            class="tabs"
-            style="
-              display: flex;
-              gap: 10px;
-              border-bottom: 1px solid #ddd;
-              padding-bottom: 10px;
-            "
+            class="students-card"
+            style="width: 280px; flex-shrink: 0; padding: 1rem"
           >
-            <button
-              class="tab active"
-              data-tab="register"
-              onclick="switchTab(this)"
+            <div
               style="
-                padding: 10px 20px;
-                border: none;
-                background: none;
-                font-weight: bold;
-                cursor: pointer;
-                color: #007cba;
-                border-bottom: 2px solid #007cba;
+                padding: 0.5rem;
+                font-weight: 600;
+                color: #2d3748;
+                margin-bottom: 1rem;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
               "
             >
-              Register New
-            </button>
-            <button
-              class="tab"
-              data-tab="manage"
-              onclick="switchTab(this)"
-              style="
-                padding: 10px 20px;
-                border: none;
-                background: none;
-                font-weight: bold;
-                cursor: pointer;
-                color: #666;
-              "
+              <span class="material-symbols-outlined">school</span>
+              Select a Class
+            </div>
+            <div
+              id="classSidebar"
+              style="display: flex; flex-direction: column; gap: 0.5rem"
             >
-              View & Edit Students
-            </button>
-          </div>
-        </div>
-
-        <div class="content">
-          <!-- Register Tab -->
-          <div class="tab-content active" id="register-tab">
-            <div class="new-student-form-wrapper card">
-              <h2>Register New Student</h2>
-              <form id="studentForm">
-                <div class="form-wrap">
-                  <div class="form-wrap-item">
-                    <label for="Firstname"
-                      >First Name <span style="color: red">*</span></label
-                    >
-                    <input
-                      type="text"
-                      name="Firstname"
-                      id="Firstname"
-                      required
-                    />
-                  </div>
-                  <div class="form-wrap-item">
-                    <label for="Other-Names"
-                      >Other Names <span style="color: red">*</span></label
-                    >
-                    <input
-                      type="text"
-                      name="Othernames"
-                      id="Other-Names"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div class="form-wrap">
-                  <div class="form-wrap-item">
-                    <label for="studentid">Student ID (Auto-generated)</label>
-                    <input
-                      type="text"
-                      name="studentid"
-                      id="studentid"
-                      readonly
-                      style="background: #f0f0f0; cursor: not-allowed"
-                    />
-                  </div>
-                  <div class="form-wrap-item">
-                    <label for="DOB"
-                      >Date of Birth <span style="color: red">*</span></label
-                    >
-                    <input type="date" name="DOB" id="DOB" required />
-                  </div>
-                </div>
-
-                <div class="form-wrap">
-                  <div class="form-wrap-item">
-                    <label for="gender"
-                      >Gender <span style="color: red">*</span></label
-                    >
-                    <select name="gender" id="gender" required>
-                      <option value="">Select gender</option>
-                      <option value="male">Male</option>
-                      <option value="female">Female</option>
-                    </select>
-                  </div>
-                  <div class="form-wrap-item">
-                    <label for="religion"
-                      >Religion <span style="color: red">*</span></label
-                    >
-                    <select name="religion" id="religion" required>
-                      <option value="">Select religion</option>
-                      <option value="ISLAM">Islam</option>
-                      <option value="CHRISTIANITY">Christianity</option>
-                      <option value="OTHER">Other for primary(CRS)</option>
-                    </select>
-                    <small style="color: #666; font-size: 12px">
-                      This helps us assign the correct Religious Studies subject
-                    </small>
-                  </div>
-                </div>
-
-                <div class="form-wrap">
-                  <div class="form-wrap-item">
-                    <label for="clslevel"
-                      >Class Level <span style="color: red">*</span></label
-                    >
-                    <select name="clslevel" id="clslevel" required>
-                      <option value="">Select class level</option>
-                    </select>
-                  </div>
-                  <div
-                    class="form-wrap-item"
-                    id="departmentField"
-                    style="display: none"
-                  >
-                    <label for="department"
-                      >Department <span style="color: red">*</span></label
-                    >
-                    <select name="department" id="department">
-                      <option value="">Select department</option>
-                      <option value="SCIENCE">Science</option>
-                      <option value="ARTS">Arts</option>
-                      <option value="COMMERCIAL">Commercial</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div class="form-wrap">
-                  <div class="form-wrap-item">
-                    <label for="cntemail">Contact Email</label>
-                    <input
-                      type="email"
-                      name="cntemail"
-                      id="cntemail"
-                      placeholder="parent@example.com"
-                    />
-                  </div>
-                  <div class="form-wrap-item">
-                    <label for="cntphone">Contact Phone</label>
-                    <input
-                      type="tel"
-                      name="cntphone"
-                      id="cntphone"
-                      placeholder="024xxxxxxx"
-                    />
-                  </div>
-                </div>
-
-                <label for="guardianname"
-                  >Parent/Guardian Name <span style="color: red">*</span></label
-                >
-                <input
-                  type="text"
-                  name="guardianname"
-                  id="guardianname"
-                  required
-                />
-
-                <label for="address">Address</label>
-                <textarea
-                  name="address"
-                  id="address"
-                  rows="4"
-                  placeholder="Enter student's home address"
-                ></textarea>
-
-                <button type="submit" style="margin-top: 20px">
-                  Register Student
-                </button>
-              </form>
+              <!-- Classes will be loaded here -->
             </div>
           </div>
 
-          <!-- Manage Tab -->
-          <div class="tab-content" id="manage-tab" style="display: none">
-            <div class="card">
-              <div style="display: flex; gap: 15px; margin-bottom: 20px">
+          <!-- Premium Card Wrapper -->
+          <div class="students-card" style="flex: 1">
+            <!-- Smart Filter Bar -->
+            <div class="smart-filter-bar">
+              <div class="search-container">
+                <span class="material-symbols-outlined">search</span>
                 <input
                   type="text"
                   id="searchInput"
-                  placeholder="Search by name or ID..."
-                  style="
-                    padding: 10px;
-                    border: 1px solid #ddd;
-                    border-radius: 4px;
-                    flex: 1;
-                  "
+                  placeholder="Search students by name or ID..."
+                  oninput="filterStudents()"
                 />
-                <select
-                  id="filterClass"
-            <div style="display: flex; gap: 20px; align-items: flex-start;">
-              
-              <!-- Sidebar -->
-              <div class="card" style="width: 250px; padding: 0; overflow: hidden; flex-shrink: 0;">
-                <div style="padding: 15px; background: #f8f9fa; border-bottom: 1px solid #eee; font-weight: bold;">
-                  Classes
-                </div>
-                <div id="classSidebar" style="max-height: 600px; overflow-y: auto;">
-                  <!-- Class list populated here -->
-                  <div style="padding: 15px; text-align: center; color: #666;">Loading...</div>
-                </div>
               </div>
 
-              <!-- Main Content -->
-              <div class="card" style="flex: 1; min-height: 400px;">
-                <!-- Advanced Filters -->
-                <div style="display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; align-items: center;">
-                   <div style="flex: 1; min-width: 200px; position: relative;">
-                      <span class="material-symbols-outlined" style="position: absolute; left: 10px; top: 10px; color: #999;">search</span>
-                      <input type="text" id="searchInput" placeholder="Search students..." style="width: 100%; padding: 10px 10px 10px 40px; border: 1px solid #ddd; border-radius: 4px;">
-                   </div>
-                   
-                   <!-- Removed Class Filter (Moved to Sidebar) -->
-                   
-                   <select id="filterGender" style="padding: 10px; border: 1px solid #ddd; border-radius: 4px; min-width: 120px;">
-                     <option value="">Gender: All</option>
-                     <option value="male">Male</option>
-                     <option value="female">Female</option>
-                   </select>
-  
-                   <select id="filterStatus" style="padding: 10px; border: 1px solid #ddd; border-radius: 4px; min-width: 120px;">
-                     <option value="">Status: All</option>
-                     <option value="active">Active</option>
-                     <option value="left">Left</option>
-                   </select>
-  
-                   <!-- View Toggle -->
-                   <div style="margin-left: auto; display: flex; border: 1px solid #ddd; border-radius: 4px; overflow: hidden;">
-                      <button class="view-btn" onclick="toggleView('table')" data-view="table" style="padding: 8px 12px; border: none; background: #fff; cursor: pointer;"><span class="material-symbols-outlined" style="font-size: 20px;">table_chart</span></button>
-                      <button class="view-btn active" onclick="toggleView('grid')" data-view="grid" style="padding: 8px 12px; border: none; background: #eee; cursor: pointer;"><span class="material-symbols-outlined" style="font-size: 20px;">grid_view</span></button>
-                   </div>
-                </div>
-  
-                <!-- Table View -->
-                <div id="tableView" class="table-wrapper" style="display: none;">
-                  <table style="width: 100%; border-collapse: collapse;">
-                    <thead>
-                      <tr style="background: #f8f9fa; border-bottom: 2px solid #ddd;">
-                        <th style="padding: 12px; text-align: left;">ID</th>
-                        <th style="padding: 12px; text-align: left;">Name</th>
-                        <th style="padding: 12px; text-align: center;">Class</th>
-                        <th style="padding: 12px; text-align: center;">Gender</th>
-                        <th style="padding: 12px; text-align: center;">Guardian</th>
-                        <th style="padding: 12px; text-align: right;">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody id="studentsTableBody">
-                       <tr><td colspan="6" style="padding: 20px; text-align: center; color: #666;">Loading students...</td></tr>
-                    </tbody>
-                  </table>
-                </div>
-                
-                <!-- Grid View Container -->
-                <div id="studentsGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;">
-                  <!-- Grid items will be injected here -->
-                </div>
+              <div class="filter-group">
+                <select
+                  id="filterGender"
+                  class="filter-select"
+                  onchange="filterStudents()"
+                >
+                  <option value="">All Genders</option>
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                </select>
 
-                <div id="emptyState" style="display:none; text-align: center; padding: 40px; color: #666;">
-                   <span class="material-symbols-outlined" style="font-size: 48px; color: #ddd; margin-bottom: 10px;">group_off</span>
-                   <p>No students found matching current filters.</p>
+                <!-- View Mode Toggle -->
+                <div class="view-toggle">
+                  <button
+                    class="view-btn active"
+                    onclick="toggleView('grid')"
+                    data-view="grid"
+                  >
+                    <span class="material-symbols-outlined">grid_view</span>
+                  </button>
+                  <button
+                    class="view-btn"
+                    onclick="toggleView('table')"
+                    data-view="table"
+                  >
+                    <span class="material-symbols-outlined">table_chart</span>
+                  </button>
                 </div>
-
               </div>
             </div>
 
-            <!-- Edit Modal (Hidden) -->
-            <div
-              id="editModal"
-              style="
-                display: none;
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(0, 0, 0, 0.5);
-                z-index: 1000;
-              "
-            >
-              <div
-                style="
-                  background: white;
-                  width: 90%;
-                  max-width: 600px;
-                  margin: 50px auto;
-                  padding: 30px;
-                  border-radius: 8px;
-                  max-height: 90vh;
-                  overflow-y: auto;
-                "
-              >
-                <div
-                  style="
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    margin-bottom: 20px;
-                  "
+            <!-- Initial State: Select a Class -->
+            <div id="selectClassMessage" class="empty-state">
+              <span class="material-symbols-outlined">arrow_back</span>
+              <h3>Select a Class to View Students</h3>
+              <p>Click on a class from the sidebar to view students</p>
+            </div>
+
+            <!-- Active Students Section -->
+            <div id="activeStudentsSection" style="display: none">
+              <div class="section-title" style="color: #22543d">
+                <span class="material-symbols-outlined">check_circle</span>
+                <span>Active Students</span>
+                <span
+                  id="activeStudentCount"
+                  class="student-count"
+                  style="background: #c6f6d5; color: #22543d"
+                  >0</span
                 >
-                  <h2>Edit Student</h2>
-                  <button
-                    type="button"
-                    onclick="closeEditModal()"
-                    style="
-                      border: none;
-                      background: none;
-                      font-size: 24px;
-                      cursor: pointer;
-                    "
-                  >
-                    &times;
-                  </button>
-                </div>
-                <div id="editFormContainer"></div>
+              </div>
+
+              <!-- Grid View for Active -->
+              <div id="activeGridView" class="students-grid"></div>
+
+              <!-- Table View for Active -->
+              <div id="activeTableView" style="display: none">
+                <table class="students-table">
+                  <thead>
+                    <tr>
+                      <th>Student</th>
+                      <th>Gender</th>
+                      <th>Guardian</th>
+                      <th style="text-align: right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="activeTableBody"></tbody>
+                </table>
+              </div>
+
+              <!-- Empty State for Active -->
+              <div
+                id="activeEmptyState"
+                class="empty-state"
+                style="display: none; padding: 2rem"
+              >
+                <span class="material-symbols-outlined" style="font-size: 3rem"
+                  >groups</span
+                >
+                <p style="margin: 0">No active students in this class</p>
+              </div>
+            </div>
+
+            <!-- Left Students Section -->
+            <div
+              id="leftStudentsSection"
+              style="display: none; margin-top: 2rem"
+            >
+              <div class="section-title" style="color: #742a2a">
+                <span class="material-symbols-outlined">cancel</span>
+                <span>Left Students</span>
+                <span
+                  id="leftStudentCount"
+                  class="student-count"
+                  style="background: #fed7d7; color: #742a2a"
+                  >0</span
+                >
+              </div>
+
+              <!-- Grid View for Left -->
+              <div id="leftGridView" class="students-grid"></div>
+
+              <!-- Table View for Left -->
+              <div id="leftTableView" style="display: none">
+                <table class="students-table">
+                  <thead>
+                    <tr>
+                      <th>Student</th>
+                      <th>Gender</th>
+                      <th>Guardian</th>
+                      <th style="text-align: right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="leftTableBody"></tbody>
+                </table>
+              </div>
+
+              <!-- Empty State for Left -->
+              <div
+                id="leftEmptyState"
+                class="empty-state"
+                style="display: none; padding: 2rem"
+              >
+                <span class="material-symbols-outlined" style="font-size: 3rem"
+                  >group_off</span
+                >
+                <p style="margin: 0">No students have left this class</p>
               </div>
             </div>
           </div>
@@ -426,7 +824,151 @@
       </section>
     </main>
 
+    <!-- Add/Edit Student Modal -->
+    <div
+      id="studentModal"
+      class="modal-overlay"
+      onclick="closeModalOnOverlay(event)"
+    >
+      <div class="modal">
+        <div class="modal-header">
+          <h2 id="modalTitle">Add New Student</h2>
+          <button class="close-modal" onclick="closeModal()">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form id="studentForm">
+            <div class="form-row">
+              <div class="form-group">
+                <label>First Name <span class="required">*</span></label>
+                <input type="text" id="firstName" required />
+              </div>
+              <div class="form-group">
+                <label>Other Names <span class="required">*</span></label>
+                <input type="text" id="otherNames" required />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>Student ID (Auto-generated)</label>
+                <input
+                  type="text"
+                  id="studentId"
+                  readonly
+                  style="background: #f7fafc"
+                />
+              </div>
+              <div class="form-group">
+                <label>Date of Birth <span class="required">*</span></label>
+                <input type="date" id="dob" required />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>Gender <span class="required">*</span></label>
+                <select id="gender" required>
+                  <option value="">Select gender</option>
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Religion <span class="required">*</span></label>
+                <select id="religion" required>
+                  <option value="">Select religion</option>
+                  <option value="ISLAM">Islam</option>
+                  <option value="CHRISTIANITY">Christianity</option>
+                  <option value="OTHER">Other</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>Class Level <span class="required">*</span></label>
+                <select id="classLevel" required></select>
+              </div>
+              <div
+                class="form-group"
+                id="departmentField"
+                style="display: none"
+              >
+                <label>Department <span class="required">*</span></label>
+                <select id="department">
+                  <option value="">Select department</option>
+                  <option value="SCIENCE">Science</option>
+                  <option value="ARTS">Arts</option>
+                  <option value="COMMERCIAL">Commercial</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label
+                >Parent/Guardian Name <span class="required">*</span></label
+              >
+              <input type="text" id="guardianName" required />
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>Contact Email</label>
+                <input
+                  type="email"
+                  id="contactEmail"
+                  placeholder="parent@example.com"
+                />
+              </div>
+              <div class="form-group">
+                <label>Contact Phone</label>
+                <input type="tel" id="contactPhone" placeholder="024xxxxxxx" />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>Student Status <span class="required">*</span></label>
+                <select id="studentStatus" required>
+                  <option value="active">Active</option>
+                  <option value="left">Left</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Address</label>
+                <textarea
+                  id="address"
+                  rows="3"
+                  placeholder="Enter student's home address"
+                ></textarea>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            onclick="closeModal()"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            class="btn btn-primary"
+            id="saveButton"
+            onclick="saveStudent()"
+          >
+            Save Student
+          </button>
+        </div>
+      </div>
+    </div>
+
     <script type="module" src="../scripts/auth-guard.js"></script>
     <script type="module" src="../scripts/student.js"></script>
+    <script src="../scripts/sidebar-toggle.js"></script>
   </body>
 </html>

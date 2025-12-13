@@ -1,0 +1,18 @@
+# Render.com configuration for backend deployment
+# This file helps Render understand how to build and run your backend
+
+# Build command (will run during deployment)
+# Render will automatically detect package.json and run npm install
+
+# Start command
+# node src/app.js
+
+# Environment Variables (set these in Render dashboard):
+# NODE_ENV=production
+# PORT=5000  (Render provides this automatically)
+# MONGO_URI=your_mongodb_atlas_connection_string
+# JWT_SECRET=your_strong_production_secret_key
+# JWT_EXPIRE=30d
+
+# This service will be accessible at:
+# https://your-service-name.onrender.com

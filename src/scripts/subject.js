@@ -285,6 +285,25 @@ async function saveSubject() {
     return;
   }
 
+  // Check for duplicate subject code (only if adding new or code changed)
+  if (!isEditing || (isEditing && code !== editingSubjectCode)) {
+    const existingSubject = allSubjects.find(
+      (s) => s.code.toUpperCase() === code.toUpperCase()
+    );
+
+    if (existingSubject) {
+      alert(
+        `Subject code "${code}" already exists!\n\n` +
+          `It's used by: ${existingSubject.name}\n\n` +
+          `Please edit the code field to use a different unique code.`
+      );
+      // Focus on the code field for user to edit
+      document.getElementById("subjectCode").focus();
+      document.getElementById("subjectCode").select();
+      return;
+    }
+  }
+
   // Determine selected classes based on category
   let selectedClasses = [];
   const category = document.querySelector(

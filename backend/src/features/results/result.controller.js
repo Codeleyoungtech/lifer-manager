@@ -193,6 +193,7 @@ const calculatePositions = async (req, res, next) => {
     const isSecondary =
       classLevel.startsWith("JSS") || classLevel.startsWith("SS");
 
+    // Calculate positions with proper handling of ties (standard competition ranking)
     const operations = results.map((result, index) => {
       // Recalculate based on total
       const grade = calculateGrade(result.total);
@@ -200,11 +201,35 @@ const calculatePositions = async (req, res, next) => {
         ? calculateRemarks(result.total)
         : calculatePrimaryRemarks(result.total);
 
+      // Determine position accounting for ties
+      let position = 1;
+      if (index > 0) {
+        // Count how many students have higher scores
+        // If current student has same score as previous, they get same position
+        const currentScore = result.total;
+        const previousScore = results[index - 1].total;
+
+        if (currentScore === previousScore) {
+          // Find the position of the first student with this score
+          let firstIndexWithScore = index;
+          while (
+            firstIndexWithScore > 0 &&
+            results[firstIndexWithScore - 1].total === currentScore
+          ) {
+            firstIndexWithScore--;
+          }
+          position = firstIndexWithScore + 1;
+        } else {
+          // This is a new score, position is current index + 1
+          position = index + 1;
+        }
+      }
+
       return {
         updateOne: {
           filter: { _id: result._id },
           update: {
-            position: index + 1,
+            position: position,
             grade: grade,
             remarks: remarks,
           },

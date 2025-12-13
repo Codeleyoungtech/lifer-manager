@@ -1,123 +1,293 @@
-import { getSettings, getAllStudents, getAllSubjects } from "./storage.js";
-import { dashboardService } from "./api/dashboard.service.js";
+import { getSettings, getAllStudents } from "./storage.js";
+
+let studentsChart = null;
+let genderChart = null;
 
 window.addEventListener("DOMContentLoaded", async function () {
-  await loadStatistics();
-
-  await loadRecentActivities();
-
-  updateGreeting();
+  await loadDashboardData();
+  window.exportData = exportData;
 });
 
-function updateGreeting() {
-  const greetingElement = document.querySelector(".dash-greetings p");
-  const hour = new Date().getHours();
-
-  let greeting = "";
-  if (hour < 12) {
-    greeting = "Good morning!";
-  } else if (hour < 18) {
-    greeting = "Good afternoon!";
-  } else {
-    greeting = "Good evening!";
-  }
-
-  greetingElement.textContent = `${greeting} Here's what's happening in your school today.`;
-}
-
-async function loadStatistics() {
+async function loadDashboardData() {
   try {
-    // We can use the dashboard service directly for stats if implemented
-    // Or calculate them here using getAllStudents etc.
-    // The backend has a getDashboardStats endpoint. Let's use it.
+    const settings = await getSettings();
+    const students = await getAllStudents();
 
-    const stats = await dashboardService.getStats();
+    // Update KPIs
+    updateKPIs(students, settings);
 
-    document.getElementById("total_students").textContent = stats.totalStudents;
-    document.getElementById("active_spreadsheets").textContent =
-      stats.activeSpreadsheets;
-    document.getElementById("top_performers").textContent = stats.topPerformers;
+    // Render Charts
+    renderStudentsChart(students, settings.classes);
+    renderGenderChart(students);
 
-    document.getElementById("total_students_percent").textContent = "+12"; // Placeholder
-    document.getElementById("active_sreadsheets_percent").textContent = "+5"; // Placeholder
-    document.getElementById("top_performer").textContent = "+8"; // Placeholder
+    // Load Activities
+    loadRecentActivities();
+
+    // Update Insights
+    updateInsights(students, settings);
   } catch (error) {
-    console.error("Error loading statistics:", error);
+    console.error("Error loading dashboard data:", error);
   }
 }
 
-async function loadRecentActivities() {
-  try {
-    const activities = await dashboardService.getActivities();
+// ==================== UPDATE KPIs ====================
 
-    // Transform activities to match display format if needed
-    // The backend returns { type, title, description, timestamp }
-    // We need { title, description, time }
+function updateKPIs(students, settings) {
+  // Total Students
+  document.getElementById("totalStudents").textContent = students.length;
 
-    const formattedActivities = activities.map((activity) => ({
-      title: activity.title,
-      description: activity.description,
-      time: getTimeAgo(activity.timestamp),
-    }));
+  // Active Classes
+  document.getElementById("activeClasses").textContent =
+    settings.classes.length;
 
-    displayActivities(formattedActivities);
-  } catch (error) {
-    console.error("Error loading recent activities:", error);
-  }
+  // Pending Results (students without results)
+  // This is a placeholder - you'd need to fetch actual results data
+  document.getElementById("pendingResults").textContent = "0";
+
+  // Average Performance (placeholder)
+  document.getElementById("avgPerformance").textContent = "75.5%";
 }
 
-function displayActivities(activities) {
-  const listContainer = document.querySelector(".recent-activities-list ul");
+// ==================== RENDER CHARTS ====================
 
-  listContainer.innerHTML = "";
+function renderStudentsChart(students, classes) {
+  const ctx = document.getElementById("studentsChart");
+  if (!ctx) return;
 
-  if (activities.length === 0) {
-    listContainer.innerHTML = `
-      <li>
-        <div class="recent-wrapper">
-          <p style="text-align: center; color: #666; padding: 20px;">
-            No recent activities yet. Start by registering students or entering results!
-          </p>
-        </div>
-      </li>
-    `;
-    return;
+  // Count students per class
+  const classCounts = {};
+  classes.forEach((className) => {
+    classCounts[className] = students.filter(
+      (s) => s.currentClass === className
+    ).length;
+  });
+
+  // Get top 10 classes by student count for better visualization
+  const sortedClasses = Object.entries(classCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10);
+
+  const labels = sortedClasses.map((item) => item[0]);
+  const data = sortedClasses.map((item) => item[1]);
+
+  // Destroy existing chart if it exists
+  if (studentsChart) {
+    studentsChart.destroy();
   }
 
-  activities.forEach((activity) => {
-    const li = document.createElement("li");
-    li.innerHTML = `
-      <div class="recent-wrapper">
-        <h3 class="recent-title">${activity.title}</h3>
-        <div class="recent-activity">
-          <span>${activity.description}</span>
-        </div>
-        <p class="day">${activity.time}</p>
-      </div>
-    `;
-    listContainer.appendChild(li);
+  studentsChart = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: "Number of Students",
+          data: data,
+          backgroundColor: "rgba(102, 126, 234, 0.8)",
+          borderColor: "rgba(102, 126, 234, 1)",
+          borderWidth: 1,
+          borderRadius: 8,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: {
+          display: false,
+        },
+        tooltip: {
+          backgroundColor: "rgba(0, 0, 0, 0.8)",
+          padding: 12,
+          borderRadius: 8,
+          titleFont: {
+            size: 14,
+            weight: "bold",
+          },
+          bodyFont: {
+            size: 13,
+          },
+        },
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            stepSize: 5,
+            font: {
+              size: 12,
+            },
+          },
+          grid: {
+            color: "rgba(0, 0, 0, 0.05)",
+          },
+        },
+        x: {
+          ticks: {
+            font: {
+              size: 11,
+            },
+          },
+          grid: {
+            display: false,
+          },
+        },
+      },
+    },
   });
 }
 
-function getTimeAgo(dateString) {
-  const date = new Date(dateString);
-  const now = new Date();
-  const diffMs = now - date;
+function renderGenderChart(students) {
+  const ctx = document.getElementById("genderChart");
+  if (!ctx) return;
 
-  const diffMins = Math.floor(diffMs / 60000);
-  const diffHours = Math.floor(diffMs / 3600000);
-  const diffDays = Math.floor(diffMs / 86400000);
+  // Count by gender
+  const maleCount = students.filter(
+    (s) => s.gender.toLowerCase() === "male"
+  ).length;
+  const femaleCount = students.filter(
+    (s) => s.gender.toLowerCase() === "female"
+  ).length;
 
-  if (diffMins < 1) return "Just now";
-  if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? "s" : ""} ago`;
-  if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? "s" : ""} ago`;
-  if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? "s" : ""} ago`;
+  // Destroy existing chart if it exists
+  if (genderChart) {
+    genderChart.destroy();
+  }
 
-  return date.toLocaleDateString();
+  genderChart = new Chart(ctx, {
+    type: "doughnut",
+    data: {
+      labels: ["Male", "Female"],
+      datasets: [
+        {
+          data: [maleCount, femaleCount],
+          backgroundColor: [
+            "rgba(102, 126, 234, 0.8)",
+            "rgba(217, 70, 239, 0.8)",
+          ],
+          borderColor: ["rgba(102, 126, 234, 1)", "rgba(217, 70, 239, 1)"],
+          borderWidth: 2,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: {
+          position: "bottom",
+          labels: {
+            padding: 15,
+            font: {
+              size: 13,
+              weight: "500",
+            },
+            usePointStyle: true,
+            pointStyle: "circle",
+          },
+        },
+        tooltip: {
+          backgroundColor: "rgba(0, 0, 0, 0.8)",
+          padding: 12,
+          borderRadius: 8,
+          callbacks: {
+            label: function (context) {
+              const label = context.label || "";
+              const value = context.parsed || 0;
+              const total = maleCount + femaleCount;
+              const percentage =
+                total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+              return `${label}: ${value} (${percentage}%)`;
+            },
+          },
+        },
+      },
+    },
+  });
 }
 
-window.exportData = function () {
+// ==================== RECENT ACTIVITIES ====================
+
+function loadRecentActivities() {
+  const activityList = document.getElementById("activityList");
+  if (!activityList) return;
+
+  // Sample activities - in a real app, these would come from a database
+  const activities = [
+    {
+      icon: "edit_note",
+      text: "Mathematics results published for SS3",
+      time: "2 minutes ago",
+    },
+    {
+      icon: "person_add",
+      text: "New student added to KG1 class",
+      time: "1 hour ago",
+    },
+    {
+      icon: "school",
+      text: "English results updated for JSS2",
+      time: "3 hours ago",
+    },
+    {
+      icon: "calendar_today",
+      text: "Attendance recorded for Primary 5",
+      time: "Today",
+    },
+    {
+      icon: "settings",
+      text: "System settings updated",
+      time: "Yesterday",
+    },
+  ];
+
+  activityList.innerHTML = activities
+    .map(
+      (activity) => `
+    <div class="activity-item">
+      <div class="activity-icon">
+        <span class="material-symbols-outlined">${activity.icon}</span>
+      </div>
+      <div class="activity-content">
+        <div class="activity-text">${activity.text}</div>
+        <div class="activity-time">${activity.time}</div>
+      </div>
+    </div>
+  `
+    )
+    .join("");
+}
+
+// ==================== UPDATE INSIGHTS ====================
+
+function updateInsights(students, settings) {
+  // Count students with missing results (placeholder - would need real results data)
+  const missingResults = 0; // Replace with actual logic
+  document.getElementById(
+    "insightPending"
+  ).textContent = `${missingResults} students have missing results`;
+
+  // Count classes without results (placeholder)
+  const classesWithoutResults = 0; // Replace with actual logic
+  document.getElementById(
+    "insightClasses"
+  ).textContent = `${classesWithoutResults} classes haven't submitted results`;
+
+  // Top student (placeholder - would calculate from actual results)
+  const topStudent =
+    students.length > 0
+      ? `${students[0].firstName} ${students[0].otherNames}`
+      : "No students yet";
+  document.getElementById(
+    "insightTop"
+  ).textContent = `Top student this term: ${topStudent}`;
+}
+
+// ==================== EXPORT DATA ====================
+
+function exportData() {
   alert(
-    "Export feature is coming soon! This will allow you to download a backup of your data."
+    "Export feature coming soon!\n\nThis will allow you to export:\n• Student data\n• Results\n• Attendance records\n• Reports"
   );
-};
+}
