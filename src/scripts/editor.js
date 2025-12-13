@@ -17,6 +17,59 @@ let currentSubject = "";
 let currentStudent = "";
 let currentMode = "subject"; // 'subject' or 'student'
 
+// Helper for subject ordering
+const validClassPatterns = {
+  prenursery: /^(NURSERY\s*1|KG)/i,
+  primary: /^(NURSERY\s*2|PRIMARY|BASIC)/i,
+  jss: /^JSS/i,
+  ss: /^SS/i,
+};
+
+function getSubjectCategory(className) {
+  for (const [category, pattern] of Object.entries(validClassPatterns)) {
+    if (pattern.test(className)) {
+      return category;
+    }
+  }
+  return null;
+}
+
+async function getOrderedSubjects(subjects, className) {
+  try {
+    const settings = await getSettings();
+    const category = getSubjectCategory(className);
+
+    if (
+      !category ||
+      !settings.subjectOrders ||
+      !settings.subjectOrders[category]
+    ) {
+      // Default alpha sort if no order defined
+      return subjects.sort((a, b) => a.name.localeCompare(b.name));
+    }
+
+    const order = settings.subjectOrders[category];
+    const orderedSubjects = [];
+    const remainingSubjects = [...subjects];
+
+    // Pick subjects in order
+    order.forEach((code) => {
+      const idx = remainingSubjects.findIndex((s) => s.code === code);
+      if (idx !== -1) {
+        orderedSubjects.push(remainingSubjects[idx]);
+        remainingSubjects.splice(idx, 1);
+      }
+    });
+
+    // Append remaining subjects sorted alphabetically
+    remainingSubjects.sort((a, b) => a.name.localeCompare(b.name));
+    return [...orderedSubjects, ...remainingSubjects];
+  } catch (err) {
+    console.error("Error sorting subjects:", err);
+    return subjects.sort((a, b) => a.name.localeCompare(b.name));
+  }
+}
+
 window.addEventListener("DOMContentLoaded", async function () {
   await loadYearOptions();
   await loadClassOptions();
@@ -123,6 +176,8 @@ async function loadSubjectOptions() {
 
   try {
     const subjects = await getSubjectsByClass(currentClass);
+    const sortedSubjects = await getOrderedSubjects(subjects, currentClass);
+
     const isSSClass = currentClass.startsWith("SS");
 
     const generalSubjects = [];
@@ -130,7 +185,7 @@ async function loadSubjectOptions() {
     const artsSubjects = [];
     const commercialSubjects = [];
 
-    subjects.forEach((subject) => {
+    sortedSubjects.forEach((subject) => {
       if (subject.department === "GENERAL") {
         generalSubjects.push(subject);
       } else if (subject.department === "SCIENCE") {
@@ -326,7 +381,10 @@ async function loadStudentGradeSheet() {
     // For now we just use the ID.
 
     // 2. Get Subjects for this student
-    const subjects = await getSubjectsForStudent(currentStudent);
+    let subjects = await getSubjectsForStudent(currentStudent);
+
+    // Sort subjects based on settings
+    subjects = await getOrderedSubjects(subjects, currentClass);
 
     // 3. Get Existing Results for this student across all subjects
     const resultsData = await getStudentResults(
