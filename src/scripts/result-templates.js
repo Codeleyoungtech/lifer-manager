@@ -1052,7 +1052,7 @@ export function getResultStyles() {
       left: 0;
       right: 0;
       bottom: 0;
-      background-image: url(../public/download.jpeg);
+      background-image: url(/public/download.jpeg);
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
@@ -1102,11 +1102,11 @@ export function getResultStyles() {
     }
 
     .overlay-secondary {
-      background-image: url(../assets/mmlclogo.jpg);
+      background-image: url(/assets/mmlclogo.jpg);
     }
 
     .overlay-primary {
-      background-image: url(../assets/pfbslogo.jpg);
+      background-image: url(/assets/pfbslogo.jpg);
     }
 
     .top, .table, .bottom {
@@ -1127,7 +1127,7 @@ export function getResultStyles() {
     .logo {
       width: 110px;
       height: 110px;
-      background-image: url(../assets/mmlclogo.jpg); /* Default for secondary */
+      background-image: url(/assets/mmlclogo.jpg); /* Default for secondary */
       background-position: center;
       background-size: contain;
       background-repeat: no-repeat;
@@ -1136,7 +1136,7 @@ export function getResultStyles() {
     /* Override for primary and pre-nursery */
     .resu-primary .logo,
     .resu-prenursery .logo {
-      background-image: url(../assets/pfbslogo.jpg);
+      background-image: url(/assets/pfbslogo.jpg);
     }
 
     .left {
