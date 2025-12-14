@@ -1,6 +1,7 @@
 import {
   getSettings,
   getSubjectsForStudent,
+  getSubjectsByClass,
   getStudentsByClass,
   getStudentResults,
 } from "./storage.js";
@@ -836,9 +837,15 @@ async function generateSecondaryResultsTable(
 async function generateSubjectRows(student, subjectResults, settings) {
   let rows = "";
 
-  const allSubjectsForStudent = await getSubjectsForStudent(
-    student._id || student.id
-  );
+  let allSubjectsForStudent;
+
+  if (student.currentClass.startsWith("SS")) {
+    allSubjectsForStudent = await getSubjectsByClass(student.currentClass);
+  } else {
+    allSubjectsForStudent = await getSubjectsForStudent(
+      student._id || student.id
+    );
+  }
 
   sortSubjects(allSubjectsForStudent, student.currentClass, settings);
 
