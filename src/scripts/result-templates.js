@@ -356,14 +356,14 @@ async function generatePrimaryResultsTable(
       <tr>
         <td class="subject-title">${subject.name}</td>
         <td class="bold">10</td>
-        <td>${result?.weeklyTest || ""}</td>
+        <td>${result?.weeklyTest ?? "--"}</td>
         <td class="bold">20</td>
-        <td>${result?.midTerm || ""}</td>
+        <td>${result?.midTerm ?? "--"}</td>
         <td class="bold">70</td>
-        <td>${result?.exam || ""}</td>
-        <td><strong>${result?.total || ""}</strong></td>
+        <td>${result?.exam ?? "--"}</td>
+        <td><strong>${result?.total ?? "--"}</strong></td>
         <td>${getOrdinal(result?.position)}</td>
-        <td>${result?.remarks || ""}</td>
+        <td>${result?.remarks ?? "--"}</td>
       </tr>
     `;
   });
