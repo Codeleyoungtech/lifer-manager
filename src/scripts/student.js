@@ -1,7 +1,6 @@
 import {
   getSettings,
   addStudent,
-  generateStudentId,
   getAllStudents,
   updateStudent,
   deleteStudent,
@@ -159,8 +158,8 @@ function openModal(studentId = null) {
     title.textContent = "Add New Student";
     saveBtn.textContent = "Save Student";
     resetForm();
-    // Generate new student ID
-    document.getElementById("studentId").value = generateStudentId();
+    // Clear student ID field (optional manual entry)
+    document.getElementById("studentId").value = "";
   }
 
   modal.classList.add("active");
@@ -195,6 +194,8 @@ async function saveStudent() {
   const address = document.getElementById("address").value.trim();
   const status = document.getElementById("studentStatus").value;
 
+  const studentId = document.getElementById("studentId").value.trim();
+
   // Validation
   if (
     !firstName ||
@@ -220,6 +221,7 @@ async function saveStudent() {
   }
 
   const studentData = {
+    studentId: studentId || undefined,
     firstName,
     otherNames,
     dateOfBirth: dob,

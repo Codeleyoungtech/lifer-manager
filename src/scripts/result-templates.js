@@ -355,11 +355,11 @@ async function generatePrimaryResultsTable(
     subjectRows += `
       <tr>
         <td class="subject-title">${subject.name}</td>
-        <td>10</td>
+        <td class="bold">10</td>
         <td>${result?.weeklyTest || ""}</td>
-        <td>20</td>
+        <td class="bold">20</td>
         <td>${result?.midTerm || ""}</td>
-        <td>70</td>
+        <td class="bold">70</td>
         <td>${result?.exam || ""}</td>
         <td><strong>${result?.total || ""}</strong></td>
         <td>${getOrdinal(result?.position)}</td>
@@ -511,11 +511,11 @@ async function generatePreNurseryResultsTable(
     subjectRows += `
       <tr>
         <td class="subject-title">${subject.name}</td>
-        <td>20</td>
+        <td class="bold">20</td>
         <td>${result?.weeklyTest || ""}</td>
-        <td>20</td>
+        <td class="bold">20</td>
         <td>${result?.midTerm || ""}</td>
-        <td>60</td>
+        <td class="bold">60</td>
         <td>${result?.exam || ""}</td>
         <td><strong>${result?.total || ""}</strong></td>
         <td>${getOrdinal(result?.position)}</td>
@@ -1335,6 +1335,10 @@ export function getResultStyles() {
       width: 100%;
       display: flex;
       align-items: center;
+    }
+
+    .bold {
+      font-weight: bold;
     }
 
     .terms-grade,

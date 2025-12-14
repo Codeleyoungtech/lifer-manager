@@ -55,8 +55,12 @@ const createStudent = async (req, res, next) => {
       address,
     } = req.body;
 
-    // Generate Student ID
-    const studentId = await generateStudentId(currentClass);
+    // Generate Student ID if not provided
+    let studentId = req.body.studentId;
+
+    if (!studentId) {
+      studentId = await generateStudentId(currentClass);
+    }
 
     const student = await Student.create({
       studentId,
