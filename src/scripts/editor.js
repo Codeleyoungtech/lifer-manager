@@ -700,8 +700,6 @@ window.saveAllResults = async function () {
       if (!subjectCode) return; // Skip info rows or headers if any
     }
 
-    affectedSubjects.add(subjectCode);
-
     const wInput = row.querySelector(".weekly-test");
     const mInput = row.querySelector(".mid-term");
     const eInput = row.querySelector(".exam");
@@ -710,6 +708,9 @@ window.saveAllResults = async function () {
     if (wInput.value === "" && mInput.value === "" && eInput.value === "") {
       return;
     }
+
+    // Only add to affected list if we are actually saving something
+    affectedSubjects.add(subjectCode);
 
     const weeklyTest = parseFloat(wInput.value) || 0;
     const midTerm = parseFloat(mInput.value) || 0;
