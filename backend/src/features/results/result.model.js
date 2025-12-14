@@ -25,7 +25,7 @@ const resultSchema = mongoose.Schema(
       type: Number,
       default: 0,
       min: 0,
-      max: 10,
+      max: 20,
     },
     midTerm: {
       type: Number,

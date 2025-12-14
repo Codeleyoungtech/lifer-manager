@@ -187,6 +187,7 @@ const calculatePositions = async (req, res, next) => {
       academicYear,
       term,
       subjectCode,
+      total: { $gt: 0 }, // Only rank students with total > 0
     }).sort({ total: -1 });
 
     // Update positions AND Grades/Remarks (to enforce new grading system)

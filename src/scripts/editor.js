@@ -445,6 +445,13 @@ function buildStudentGradeTable(subjects, resultsMap) {
     const row = document.createElement("tr");
     row.dataset.subjectCode = subject.code; // Key for saving
 
+    // Determine max scores based on class level
+    // Prenursery: 20 20 60
+    // Others: 10 20 70
+    const isPrenursery = /^(NURSERY\s*1|KG)/i.test(currentClass);
+    const maxWeekly = isPrenursery ? 20 : 10;
+    const maxExam = isPrenursery ? 60 : 70;
+
     row.innerHTML = `
       <td style="padding: 10px; text-align: center;">${index + 1}</td>
       <td style="padding: 10px;">
@@ -456,9 +463,9 @@ function buildStudentGradeTable(subjects, resultsMap) {
           type="number" 
           class="score-input weekly-test"
           min="0" 
-          max="10" 
+          max="${maxWeekly}" 
           value="${existingResult?.weeklyTest || ""}"
-          placeholder="0-10"
+          placeholder="0-${maxWeekly}"
           style="width: 80px; padding: 5px; text-align: center; border: 1px solid #ddd; border-radius: 4px;"
         />
       </td>
@@ -478,14 +485,19 @@ function buildStudentGradeTable(subjects, resultsMap) {
           type="number" 
           class="score-input exam"
           min="0" 
-          max="70" 
+          max="${maxExam}" 
           value="${existingResult?.exam || ""}"
-          placeholder="0-70"
+          placeholder="0-${maxExam}"
           style="width: 80px; padding: 5px; text-align: center; border: 1px solid #ddd; border-radius: 4px;"
         />
       </td>
       <td style="padding: 10px; text-align: center;">
         <strong class="total-display">${existingResult?.total || "-"}</strong>
+      </td>
+      <td style="padding: 10px; text-align: center;">
+        <span class="position-display">${
+          existingResult?.total ? existingResult.position || "-" : "-"
+        }</span>
       </td>
       <td style="padding: 10px; text-align: center;">
         <span class="remarks-display">${existingResult?.remarks || "-"}</span>
@@ -552,6 +564,13 @@ function buildGradeTable(students, subject, resultsMap) {
     const row = document.createElement("tr");
     row.dataset.studentId = student._id;
 
+    // Determine max scores based on class level
+    // Prenursery: 20 20 60
+    // Others: 10 20 70
+    const isPrenursery = /^(NURSERY\s*1|KG)/i.test(currentClass);
+    const maxWeekly = isPrenursery ? 20 : 10;
+    const maxExam = isPrenursery ? 60 : 70;
+
     row.innerHTML = `
       <td style="padding: 10px; text-align: center;">${index + 1}</td>
       <td style="padding: 10px;">
@@ -568,9 +587,9 @@ function buildGradeTable(students, subject, resultsMap) {
           type="number" 
           class="score-input weekly-test"
           min="0" 
-          max="10" 
+          max="${maxWeekly}" 
           value="${existingResults?.weeklyTest || ""}"
-          placeholder="0-10"
+          placeholder="0-${maxWeekly}"
           style="width: 80px; padding: 5px; text-align: center; border: 1px solid #ddd; border-radius: 4px;"
         />
       </td>
@@ -590,14 +609,19 @@ function buildGradeTable(students, subject, resultsMap) {
           type="number" 
           class="score-input exam"
           min="0" 
-          max="70" 
+          max="${maxExam}" 
           value="${existingResults?.exam || ""}"
-          placeholder="0-70"
+          placeholder="0-${maxExam}"
           style="width: 80px; padding: 5px; text-align: center; border: 1px solid #ddd; border-radius: 4px;"
         />
       </td>
       <td style="padding: 10px; text-align: center;">
         <strong class="total-display">${existingResults?.total || "-"}</strong>
+      </td>
+      <td style="padding: 10px; text-align: center;">
+        <span class="position-display">${
+          existingResults?.total ? existingResults.position || "-" : "-"
+        }</span>
       </td>
       <td style="padding: 10px; text-align: center;">
         <span class="remarks-display">${existingResults?.remarks || "-"}</span>
@@ -661,24 +685,43 @@ window.saveAllResults = async function () {
   const rows = document.querySelectorAll("#spreadsheetBody tr");
   let savedCount = 0;
   const promises = [];
+  const affectedSubjects = new Set();
 
   rows.forEach((row) => {
-    const studentId = row.dataset.studentId;
+    let studentId, subjectCode;
 
-    // Skip info rows
-    if (!studentId) return;
+    if (currentMode === "subject") {
+      studentId = row.dataset.studentId;
+      subjectCode = currentSubject;
+      if (!studentId) return; // Skip info rows
+    } else {
+      studentId = currentStudent;
+      subjectCode = row.dataset.subjectCode;
+      if (!subjectCode) return; // Skip info rows or headers if any
+    }
 
-    const weeklyTest = parseFloat(row.querySelector(".weekly-test").value) || 0;
-    const midTerm = parseFloat(row.querySelector(".mid-term").value) || 0;
-    const exam = parseFloat(row.querySelector(".exam").value) || 0;
+    affectedSubjects.add(subjectCode);
+
+    const wInput = row.querySelector(".weekly-test");
+    const mInput = row.querySelector(".mid-term");
+    const eInput = row.querySelector(".exam");
+
+    // Skip saving if all inputs are empty (user didn't touch this row)
+    if (wInput.value === "" && mInput.value === "" && eInput.value === "") {
+      return;
+    }
+
+    const weeklyTest = parseFloat(wInput.value) || 0;
+    const midTerm = parseFloat(mInput.value) || 0;
+    const exam = parseFloat(eInput.value) || 0;
 
     // Only save if there's at least one score or if we want to clear it (but backend handles upsert)
     // If all are 0, we still save it as 0.
 
     promises.push(
       saveResult(
-        currentMode === "subject" ? studentId : currentStudent,
-        currentMode === "subject" ? currentSubject : row.dataset.subjectCode,
+        studentId,
+        subjectCode,
         {
           weeklyTest: weeklyTest,
           midTerm: midTerm,
@@ -695,12 +738,12 @@ window.saveAllResults = async function () {
     await Promise.all(promises);
 
     // Calculate positions after saving all
-    await calculatePositions(
-      currentClass,
-      currentSubject,
-      currentYear,
-      currentTerm
+    // Calculate positions after saving all
+    // Iterate over all affected subjects (one in subject mode, many in student mode)
+    const positionPromises = Array.from(affectedSubjects).map((subjectCode) =>
+      calculatePositions(currentClass, subjectCode, currentYear, currentTerm)
     );
+    await Promise.all(positionPromises);
 
     showNotification(
       `✅ Successfully saved results for ${savedCount} entries!`,
@@ -749,45 +792,87 @@ function showNoStudentsMessage() {
 }
 
 window.exportToCSV = async function () {
-  if (!currentClass || !currentSubject) {
+  if (currentMode === "subject" && (!currentClass || !currentSubject)) {
     showNotification("Please select a class and subject first!", "error");
+    return;
+  }
+  if (currentMode === "student" && (!currentClass || !currentStudent)) {
+    showNotification("Please select a class and a student first!", "error");
     return;
   }
 
   try {
-    const students = await getStudentsByClass(currentClass);
-    const subjects = await getSubjectsByClass(currentClass);
-    const subject = subjects.find((s) => s.code === currentSubject);
-    const resultsMap = await getResultsByClass(
-      currentClass,
-      currentSubject,
-      currentYear,
-      currentTerm
-    );
+    let csvContent = "";
+    let filename = "";
 
-    let csv =
-      "Student Name,Student ID,Weekly Test,Mid-Term,Exam,Total,Grade,Position\n";
+    if (currentMode === "subject") {
+      const students = await getStudentsByClass(currentClass);
+      // Sort students by name
+      students.sort((a, b) => a.firstName.localeCompare(b.firstName));
 
-    students.forEach((student) => {
-      const result = resultsMap[student.id];
+      const subjects = await getSubjectsByClass(currentClass);
+      const subject = subjects.find((s) => s.code === currentSubject);
+      const resultsMap = await getResultsByClass(
+        currentClass,
+        currentSubject,
+        currentYear,
+        currentTerm
+      );
 
-      if (result) {
-        csv += `"${student.firstName} ${student.otherNames}",${
-          student.studentId || student.id
-        },${result.weeklyTest},${result.midTerm},${result.exam},${
-          result.total
-        },${result.grade},${result.position || "-"}\n`;
-      }
-    });
+      csvContent =
+        "Student Name,Student ID,Weekly Test,Mid-Term,Exam,Total,Grade,Position\n";
 
-    const blob = new Blob([csv], { type: "text/csv" });
+      students.forEach((student) => {
+        const result = resultsMap[student._id] || {};
+        csvContent += `"${student.firstName} ${student.otherNames}",${
+          student.studentId || student._id
+        },${result.weeklyTest || 0},${result.midTerm || 0},${
+          result.exam || 0
+        },${result.total || 0},${result.grade || "-"},${
+          result.position || "-"
+        }\n`;
+      });
+
+      filename = `${currentClass}_${subject.name}_${currentTerm}_${currentYear}.csv`;
+    } else {
+      // Student Mode
+      const studentSelect = document.getElementById("resultStudent");
+      const studentName =
+        studentSelect.options[studentSelect.selectedIndex].text;
+
+      let subjects = await getSubjectsForStudent(currentStudent);
+      subjects = await getOrderedSubjects(subjects, currentClass);
+
+      const resultsData = await getStudentResults(
+        currentStudent,
+        currentYear,
+        currentTerm
+      );
+      const resultsMap = resultsData.subjects || {};
+
+      csvContent =
+        "Subject,Code,Weekly Test,Mid-Term,Exam,Total,Grade,Position\n";
+
+      subjects.forEach((subject) => {
+        const result = resultsMap[subject.code] || {};
+        csvContent += `"${subject.name}",${subject.code},${
+          result.weeklyTest || 0
+        },${result.midTerm || 0},${result.exam || 0},${result.total || 0},${
+          result.grade || "-"
+        },${result.position || "-"}\n`;
+      });
+
+      filename = `${studentName}_${currentClass}_${currentTerm}_${currentYear}.csv`;
+    }
+
+    const blob = new Blob([csvContent], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `${currentClass}_${subject.name}_${currentTerm}_${currentYear}.csv`;
+    link.download = filename;
     link.click();
 
-    alert("✅ Results exported to CSV!");
+    showNotification("✅ Results exported to CSV!", "success");
   } catch (error) {
     console.error("Error exporting to CSV:", error);
     showNotification("Failed to export results.", "error");
