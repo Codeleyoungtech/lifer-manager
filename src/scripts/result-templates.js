@@ -305,7 +305,7 @@ async function generatePrimaryResultSheet(
       <!-- Bottom Section: Statistics & Comments -->
       <div class="bottom">
         ${generateBottomStats(stats, cumulativeScores)}
-        ${generateComments(metadata)}
+        ${generateComments(metadata, "HEAD OF SCHOOL'S COMMENT")}
         <div class="school-sign">SCHOOL SIGNATURE AND STAMP</div>
       </div>
   </div>
@@ -460,7 +460,7 @@ async function generatePreNurseryResultSheet(
       <!-- Bottom Section: Statistics & Comments -->
       <div class="bottom">
         ${generateBottomStats(stats, cumulativeScores)}
-        ${generateComments(metadata)}
+        ${generateComments(metadata, "HEAD OF SCHOOL'S COMMENT")}
         <div class="school-sign">SCHOOL SIGNATURE AND STAMP</div>
       </div>
   </div>
@@ -930,7 +930,10 @@ function generateBottomStats(stats, cumulativeScores = {}) {
   `;
 }
 
-function generateComments(metadata = {}) {
+function generateComments(
+  metadata = {},
+  principalLabel = "SCHOOL PRINCIPAL'S COMMENT"
+) {
   const classTeacherComment =
     metadata.classTeacherComment || "Keep up the good work!";
   const principalComment =
@@ -944,7 +947,7 @@ function generateComments(metadata = {}) {
       </div>
       
       <div class="comment">
-        <span class="comment-type">SCHOOL PRINCIPAL'S COMMENT:</span>
+        <span class="comment-type">${principalLabel}:</span>
         <span class="school-principal-comment" contenteditable="true" data-field="principalComment">${principalComment}</span>
       </div>
     </div>

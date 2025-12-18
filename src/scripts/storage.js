@@ -216,3 +216,41 @@ export async function calculatePositions(classLevel, subjectCode, year, term) {
     term,
   });
 }
+
+export async function getBroadsheetData(classLevel, year, term) {
+  const settings = await getSettings();
+  if (!year) year = settings.currentAcademicYear;
+  if (!term) term = settings.currentTerm;
+
+  // 1. Get All Students in Class
+  const students = await getStudentsByClass(classLevel);
+
+  // 2. Get All Subjects for Class
+  const subjects = await getSubjectsByClass(classLevel);
+
+  // 3. Get All Results for Class
+  // We use the raw service call to get the flat array
+  const allResults = await resultService.getResults({
+    classLevel,
+    academicYear: year,
+    term,
+  });
+
+  // 4. Organize Results by StudentID -> SubjectCode
+  const resultsMap = {}; // { studentId: { subjectCode: { total: 50, ... } } }
+
+  allResults.forEach((r) => {
+    // Ensure we have a valid student reference
+    const sId = r.studentId._id || r.studentId;
+    if (!resultsMap[sId]) {
+      resultsMap[sId] = {};
+    }
+    resultsMap[sId][r.subjectCode] = r;
+  });
+
+  return {
+    students,
+    subjects,
+    results: resultsMap,
+  };
+}
