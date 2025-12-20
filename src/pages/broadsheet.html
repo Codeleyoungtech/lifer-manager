@@ -16,182 +16,240 @@
       referrerpolicy="no-referrer"
     ></script>
     <style>
+      /* Inherited Styles from JSS/SSS Templates */
+      @font-face {
+        font-family: "ITC";
+        src: url(../assets/fonts/ITC-Machine-Medium.otf);
+      }
+
+      .header-title {
+        width: 100%;
+        display: flex;
+        justify-content: center; /* Centering as requested */
+        align-items: center;
+      }
+
+      /* Logo defaults */
+      .logo {
+        width: 110px;
+        height: 110px;
+        background-position: center;
+        background-size: contain;
+        background-repeat: no-repeat;
+        flex-shrink: 0;
+      }
+
+      .left {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2px;
+        font-weight: 900;
+        text-align: center;
+        font-family: Arial, Helvetica, sans-serif;
+      }
+
+      .school-name {
+        font-size: 60px; /* Slightly smaller than 75 to fit print width */
+        color: #006b2d;
+        line-height: 1.1;
+        font-family: "ITC", sans-serif;
+        text-align: center;
+        background: linear-gradient(
+          180deg,
+          #7ab85c 0%,
+          #4a7c3a 50%,
+          #2d5a28 100%
+        );
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-shadow: 2px 3px 5px rgba(0, 0, 0, 0.4);
+        filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.3));
+        -webkit-text-stroke: 1.2px white;
+        letter-spacing: 0px;
+        font-weight: 900;
+        white-space: nowrap;
+      }
+
+      .address {
+        background-color: #006336;
+        color: white;
+        padding: 4px 10px;
+        border-radius: 8px;
+        font-size: 12px;
+        margin-top: 5px;
+      }
+
+      .add-highlight,
+      .phone-highlight {
+        color: yellow;
+      }
+      .phone-highlight {
+        color: #b70d18;
+      }
+
+      .motto {
+        font-size: 16px;
+        margin: 2px 0;
+      }
+
+      .contact {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+        font-size: 12px;
+      }
+
+      .result-class {
+        font-size: 18px;
+        padding: 2px 10px;
+        background-color: #b70d18;
+        color: white;
+        border-radius: 8px;
+        text-transform: uppercase;
+        margin-top: 5px;
+        font-weight: bold;
+      }
+
+      /* Broadsheet Specific Overrides */
       .broadsheet-page {
         padding: 20px;
         overflow-y: auto;
       }
 
-      .controls-section {
-        background: white;
-        padding: 20px;
-        border-radius: 8px;
-        border: 1px solid #e0e0e0;
-        display: flex;
-        gap: 15px;
-        align-items: flex-end;
-        flex-wrap: wrap;
-        margin-bottom: 20px;
-      }
-
-      .form-group {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-      }
-
-      .form-group label {
-        font-weight: 600;
-        font-size: 13px;
-        color: #555;
-      }
-
-      .form-control {
-        padding: 9px 12px;
-        border: 1px solid #ddd;
-        border-radius: 6px;
-        min-width: 160px;
-        font-family: inherit;
-        font-size: 14px;
-      }
-
-      .btn {
-        padding: 10px 18px;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        font-weight: 500;
-        font-size: 14px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        transition: all 0.2s;
-        font-family: inherit;
-      }
-
-      .btn-primary {
-        background: #000;
-        color: white;
-      }
-
-      .btn:hover {
-        opacity: 0.9;
-        transform: translateY(-1px);
-      }
-
-      .btn:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-      }
-
-      /* Broadsheet Table Styles */
       .sheet-container {
         background: white;
-        padding: 40px; /* Padding for print margins */
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        overflow-x: auto;
+        padding: 20px;
         min-height: 600px;
+        overflow-x: auto;
       }
 
-      .sheet-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 30px;
-        border-bottom: 2px solid #000;
-        padding-bottom: 10px;
-      }
-
-      .school-info {
-        display: flex;
-        align-items: center;
-        gap: 20px;
-      }
-
-      .logo-box {
-        width: 100px;
-        height: 100px;
-        background-image: url("/assets/logo.png"); /* Ensure this path is correct or use class */
-        background-size: contain;
-        background-repeat: no-repeat;
-        background-position: center;
-      }
-
-      .school-text h1 {
-        font-size: 28px;
-        font-weight: 900;
-        margin: 0;
-        text-transform: uppercase;
-        color: #2d5a28; /* Greenish tone */
-      }
-
-      .school-text p {
-        margin: 5px 0 0;
-        font-size: 14px;
-      }
-
-      .sheet-meta {
-        text-align: right;
-        font-weight: bold;
-      }
-
+      /* ===== BROADSHEET TABLE - CLEAN & SIMPLE ===== */
       .bs-table {
         width: 100%;
         border-collapse: collapse;
-        font-size: 12px;
+        table-layout: fixed;
+        font-size: 8px;
+        margin-top: 5px;
       }
 
       .bs-table th,
       .bs-table td {
         border: 1px solid #000;
-        padding: 4px 8px;
+        padding: 2px;
         text-align: center;
+        box-sizing: border-box;
       }
 
-      .bs-table th.vertical-header {
-        height: 140px;
+      /* S/N Column */
+      .col-sn {
+        width: 20px !important;
+      }
+
+      /* Name Column - Fixed narrow width */
+      .col-name {
+        width: 100px !important;
+        text-align: left !important;
+        padding-left: 2px !important;
+        font-weight: bold;
+        font-size: 7px;
+        overflow: hidden;
+        text-overflow: ellipsis;
         white-space: nowrap;
+      }
+
+      /* Score columns - all uniform */
+      .bs-table th.vertical-header,
+      .bs-table td:not(.col-sn):not(.col-name) {
+        width: 22px !important;
+      }
+
+      /* Vertical headers */
+      .bs-table th.vertical-header {
+        height: 180px;
         vertical-align: bottom;
-        padding-bottom: 10px;
+        padding: 0 0 8px 0;
+        position: relative;
+        text-transform: uppercase;
       }
 
       .bs-table th.vertical-header > div {
-        writing-mode: vertical-rl;
-        transform: rotate(180deg);
+        transform: rotate(-90deg);
+        transform-origin: center bottom;
+        position: absolute;
+        bottom: 15px;
+        left: 50%;
+        margin-left: -5px;
+        white-space: nowrap;
+        font-size: 8px;
         width: 20px;
-        margin: 0 auto;
-        text-align: left; /* Becomes top after rotation */
       }
 
-      .col-sn {
-        width: 40px;
-      }
-      .col-name {
-        width: 250px;
-        text-align: left !important;
-        font-weight: bold;
+      /* Container and watermark */
+      .broadsheet-print-container {
+        position: relative;
+        width: 1120px; /* Fixed width for perfect PDF match */
+        max-width: 100%;
+        background: white;
+        padding: 5px;
+        margin: 0 auto; /* Center it */
       }
 
-      .score-cell {
-        font-family: "Courier New", monospace;
+      .broadsheet-watermark {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 50%;
+        height: 50%;
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: contain;
+        opacity: 0.05;
+        pointer-events: none;
+        z-index: 0;
       }
 
       @media print {
-        aside,
-        .controls-section,
-        .navigation {
-          display: none !important;
-        }
-        .dashboard-page {
-          padding: 0;
-        }
-        .sheet-container {
-          box-shadow: none;
-          padding: 0;
-        }
         @page {
           size: landscape;
-          margin: 10mm;
+          margin: 5mm;
+        }
+
+        body {
+          margin: 0;
+          padding: 0;
+        }
+
+        aside,
+        .controls-section,
+        .dashboard-action {
+          display: none !important;
+        }
+
+        .dashboard-page {
+          width: 100% !important;
+          padding: 0 !important;
+          margin: 0 !important;
+        }
+
+        .sheet-container {
+          box-shadow: none !important;
+          padding: 0 !important;
+          margin: 0 !important;
+          width: 100% !important;
+          overflow: visible !important;
+        }
+
+        .broadsheet-print-container {
+          width: 100% !important;
+          max-width: none !important;
+        }
+
+        * {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
         }
       }
     </style>
@@ -302,9 +360,17 @@
             Load Broadsheet
           </button>
           <button
+            id="downloadAllBtn"
+            class="btn btn-primary"
+            style="background: #006b2d; margin-left: auto; margin-right: 10px"
+          >
+            <span class="material-symbols-outlined">folder_zip</span>
+            Download All Results
+          </button>
+          <button
             id="printBtn"
             class="btn btn-primary"
-            style="background: #555; margin-left: auto"
+            style="background: #555"
           >
             <span class="material-symbols-outlined">print</span>
             Print
