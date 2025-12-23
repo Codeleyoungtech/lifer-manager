@@ -401,11 +401,14 @@ async function printBroadsheet() {
     const contentClone = element.cloneNode(true);
 
     // 3. Force styles on the clone to ensure perfect A4 landscape fit (1120px)
+    // We add "breathing room" by scaling slightly down (98%) and centering
     contentClone.style.width = "1120px";
     contentClone.style.maxWidth = "1120px";
-    contentClone.style.margin = "0";
+    contentClone.style.margin = "0 auto"; // Center it
     contentClone.style.padding = "0";
     contentClone.style.background = "white";
+    contentClone.style.transform = "scale(0.98)"; // The safest way to add breathing room
+    contentClone.style.transformOrigin = "top center";
 
     // 4. Inject styles explicitly
     const styleTag = document.createElement("style");
@@ -417,7 +420,7 @@ async function printBroadsheet() {
       .broadsheet-print-container {
         width: 1120px !important;
         max-width: 1120px !important;
-        margin: 0 !important;
+        margin: 0 auto !important;
         padding: 0 !important;
         box-sizing: border-box !important;
       }
@@ -439,7 +442,7 @@ async function printBroadsheet() {
 
     // 5. PDF generation options
     const opt = {
-      margin: 0,
+      margin: 0, // No PDF margin needed, scale handles it
       filename: `Broadsheet_${document.getElementById("classLevel").value}.pdf`,
       image: { type: "jpeg", quality: 0.98 },
       html2canvas: {
