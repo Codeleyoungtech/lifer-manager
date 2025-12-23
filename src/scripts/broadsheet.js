@@ -385,47 +385,74 @@ async function printBroadsheet() {
   showLoading(document.body, "Generating PDF...");
 
   try {
-    // Use standard A4 landscape - allow multiple pages
+    // Wait for fonts to load
+    try {
+      await document.fonts.ready;
+      await new Promise((resolve) => setTimeout(resolve, 300));
+    } catch (e) {
+      console.warn("Font loading wait failed", e);
+    }
+
+    // 1. Create a detached wrapper for clean generation
+    // This isolates styling from the main page
+    const wrapper = document.createElement("div");
+
+    // 2. Clone the content
+    const contentClone = element.cloneNode(true);
+
+    // 3. Force styles on the clone to ensure perfect A4 landscape fit (1120px)
+    contentClone.style.width = "1120px";
+    contentClone.style.maxWidth = "1120px";
+    contentClone.style.margin = "0";
+    contentClone.style.padding = "0";
+    contentClone.style.background = "white";
+
+    // 4. Inject styles explicitly
+    const styleTag = document.createElement("style");
+    styleTag.textContent = `
+      @font-face {
+        font-family: "ITC";
+        src: url(/assets/fonts/ITC-Machine-Medium.otf);
+      }
+      .broadsheet-print-container {
+        width: 1120px !important;
+        max-width: 1120px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        box-sizing: border-box !important;
+      }
+      .bs-table {
+        width: 1120px !important;
+        margin: 0 !important;
+        border-collapse: collapse;
+      }
+      /* Ensure watermark is visible in print */
+      .broadsheet-watermark {
+         opacity: 0.1 !important;
+         -webkit-print-color-adjust: exact;
+         print-color-adjust: exact;
+      }
+    `;
+
+    wrapper.appendChild(styleTag);
+    wrapper.appendChild(contentClone);
+
+    // 5. PDF generation options
     const opt = {
-      margin: [0.3, 0.3, 0.3, 0.3],
+      margin: 0,
       filename: `Broadsheet_${document.getElementById("classLevel").value}.pdf`,
-      image: {
-        type: "jpeg",
-        quality: 0.95,
-      },
+      image: { type: "jpeg", quality: 0.98 },
       html2canvas: {
         scale: 2,
         useCORS: true,
         logging: false,
         letterRendering: true,
+        width: 1120, // Exact width
+        windowWidth: 1120,
+        x: 0,
+        y: 0,
         scrollX: 0,
         scrollY: 0,
-        width: 1120, // Match the container's fixed width
-        windowWidth: 1120, // Force rendering at container width
-        onclone: (clonedDoc) => {
-          const clonedContainer = clonedDoc.querySelector(
-            ".broadsheet-print-container"
-          );
-          if (clonedContainer) {
-            clonedContainer.style.width = "1120px";
-            clonedContainer.style.maxWidth = "1120px";
-          }
-          const style = clonedDoc.createElement("style");
-          style.textContent = `
-            @font-face {
-              font-family: "ITC";
-              src: url(/assets/fonts/ITC-Machine-Medium.otf);
-            }
-            .broadsheet-print-container {
-                width: auto !important;
-                overflow: visible !important;
-            }
-            .bs-table tr {
-                page-break-inside: avoid;
-            }
-          `;
-          clonedDoc.head.appendChild(style);
-        },
       },
       jsPDF: {
         unit: "in",
@@ -433,12 +460,10 @@ async function printBroadsheet() {
         orientation: "landscape",
         compress: true,
       },
-      pagebreak: {
-        mode: ["avoid-all", "css", "legacy"],
-      },
+      pagebreak: { mode: "avoid-all" },
     };
 
-    await html2pdf().set(opt).from(element).save();
+    await html2pdf().set(opt).from(wrapper).save();
     showNotification("PDF generated successfully!", "success");
   } catch (e) {
     console.error("PDF generation error:", e);
