@@ -19,6 +19,6 @@ export default {
       year,
       ...data,
     });
-    return response.data;
+    return response;
   },
 };

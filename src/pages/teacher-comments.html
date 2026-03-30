@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Teacher Comments</title>
+    <link rel="stylesheet" href="../assets/index.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined"
+      rel="stylesheet"
+    />
+    <style>
+      .comments-wrap {
+        max-width: 1120px;
+        margin: 0 auto;
+      }
+
+      .card {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 18px;
+      }
+
+      .filter-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .field label {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #374151;
+      }
+
+      .field select,
+      .field input,
+      .field textarea {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font: inherit;
+      }
+
+      .field textarea {
+        min-height: 180px;
+        resize: vertical;
+      }
+
+      .hint {
+        margin-top: 8px;
+        color: #6b7280;
+        font-size: 13px;
+      }
+
+      .workspace {
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        gap: 14px;
+        margin-top: 14px;
+      }
+
+      .student-panel {
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        overflow: hidden;
+        background: #fafafa;
+      }
+
+      .student-panel-header {
+        padding: 10px;
+        border-bottom: 1px solid #e5e7eb;
+        background: #fff;
+      }
+
+      .student-panel-header input {
+        width: 100%;
+        padding: 8px 10px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font: inherit;
+      }
+
+      .student-count {
+        margin-top: 8px;
+        font-size: 12px;
+        color: #6b7280;
+      }
+
+      .student-list {
+        max-height: 420px;
+        overflow-y: auto;
+        padding: 8px;
+      }
+
+      .student-item {
+        width: 100%;
+        border: 1px solid #e5e7eb;
+        background: #fff;
+        border-radius: 8px;
+        text-align: left;
+        padding: 8px 10px;
+        margin-bottom: 8px;
+        cursor: pointer;
+      }
+
+      .student-item.active {
+        border-color: #111827;
+        background: #f3f4f6;
+      }
+
+      .student-item-name {
+        font-weight: 600;
+        font-size: 13px;
+        color: #111827;
+      }
+
+      .student-item-id {
+        margin-top: 2px;
+        color: #6b7280;
+        font-size: 12px;
+      }
+
+      .comment-panel {
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 14px;
+        background: #fff;
+      }
+
+      .panel-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      .save-state {
+        font-size: 12px;
+        padding: 4px 8px;
+        border-radius: 999px;
+        background: #f3f4f6;
+        color: #4b5563;
+        font-weight: 600;
+      }
+
+      .save-state.unsaved {
+        background: #fef3c7;
+        color: #92400e;
+      }
+
+      .nav-row {
+        margin-top: 10px;
+        display: flex;
+        gap: 8px;
+      }
+
+      .nav-btn {
+        border: 1px solid #d1d5db;
+        background: #fff;
+        color: #111827;
+        border-radius: 8px;
+        padding: 8px 12px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      .nav-btn:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+      }
+
+      .save-row {
+        margin-top: 14px;
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+      }
+
+      .save-btn {
+        border: none;
+        background: #111827;
+        color: #fff;
+        border-radius: 8px;
+        padding: 10px 16px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      .student-info {
+        margin: 10px 0 0;
+        color: #4b5563;
+        font-size: 13px;
+      }
+
+      @media (max-width: 768px) {
+        .dashboard-page {
+          padding: 12px;
+        }
+
+        .filter-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .workspace {
+          grid-template-columns: 1fr;
+        }
+
+        .card {
+          padding: 14px;
+        }
+
+        .save-row {
+          justify-content: stretch;
+        }
+
+        .save-btn {
+          width: 100%;
+        }
+      }
+
+      @media (max-width: 520px) {
+        .filter-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <aside>
+      <div class="sidebar-wrapper">
+        <div class="sidebar-header">
+          <h3>Lifer's Results</h3>
+          <p class="gray-medium">Management Platform</p>
+        </div>
+        <div class="sd-parent">
+          <nav class="links-wrapper">
+            <ul>
+              <li>
+                <a href="../pages/index.html"
+                  ><span class="material-symbols-outlined">dashboard</span
+                  ><span>Dashboard</span></a
+                >
+              </li>
+              <li>
+                <a href="../pages/editor.html"
+                  ><span class="material-symbols-outlined">description</span
+                  ><span>Legacy Editor</span></a
+                >
+              </li>
+              <li>
+                <a href="../pages/attendance.html"
+                  ><span class="material-symbols-outlined">calendar_month</span
+                  ><span>Attendance</span></a
+                >
+              </li>
+              <li>
+                <a href="../pages/teacher-comments.html" class="active"
+                  ><span class="material-symbols-outlined">comment</span
+                  ><span>Teacher Comments</span></a
+                >
+              </li>
+            </ul>
+          </nav>
+
+          <div class="sidebar-footer">
+            <span class="user-name">Admin User</span>
+            <span class="user-type">Super_admin</span>
+            <a href="#"
+              ><span class="material-symbols-outlined">logout</span
+              ><span>Logout</span></a
+            >
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <main>
+      <section class="dashboard-page" id="teacherCommentsPage">
+        <div class="comments-wrap">
+          <div class="dashboard-action">
+            <div class="dash-greetings">
+              <h2>Teacher Comments</h2>
+              <p>Write and save class teacher comments using result metadata.</p>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="filter-grid">
+              <div class="field">
+                <label for="classSelect">Class</label>
+                <select id="classSelect">
+                  <option value="">Select Class</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="termSelect">Term</label>
+                <select id="termSelect">
+                  <option value="firstTerm">First Term</option>
+                  <option value="secondTerm">Second Term</option>
+                  <option value="thirdTerm">Third Term</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="academicYear">Academic Year</label>
+                <input id="academicYear" type="text" readonly />
+              </div>
+            </div>
+
+            <div class="workspace">
+              <aside class="student-panel">
+                <div class="student-panel-header">
+                  <input
+                    type="text"
+                    id="studentSearch"
+                    placeholder="Search student..."
+                  />
+                  <p class="student-count" id="studentCount">0 students</p>
+                </div>
+                <div class="student-list" id="studentList"></div>
+              </aside>
+
+              <div class="comment-panel">
+                <div class="panel-top">
+                  <p class="student-info" id="studentInfo">
+                    Select a class and student to load existing comment.
+                  </p>
+                  <span class="save-state" id="saveState">Saved</span>
+                </div>
+
+                <div class="nav-row">
+                  <button class="nav-btn" id="prevStudentBtn" type="button">
+                    Previous
+                  </button>
+                  <button class="nav-btn" id="nextStudentBtn" type="button">
+                    Next
+                  </button>
+                </div>
+
+                <div class="field" style="margin-top: 10px">
+                  <label for="teacherComment">Class Teacher Comment</label>
+                  <textarea
+                    id="teacherComment"
+                    placeholder="Type teacher comment here..."
+                  ></textarea>
+                  <p class="hint" id="emptyHelp">
+                    Existing comment will appear here when you select a student.
+                  </p>
+                </div>
+
+                <div class="save-row">
+                  <button class="save-btn" id="saveCommentBtn">Save Comment</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script type="module" src="../scripts/auth-guard.js"></script>
+    <script type="module" src="../scripts/teacher-comments.js"></script>
+    <script type="module" src="../scripts/sidebar-toggle.js"></script>
+  </body>
+</html>

@@ -49,6 +49,20 @@ const saveResultMetadata = async (req, res, next) => {
       });
     }
 
+    const updateFields = {};
+    if (conventionalPerformance !== undefined) {
+      updateFields.conventionalPerformance = conventionalPerformance;
+    }
+    if (classTeacherComment !== undefined) {
+      updateFields.classTeacherComment = classTeacherComment;
+    }
+    if (principalComment !== undefined) {
+      updateFields.principalComment = principalComment;
+    }
+    if (intuitiveFeats !== undefined) {
+      updateFields.intuitiveFeats = intuitiveFeats;
+    }
+
     const metadata = await ResultMetadata.findOneAndUpdate(
       {
         studentId,
@@ -56,12 +70,7 @@ const saveResultMetadata = async (req, res, next) => {
         academicYear: year,
       },
       {
-        $set: {
-          conventionalPerformance,
-          classTeacherComment,
-          principalComment,
-          intuitiveFeats,
-        },
+        $set: updateFields,
       },
       {
         new: true,

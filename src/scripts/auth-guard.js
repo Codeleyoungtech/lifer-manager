@@ -11,7 +11,11 @@ import { authService } from "./api/auth.service.js";
   const user = authService.getCurrentUser();
   const role = user?.role || "";
   const currentPath = window.location.pathname;
-  const teacherAllowedPaths = ["/src/pages/editor.html", "/src/pages/attendance.html"];
+  const teacherAllowedPaths = [
+    "/src/pages/editor.html",
+    "/src/pages/attendance.html",
+    "/src/pages/teacher-comments.html",
+  ];
   const isTeacherAllowedPage = teacherAllowedPaths.some((path) =>
     currentPath.endsWith(path)
   );
@@ -22,7 +26,11 @@ import { authService } from "./api/auth.service.js";
   }
 
   if (role === "teacher") {
-    const allowedHrefs = ["../pages/editor.html", "../pages/attendance.html"];
+    const allowedHrefs = [
+      "../pages/editor.html",
+      "../pages/attendance.html",
+      "../pages/teacher-comments.html",
+    ];
     document.querySelectorAll(".links-wrapper a").forEach((link) => {
       const href = link.getAttribute("href") || "";
       const isAllowed = allowedHrefs.includes(href);
