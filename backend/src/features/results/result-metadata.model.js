@@ -43,10 +43,12 @@ const resultMetadataSchema = mongoose.Schema(
     classTeacherComment: {
       type: String,
       default: "Keep up the good work!",
+      maxlength: 500,
     },
     principalComment: {
       type: String,
       default: "Excellent performance.",
+      maxlength: 500,
     },
     // Intuitive Feats (Secondary)
     intuitiveFeats: {
@@ -57,6 +59,11 @@ const resultMetadataSchema = mongoose.Schema(
       speaking: { type: String, default: "" },
       politeness: { type: String, default: "" },
       perseverance: { type: String, default: "" },
+    },
+    updatedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
     },
   },
   {

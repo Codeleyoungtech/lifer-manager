@@ -31,6 +31,18 @@ const userSchema = mongoose.Schema(
       enum: ["admin", "teacher", "principal"],
       default: "teacher",
     },
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
+    assignedClasses: {
+      type: [String],
+      default: [],
+    },
+    forceLogoutAt: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true,
@@ -38,9 +50,9 @@ const userSchema = mongoose.Schema(
 );
 
 // Encrypt password using bcrypt
-userSchema.pre("save", async function (next) {
+userSchema.pre("save", async function () {
   if (!this.isModified("password")) {
-    next();
+    return;
   }
 
   const salt = await bcrypt.genSalt(10);

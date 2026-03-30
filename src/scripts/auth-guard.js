@@ -11,6 +11,7 @@ import { authService } from "./api/auth.service.js";
   const user = authService.getCurrentUser();
   const role = user?.role || "";
   const currentPath = window.location.pathname;
+  const isUserManagementPage = currentPath.endsWith("/src/pages/user-management.html");
   const teacherAllowedPaths = [
     "/src/pages/editor.html",
     "/src/pages/attendance.html",
@@ -22,6 +23,11 @@ import { authService } from "./api/auth.service.js";
 
   if (role === "teacher" && !isTeacherAllowedPage) {
     window.location.href = "../pages/editor.html";
+    return;
+  }
+
+  if (isUserManagementPage && role !== "admin") {
+    window.location.href = "../pages/index.html";
     return;
   }
 

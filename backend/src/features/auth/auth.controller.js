@@ -1,13 +1,12 @@
 const jwt = require("jsonwebtoken");
-const bcrypt = require("bcryptjs");
 const User = require("./user.model");
 
 // @desc    Register new user
 // @route   POST /api/auth/register
-// @access  Public (or Admin only in future)
+// @access  Admin only
 const registerUser = async (req, res, next) => {
   try {
-    const { firstName, lastName, email, password } = req.body;
+    const { firstName, lastName, email, password, assignedClasses } = req.body;
 
     if (!firstName || !lastName || !email || !password) {
       res.status(400);
@@ -29,15 +28,18 @@ const registerUser = async (req, res, next) => {
       email,
       password,
       role: "teacher",
+      assignedClasses: Array.isArray(assignedClasses) ? assignedClasses : [],
     });
 
     if (user) {
       res.status(201).json({
         _id: user.id,
         firstName: user.firstName,
+        lastName: user.lastName,
         email: user.email,
         role: user.role,
-        token: generateToken(user._id),
+        assignedClasses: user.assignedClasses,
+        isActive: user.isActive,
       });
     } else {
       res.status(400);
@@ -58,12 +60,20 @@ const loginUser = async (req, res, next) => {
     // Check for user email
     const user = await User.findOne({ email }).select("+password");
 
+    if (user && !user.isActive) {
+      res.status(403);
+      throw new Error("Account has been deactivated");
+    }
+
     if (user && (await user.matchPassword(password))) {
       res.json({
         _id: user.id,
         firstName: user.firstName,
+        lastName: user.lastName,
         email: user.email,
         role: user.role,
+        assignedClasses: user.assignedClasses || [],
+        isActive: user.isActive,
         token: generateToken(user._id),
       });
     } else {
@@ -85,9 +95,57 @@ const getMe = async (req, res, next) => {
     res.status(200).json({
       id: user.id,
       firstName: user.firstName,
+      lastName: user.lastName,
       email: user.email,
       role: user.role,
+      assignedClasses: user.assignedClasses || [],
+      isActive: user.isActive,
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    List users
+// @route   GET /api/auth/users
+// @access  Admin only
+const listUsers = async (req, res, next) => {
+  try {
+    const users = await User.find().select("-password").sort({ createdAt: -1 });
+    res.status(200).json(users);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Update user access details
+// @route   PATCH /api/auth/users/:id/access
+// @access  Admin only
+const updateUserAccess = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { isActive, assignedClasses, forceLogoutNow } = req.body;
+
+    const user = await User.findById(id);
+    if (!user) {
+      res.status(404);
+      throw new Error("User not found");
+    }
+
+    if (typeof isActive === "boolean") {
+      user.isActive = isActive;
+    }
+    if (Array.isArray(assignedClasses)) {
+      user.assignedClasses = assignedClasses;
+    }
+    if (forceLogoutNow === true) {
+      user.forceLogoutAt = new Date();
+    }
+
+    await user.save();
+    const updated = await User.findById(id).select("-password");
+
+    res.status(200).json(updated);
   } catch (error) {
     next(error);
   }
@@ -104,4 +162,6 @@ module.exports = {
   registerUser,
   loginUser,
   getMe,
+  listUsers,
+  updateUserAccess,
 };

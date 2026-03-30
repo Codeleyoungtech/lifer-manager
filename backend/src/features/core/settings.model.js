@@ -52,6 +52,10 @@ const settingsSchema = mongoose.Schema(
       type: Number,
       default: 0,
     },
+    lockedTerms: {
+      type: [String], // Format: "2025-2026:firstTerm"
+      default: [],
+    },
     subjectOrders: {
       prenursery: { type: [String], default: [] },
       primary: { type: [String], default: [] },

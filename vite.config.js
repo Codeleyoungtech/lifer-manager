@@ -36,7 +36,9 @@ export default defineConfig({
         settings: resolve(__dirname, "src/pages/settings.html"),
         student: resolve(__dirname, "src/pages/student.html"),
         subject: resolve(__dirname, "src/pages/subject.html"),
-        broadsheet: resolve(__dirname, "src/pages/broadsheet.html")
+        broadsheet: resolve(__dirname, "src/pages/broadsheet.html"),
+        teacherComments: resolve(__dirname, "src/pages/teacher-comments.html"),
+        userManagement: resolve(__dirname, "src/pages/user-management.html"),
       },
     },
   },

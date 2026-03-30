@@ -21,6 +21,17 @@ const protect = async (req, res, next) => {
         res.status(401);
         throw new Error("Not authorized, user not found");
       }
+      if (!req.user.isActive) {
+        res.status(401);
+        throw new Error("Account has been deactivated");
+      }
+      if (
+        req.user.forceLogoutAt &&
+        decoded.iat * 1000 < new Date(req.user.forceLogoutAt).getTime()
+      ) {
+        res.status(401);
+        throw new Error("Session expired. Please login again.");
+      }
 
       next();
     } catch (error) {

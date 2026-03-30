@@ -6,6 +6,7 @@ import {
 import { generateResultSheet, getResultStyles } from "./result-templates.js";
 import resultMetadataService from "./api/result-metadata.service.js";
 import { showLoading, hideLoading, showNotification } from "./utils/ui.js";
+import itcFontUrl from "../assets/fonts/ITC-Machine-Medium.otf";
 
 // State
 let currentStudents = [];
@@ -299,7 +300,7 @@ async function printCurrentResult() {
         style.textContent = `
           @font-face {
             font-family: "ITC";
-            src: url(/assets/fonts/ITC-Machine-Medium.otf);
+            src: url(${itcFontUrl});
           }
         `;
         clonedDoc.head.appendChild(style);
@@ -402,7 +403,7 @@ async function downloadAllPDF() {
           style.textContent = `
             @font-face {
               font-family: "ITC";
-              src: url(/assets/fonts/ITC-Machine-Medium.otf);
+              src: url(${itcFontUrl});
             }
           `;
           clonedDoc.head.appendChild(style);

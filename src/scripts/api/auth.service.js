@@ -14,6 +14,14 @@ export const authService = {
     return await api.post("/auth/register", userData);
   },
 
+  getUsers: async () => {
+    return await api.get("/auth/users");
+  },
+
+  updateUserAccess: async (id, payload) => {
+    return await api.patch(`/auth/users/${id}/access`, payload);
+  },
+
   logout: () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");

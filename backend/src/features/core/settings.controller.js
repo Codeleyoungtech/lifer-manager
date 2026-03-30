@@ -22,12 +22,19 @@ const getSettings = async (req, res, next) => {
 // @access  Private (Admin only)
 const updateSettings = async (req, res, next) => {
   try {
+    const payload = { ...req.body };
+    if (Array.isArray(payload.lockedTerms)) {
+      payload.lockedTerms = payload.lockedTerms
+        .filter((value) => typeof value === "string" && value.includes(":"))
+        .map((value) => value.trim());
+    }
+
     let settings = await Settings.findOne();
 
     if (!settings) {
-      settings = await Settings.create(req.body);
+      settings = await Settings.create(payload);
     } else {
-      settings = await Settings.findByIdAndUpdate(settings._id, req.body, {
+      settings = await Settings.findByIdAndUpdate(settings._id, payload, {
         new: true,
         runValidators: true,
       });

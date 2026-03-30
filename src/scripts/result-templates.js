@@ -6,6 +6,12 @@ import {
   getStudentResults,
 } from "./storage.js";
 import attendanceService from "./api/attendance.service.js";
+import itcFontUrl from "../assets/fonts/ITC-Machine-Medium.otf";
+import bookAntiquaFontUrl from "../assets/fonts/book-antiqua-bold.ttf";
+import rockwellFontUrl from "../assets/fonts/Rockwell-Bold.ttf";
+import mmlcLogoUrl from "../assets/mmlclogo.jpg";
+import pfbsLogoUrl from "../assets/pfbslogo.jpg";
+import backgroundImgUrl from "../public/download.jpeg";
 
 // Generate school name as canvas image with ITC font and gradient
 async function generateSchoolNameImage() {
@@ -1030,17 +1036,17 @@ export function getResultStyles() {
 
     @font-face {
       font-family: "ITC";
-      src: url(/assets/fonts/ITC-Machine-Medium.otf);
+      src: url(${itcFontUrl});
     }
     
     @font-face {
       font-family: "book-antiqua";
-      src: url(/assets/fonts/book-antiqua-bold.ttf);
+      src: url(${bookAntiquaFontUrl});
     }
     
     @font-face {
       font-family: "rockwell";
-      src: url(../assets/fonts/Rockwell-bold.ttf);
+      src: url(${rockwellFontUrl});
     }
 
     .resu-back {
@@ -1062,7 +1068,7 @@ export function getResultStyles() {
       left: 0;
       right: 0;
       bottom: 0;
-      background-image: url(/public/download.jpeg);
+      background-image: url(${backgroundImgUrl});
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
@@ -1112,11 +1118,11 @@ export function getResultStyles() {
     }
 
     .overlay-secondary {
-      background-image: url(/assets/mmlclogo.jpg);
+      background-image: url(${mmlcLogoUrl});
     }
 
     .overlay-primary {
-      background-image: url(/assets/pfbslogo.jpg);
+      background-image: url(${pfbsLogoUrl});
     }
 
     .top, .table, .bottom {
@@ -1137,7 +1143,7 @@ export function getResultStyles() {
     .logo {
       width: 110px;
       height: 110px;
-      background-image: url(/assets/mmlclogo.jpg); /* Default for secondary */
+      background-image: url(${mmlcLogoUrl}); /* Default for secondary */
       background-position: center;
       background-size: contain;
       background-repeat: no-repeat;
@@ -1146,7 +1152,7 @@ export function getResultStyles() {
     /* Override for primary and pre-nursery */
     .resu-primary .logo,
     .resu-prenursery .logo {
-      background-image: url(/assets/pfbslogo.jpg);
+      background-image: url(${pfbsLogoUrl});
     }
 
     .left {

@@ -35,6 +35,11 @@ const attendanceSchema = new mongoose.Schema(
       default: 0,
       min: 0,
     },
+    updatedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
   },
   {
     timestamps: true,

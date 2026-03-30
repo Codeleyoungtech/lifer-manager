@@ -7,8 +7,19 @@ const getSubjects = async (req, res, next) => {
   try {
     const { classLevel, department } = req.query;
     const query = {};
+    const teacherClasses = req.user.role === "teacher" ? req.user.assignedClasses || [] : null;
 
-    if (classLevel) query.classes = classLevel;
+    if (classLevel) {
+      if (
+        req.user.role === "teacher" &&
+        !teacherClasses.includes(classLevel)
+      ) {
+        return res.status(200).json([]);
+      }
+      query.classes = classLevel;
+    } else if (req.user.role === "teacher") {
+      query.classes = { $in: teacherClasses };
+    }
     if (department) query.department = department;
 
     const subjects = await Subject.find(query).sort({ name: 1 });
@@ -28,6 +39,17 @@ const getSubject = async (req, res, next) => {
     if (!subject) {
       res.status(404);
       throw new Error("Subject not found");
+    }
+    if (req.user.role === "teacher") {
+      const classes = subject.classes || [];
+      const teacherClasses = req.user.assignedClasses || [];
+      const canAccess = classes.some((className) =>
+        teacherClasses.includes(className)
+      );
+      if (!canAccess) {
+        res.status(403);
+        throw new Error("Forbidden: subject not in assigned classes");
+      }
     }
 
     res.status(200).json(subject);

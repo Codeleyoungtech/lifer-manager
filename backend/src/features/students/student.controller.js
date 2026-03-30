@@ -1,4 +1,5 @@
 const Student = require("./student.model");
+const Settings = require("../core/settings.model");
 
 // @desc    Get all students
 // @route   GET /api/students
@@ -7,8 +8,19 @@ const getStudents = async (req, res, next) => {
   try {
     const { classLevel, status } = req.query;
     const query = {};
+    const teacherClasses = req.user.role === "teacher" ? req.user.assignedClasses || [] : null;
 
-    if (classLevel) query.currentClass = classLevel;
+    if (classLevel) {
+      if (
+        req.user.role === "teacher" &&
+        !teacherClasses.includes(classLevel)
+      ) {
+        return res.status(200).json([]);
+      }
+      query.currentClass = classLevel;
+    } else if (req.user.role === "teacher") {
+      query.currentClass = { $in: teacherClasses };
+    }
     if (status) query.status = status;
 
     const students = await Student.find(query).sort({ firstName: 1 });
@@ -28,6 +40,13 @@ const getStudent = async (req, res, next) => {
     if (!student) {
       res.status(404);
       throw new Error("Student not found");
+    }
+    if (
+      req.user.role === "teacher" &&
+      !(req.user.assignedClasses || []).includes(student.currentClass)
+    ) {
+      res.status(403);
+      throw new Error("Forbidden: student not in assigned classes");
     }
 
     res.status(200).json(student);
@@ -62,6 +81,7 @@ const createStudent = async (req, res, next) => {
       studentId = await generateStudentId(currentClass);
     }
 
+    const settings = await Settings.findOne().select("currentAcademicYear");
     const student = await Student.create({
       studentId,
       firstName,
@@ -75,7 +95,7 @@ const createStudent = async (req, res, next) => {
       contactPhone,
       guardianName,
       address,
-      currentAcademicYear: "2024-2025", // Should come from settings
+      currentAcademicYear: settings?.currentAcademicYear || "",
     });
 
     res.status(201).json(student);

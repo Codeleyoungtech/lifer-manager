@@ -1,10 +1,26 @@
 const Result = require("./result.model");
 const Student = require("../students/student.model");
+const Settings = require("../core/settings.model");
 const {
   calculateGrade,
   calculateRemarks,
   calculatePrimaryRemarks,
 } = require("./result.utils");
+
+const isTeacher = (req) => req.user?.role === "teacher";
+const getAssignedClasses = (req) => req.user?.assignedClasses || [];
+
+const ensureClassAccess = (req, classLevel) => {
+  if (!isTeacher(req)) return true;
+  return getAssignedClasses(req).includes(classLevel);
+};
+
+const ensureTermUnlocked = async (req, academicYear, term) => {
+  if (!isTeacher(req)) return true;
+  const settings = await Settings.findOne().select("lockedTerms");
+  const key = `${academicYear}:${term}`;
+  return !((settings?.lockedTerms || []).includes(key));
+};
 
 // @desc    Get results (filter by student, year, term, class)
 // @route   GET /api/results
@@ -22,9 +38,10 @@ const getResults = async (req, res, next) => {
 
     // If classLevel is provided, find students in that class first
     if (classLevel) {
-      const students = await Student.find({ currentClass: classLevel }).select(
-        "_id"
-      );
+      if (!ensureClassAccess(req, classLevel)) {
+        return res.status(200).json([]);
+      }
+      const students = await Student.find({ currentClass: classLevel }).select("_id");
       const studentIds = students.map((s) => s._id);
 
       // If studentId was also provided, we need to intersect (though unlikely use case)
@@ -36,6 +53,18 @@ const getResults = async (req, res, next) => {
         // query.studentId is already set
       } else {
         query.studentId = { $in: studentIds };
+      }
+    } else if (isTeacher(req)) {
+      const students = await Student.find({
+        currentClass: { $in: getAssignedClasses(req) },
+      }).select("_id");
+      const allowedIds = students.map((s) => s._id.toString());
+      if (query.studentId) {
+        if (!allowedIds.includes(query.studentId.toString())) {
+          return res.status(200).json([]);
+        }
+      } else {
+        query.studentId = { $in: students.map((s) => s._id) };
       }
     }
 
@@ -72,10 +101,21 @@ const saveResult = async (req, res, next) => {
     // Determine remarks based on class
     let remarks;
     const student = await Student.findById(studentId);
+    if (!student) {
+      res.status(404);
+      throw new Error("Student not found");
+    }
+    if (!ensureClassAccess(req, student.currentClass)) {
+      res.status(403);
+      throw new Error("Forbidden: class not assigned");
+    }
+    if (!(await ensureTermUnlocked(req, academicYear, term))) {
+      res.status(403);
+      throw new Error("Term is locked for teacher edits");
+    }
     if (
-      student &&
-      (student.currentClass.startsWith("JSS") ||
-        student.currentClass.startsWith("SS"))
+      student.currentClass.startsWith("JSS") ||
+      student.currentClass.startsWith("SS")
     ) {
       remarks = calculateRemarks(total);
     } else {
@@ -92,6 +132,7 @@ const saveResult = async (req, res, next) => {
         total,
         grade,
         remarks,
+        updatedBy: req.user._id,
       },
       { new: true, upsert: true, runValidators: true }
     );
@@ -114,6 +155,11 @@ const batchSaveResults = async (req, res, next) => {
       throw new Error("Invalid results data");
     }
 
+    if (!(await ensureTermUnlocked(req, academicYear, term))) {
+      res.status(403);
+      throw new Error("Term is locked for teacher edits");
+    }
+
     // Fetch all students involved to check their class
     const studentIds = results.map((r) => r.studentId);
     const students = await Student.find({ _id: { $in: studentIds } });
@@ -121,6 +167,17 @@ const batchSaveResults = async (req, res, next) => {
     students.forEach((s) => {
       studentMap[s._id.toString()] = s;
     });
+
+    if (isTeacher(req)) {
+      const allowedClasses = getAssignedClasses(req);
+      const unauthorized = students.some(
+        (s) => !allowedClasses.includes(s.currentClass)
+      );
+      if (unauthorized) {
+        res.status(403);
+        throw new Error("Forbidden: one or more students are outside assigned classes");
+      }
+    }
 
     const operations = results.map((item) => {
       const total =
@@ -154,6 +211,7 @@ const batchSaveResults = async (req, res, next) => {
             total,
             grade,
             remarks,
+            updatedBy: req.user._id,
           },
           upsert: true,
         },
@@ -174,6 +232,14 @@ const batchSaveResults = async (req, res, next) => {
 const calculatePositions = async (req, res, next) => {
   try {
     const { academicYear, term, subjectCode, classLevel } = req.body;
+    if (!ensureClassAccess(req, classLevel)) {
+      res.status(403);
+      throw new Error("Forbidden: class not assigned");
+    }
+    if (!(await ensureTermUnlocked(req, academicYear, term))) {
+      res.status(403);
+      throw new Error("Term is locked for teacher edits");
+    }
 
     // Get all students in the class
     const students = await Student.find({ currentClass: classLevel }).select(
@@ -233,6 +299,7 @@ const calculatePositions = async (req, res, next) => {
             position: position,
             grade: grade,
             remarks: remarks,
+            updatedBy: req.user._id,
           },
         },
       };

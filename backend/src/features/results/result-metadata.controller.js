@@ -1,4 +1,16 @@
 const ResultMetadata = require("./result-metadata.model");
+const Student = require("../students/student.model");
+const Settings = require("../core/settings.model");
+
+const isTeacher = (req) => req.user?.role === "teacher";
+const hasClassAccess = (req, classLevel) =>
+  !isTeacher(req) || (req.user?.assignedClasses || []).includes(classLevel);
+
+const isTermLocked = async (academicYear, term) => {
+  const settings = await Settings.findOne().select("lockedTerms");
+  const key = `${academicYear}:${term}`;
+  return (settings?.lockedTerms || []).includes(key);
+};
 
 // @desc    Get result metadata (conventional performance + comments)
 // @route   GET /api/results/metadata/:studentId?term=X&year=Y
@@ -11,6 +23,17 @@ const getResultMetadata = async (req, res, next) => {
     if (!term || !year) {
       return res.status(400).json({
         message: "Term and academic year are required",
+      });
+    }
+    const student = await Student.findById(studentId).select("currentClass");
+    if (!student) {
+      return res.status(404).json({
+        message: "Student not found",
+      });
+    }
+    if (!hasClassAccess(req, student.currentClass)) {
+      return res.status(403).json({
+        message: "Forbidden: class not assigned",
       });
     }
 
@@ -48,6 +71,32 @@ const saveResultMetadata = async (req, res, next) => {
         message: "Term and academic year are required",
       });
     }
+    const student = await Student.findById(studentId).select("currentClass");
+    if (!student) {
+      return res.status(404).json({
+        message: "Student not found",
+      });
+    }
+    if (!hasClassAccess(req, student.currentClass)) {
+      return res.status(403).json({
+        message: "Forbidden: class not assigned",
+      });
+    }
+    if (isTeacher(req) && (await isTermLocked(year, term))) {
+      return res.status(403).json({
+        message: "Term is locked for teacher edits",
+      });
+    }
+    if (
+      isTeacher(req) &&
+      (principalComment !== undefined ||
+        intuitiveFeats !== undefined ||
+        conventionalPerformance !== undefined)
+    ) {
+      return res.status(403).json({
+        message: "Teachers can only update class teacher comments",
+      });
+    }
 
     const updateFields = {};
     if (conventionalPerformance !== undefined) {
@@ -62,6 +111,7 @@ const saveResultMetadata = async (req, res, next) => {
     if (intuitiveFeats !== undefined) {
       updateFields.intuitiveFeats = intuitiveFeats;
     }
+    updateFields.updatedBy = req.user._id;
 
     const metadata = await ResultMetadata.findOneAndUpdate(
       {

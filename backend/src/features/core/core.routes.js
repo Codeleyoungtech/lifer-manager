@@ -3,6 +3,7 @@ const router = require("express").Router();
 const dashboardController = require("./dashboard.controller");
 const settingsController = require("./settings.controller");
 const attendanceController = require("./attendance.controller");
+const exportController = require("./export.controller");
 const { protect, authorize } = require("../../shared/middleware/auth.middleware");
 
 // Dashboard routes
@@ -45,6 +46,32 @@ router.post(
   protect,
   authorize("admin", "principal", "teacher"),
   attendanceController.bulkSaveAttendance
+);
+
+// Export routes
+router.get(
+  "/export/students",
+  protect,
+  authorize("admin", "principal"),
+  exportController.exportStudents
+);
+router.get(
+  "/export/attendance",
+  protect,
+  authorize("admin", "principal"),
+  exportController.exportAttendance
+);
+router.get(
+  "/export/results",
+  protect,
+  authorize("admin", "principal"),
+  exportController.exportResults
+);
+router.get(
+  "/export/comments",
+  protect,
+  authorize("admin", "principal"),
+  exportController.exportComments
 );
 
 module.exports = router;
