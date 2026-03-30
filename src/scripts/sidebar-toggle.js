@@ -2,6 +2,32 @@
 (function () {
   const SIDEBAR_STATE_KEY = "lifer_sidebar_state";
 
+  function hydrateSidebarUser() {
+    const userNameEl = document.querySelector(".sidebar-footer .user-name");
+    const userTypeEl = document.querySelector(".sidebar-footer .user-type");
+    if (!userNameEl || !userTypeEl) return;
+
+    let user = null;
+    try {
+      user = JSON.parse(localStorage.getItem("user") || "null");
+    } catch (error) {
+      user = null;
+    }
+
+    if (!user) return;
+
+    const displayName =
+      [user.firstName, user.lastName].filter(Boolean).join(" ").trim() ||
+      user.email ||
+      "User";
+    const displayRole = user.role
+      ? user.role.charAt(0).toUpperCase() + user.role.slice(1)
+      : "User";
+
+    userNameEl.textContent = displayName;
+    userTypeEl.textContent = displayRole;
+  }
+
   // Create toggle button
   const menuToggle = document.createElement("button");
   menuToggle.className = "menu-toggle";
@@ -19,6 +45,8 @@
 
   const sidebar = document.querySelector("aside");
   if (!sidebar) return; // Guard clause
+
+  hydrateSidebarUser();
 
   // Initialize state from localStorage (Desktop only)
   function initSidebarState() {

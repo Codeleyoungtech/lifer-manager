@@ -7,7 +7,7 @@ const User = require("./user.model");
 // @access  Public (or Admin only in future)
 const registerUser = async (req, res, next) => {
   try {
-    const { firstName, lastName, email, password, role } = req.body;
+    const { firstName, lastName, email, password } = req.body;
 
     if (!firstName || !lastName || !email || !password) {
       res.status(400);
@@ -28,7 +28,7 @@ const registerUser = async (req, res, next) => {
       lastName,
       email,
       password,
-      role: role || "teacher",
+      role: "teacher",
     });
 
     if (user) {

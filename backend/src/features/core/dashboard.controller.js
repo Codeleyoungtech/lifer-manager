@@ -15,11 +15,6 @@ const getDashboardStats = async (req, res, next) => {
     const totalStudents = await Student.countDocuments({ status: "active" });
 
     // Active Spreadsheets (students with results this term)
-    const activeSpreadsheets = await Result.distinct("studentId", {
-      academicYear: year,
-      term: term,
-    }).countDocuments(); // This might be wrong in mongoose, distinct returns array
-
     const distinctStudents = await Result.distinct("studentId", {
       academicYear: year,
       term: term,

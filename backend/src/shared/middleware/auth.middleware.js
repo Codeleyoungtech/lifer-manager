@@ -17,6 +17,10 @@ const protect = async (req, res, next) => {
 
       // Get user from the token
       req.user = await User.findById(decoded.id).select("-password");
+      if (!req.user) {
+        res.status(401);
+        throw new Error("Not authorized, user not found");
+      }
 
       next();
     } catch (error) {
@@ -32,4 +36,20 @@ const protect = async (req, res, next) => {
   }
 };
 
-module.exports = { protect };
+const authorize = (...roles) => {
+  return (req, res, next) => {
+    if (!req.user) {
+      res.status(401);
+      throw new Error("Not authorized");
+    }
+
+    if (!roles.includes(req.user.role)) {
+      res.status(403);
+      throw new Error("Forbidden: insufficient permissions");
+    }
+
+    next();
+  };
+};
+
+module.exports = { protect, authorize };

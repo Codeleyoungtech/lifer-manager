@@ -16,11 +16,14 @@ document.addEventListener("DOMContentLoaded", () => {
         setBtnLoading(button, true, "Signing in...");
 
         await authService.login(email, password);
+        const user = authService.getCurrentUser();
 
-        // Redirect to dashboard
-        // Adjust path based on where index.html is relative to pages
-        // index.html is in root. src/pages/index.html is dashboard.
-        window.location.href = "src/pages/index.html";
+        // Temporary role-based routing for quick teacher rollout
+        if (user?.role === "teacher") {
+          window.location.href = "src/pages/editor.html";
+        } else {
+          window.location.href = "src/pages/index.html";
+        }
       } catch (error) {
         console.error("Login failed:", error);
         showNotification(

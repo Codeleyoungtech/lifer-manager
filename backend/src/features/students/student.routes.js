@@ -7,14 +7,17 @@ const {
   updateStudent,
   deleteStudent,
 } = require("./student.controller");
-const { protect } = require("../../shared/middleware/auth.middleware");
+const { protect, authorize } = require("../../shared/middleware/auth.middleware");
 
-router.route("/").get(protect, getStudents).post(protect, createStudent);
+router
+  .route("/")
+  .get(protect, authorize("admin", "principal", "teacher"), getStudents)
+  .post(protect, authorize("admin", "principal"), createStudent);
 
 router
   .route("/:id")
-  .get(protect, getStudent)
-  .put(protect, updateStudent)
-  .delete(protect, deleteStudent);
+  .get(protect, authorize("admin", "principal", "teacher"), getStudent)
+  .put(protect, authorize("admin", "principal"), updateStudent)
+  .delete(protect, authorize("admin"), deleteStudent);
 
 module.exports = router;

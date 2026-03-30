@@ -380,8 +380,78 @@
       .attendance-table tr:hover {
         background: #f9f9f9;
       }
+
+      @media (max-width: 900px) {
+        .dashboard-page {
+          padding: 14px;
+        }
+
+        .content-area {
+          padding: 0;
+        }
+
+        .filter-card,
+        .table-card {
+          padding: 16px;
+        }
+
+        .filter-grid {
+          grid-template-columns: 1fr;
+          gap: 12px;
+        }
+
+        .btn-primary {
+          width: 100%;
+          justify-content: center;
+        }
+
+        .table-header {
+          flex-direction: column;
+          align-items: stretch;
+          gap: 12px;
+        }
+
+        .table-header h2 {
+          font-size: 16px;
+        }
+
+        .btn-success {
+          width: 100%;
+          justify-content: center;
+        }
+
+        .table-wrapper {
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
+        }
+
+        .attendance-table {
+          min-width: 680px;
+        }
+      }
+
+      @media (max-width: 520px) {
+        .dashboard-page {
+          padding: 10px;
+        }
+
+        .filter-card,
+        .table-card {
+          padding: 12px;
+        }
+
+        .attendance-table th,
+        .attendance-table td {
+          padding: 10px;
+        }
+
+        .attendance-table input[type="number"] {
+          width: 84px;
+        }
+      }
     </style>
 
+    <script type="module" src="../scripts/auth-guard.js"></script>
     <script type="module" src="../scripts/attendance.js"></script>
     <script type="module" src="../scripts/sidebar-toggle.js"></script>
   </body>

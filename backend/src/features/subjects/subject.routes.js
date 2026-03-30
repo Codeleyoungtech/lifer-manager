@@ -7,14 +7,17 @@ const {
   updateSubject,
   deleteSubject,
 } = require("./subject.controller");
-const { protect } = require("../../shared/middleware/auth.middleware");
+const { protect, authorize } = require("../../shared/middleware/auth.middleware");
 
-router.route("/").get(protect, getSubjects).post(protect, createSubject);
+router
+  .route("/")
+  .get(protect, authorize("admin", "principal", "teacher"), getSubjects)
+  .post(protect, authorize("admin", "principal"), createSubject);
 
 router
   .route("/:code")
-  .get(protect, getSubject)
-  .put(protect, updateSubject)
-  .delete(protect, deleteSubject);
+  .get(protect, authorize("admin", "principal", "teacher"), getSubject)
+  .put(protect, authorize("admin", "principal"), updateSubject)
+  .delete(protect, authorize("admin"), deleteSubject);
 
 module.exports = router;
