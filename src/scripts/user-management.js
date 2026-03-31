@@ -6,6 +6,7 @@ import settingsService from "./api/settings.service.js";
 
 let classes = [];
 let users = [];
+let currentEditUserId = null;
 
 window.addEventListener("DOMContentLoaded", async () => {
   await bootstrap();
@@ -37,6 +38,12 @@ function setupEvents() {
   document
     .getElementById("createTeacherBtn")
     .addEventListener("click", createTeacher);
+  document
+    .getElementById("saveEditUserBtn")
+    .addEventListener("click", saveEditedUser);
+  document
+    .getElementById("cancelEditUserBtn")
+    .addEventListener("click", closeEditPanel);
 
   document.querySelectorAll(".export-btn").forEach((button) => {
     button.addEventListener("click", async (event) => {
@@ -58,19 +65,29 @@ function setupEvents() {
 }
 
 function renderClassOptions() {
-  const select = document.getElementById("assignedClasses");
-  select.innerHTML = "";
-  classes.forEach((className) => {
-    const option = document.createElement("option");
-    option.value = className;
-    option.textContent = className;
-    select.appendChild(option);
+  const createContainer = document.getElementById("assignedClasses");
+  const editContainer = document.getElementById("editAssignedClasses");
+
+  [createContainer, editContainer].forEach((container, index) => {
+    const prefix = index === 0 ? "create" : "edit";
+    container.innerHTML = "";
+    classes.forEach((className) => {
+      const safeId = `${prefix}-class-${className.replace(/\s+/g, "-")}`;
+      const wrapper = document.createElement("label");
+      wrapper.className = "class-item";
+      wrapper.innerHTML = `
+        <input type="checkbox" value="${className}" id="${safeId}" />
+        <span>${className}</span>
+      `;
+      container.appendChild(wrapper);
+    });
   });
 }
 
 function getSelectedClasses() {
-  const select = document.getElementById("assignedClasses");
-  return Array.from(select.selectedOptions).map((option) => option.value);
+  const container = document.getElementById("assignedClasses");
+  return Array.from(container.querySelectorAll("input[type='checkbox']:checked"))
+    .map((input) => input.value);
 }
 
 async function createTeacher() {
@@ -129,18 +146,28 @@ function renderUsers() {
       </td>
       <td>${userClasses || "-"}</td>
       <td>
+        <button class="btn btn-secondary btn-edit" data-id="${user._id}">
+          Edit
+        </button>
         <button class="btn btn-secondary btn-toggle" data-id="${user._id}" data-next-active="${
       isActive ? "false" : "true"
     }">${isActive ? "Deactivate" : "Activate"}</button>
-        <button class="btn btn-secondary btn-classes" data-id="${
-          user._id
-        }">Set Classes</button>
         <button class="btn btn-secondary btn-logout" data-id="${
           user._id
         }">Force Logout</button>
+        <button class="btn btn-secondary btn-delete" data-id="${user._id}">
+          Delete
+        </button>
       </td>
     `;
     tbody.appendChild(tr);
+  });
+
+  tbody.querySelectorAll(".btn-edit").forEach((button) => {
+    button.addEventListener("click", (event) => {
+      const id = event.currentTarget.dataset.id;
+      openEditPanel(id);
+    });
   });
 
   tbody.querySelectorAll(".btn-toggle").forEach((button) => {
@@ -158,26 +185,19 @@ function renderUsers() {
     });
   });
 
-  tbody.querySelectorAll(".btn-classes").forEach((button) => {
+  tbody.querySelectorAll(".btn-delete").forEach((button) => {
     button.addEventListener("click", async (event) => {
       const id = event.currentTarget.dataset.id;
-      const user = users.find((item) => item._id === id);
-      const currentValue = (user?.assignedClasses || []).join(", ");
-      const input = window.prompt(
-        "Enter comma-separated classes (must match configured class names):",
-        currentValue
-      );
-      if (input === null) return;
-      const parsed = input
-        .split(",")
-        .map((v) => v.trim())
-        .filter(Boolean);
-      const invalid = parsed.filter((className) => !classes.includes(className));
-      if (invalid.length > 0) {
-        showNotification(`Invalid classes: ${invalid.join(", ")}`, "error");
+      const targetUser = users.find((item) => item._id === id);
+      if (!targetUser) return;
+      if (targetUser.role === "admin") {
+        showNotification("Admin users cannot be deleted", "error");
         return;
       }
-      await updateAccess(id, { assignedClasses: parsed });
+      if (!window.confirm(`Delete user ${targetUser.email}? This cannot be undone.`)) {
+        return;
+      }
+      await deleteUser(id);
     });
   });
 }
@@ -200,6 +220,94 @@ async function updateAccess(id, payload) {
 async function refreshUsers() {
   users = await authService.getUsers();
   renderUsers();
+  if (currentEditUserId) {
+    const stillExists = users.find((item) => item._id === currentEditUserId);
+    if (!stillExists) closeEditPanel();
+  }
+}
+
+function openEditPanel(id) {
+  const user = users.find((item) => item._id === id);
+  if (!user) return;
+  currentEditUserId = id;
+
+  document.getElementById("editFirstName").value = user.firstName || "";
+  document.getElementById("editLastName").value = user.lastName || "";
+  document.getElementById("editEmail").value = user.email || "";
+  document.getElementById("editPassword").value = "";
+  document.getElementById("editStatus").value =
+    user.isActive === false ? "inactive" : "active";
+
+  const classSet = new Set(user.assignedClasses || []);
+  const classContainer = document.getElementById("editAssignedClasses");
+  Array.from(classContainer.querySelectorAll("input[type='checkbox']")).forEach(
+    (input) => {
+      input.checked = classSet.has(input.value);
+    }
+  );
+  Array.from(
+    document
+      .getElementById("assignedClasses")
+      .querySelectorAll("input[type='checkbox']")
+  ).forEach((input) => {
+    input.checked = false;
+  });
+
+  document.getElementById("editUserPanel").classList.remove("hidden");
+}
+
+function closeEditPanel() {
+  currentEditUserId = null;
+  document.getElementById("editUserPanel").classList.add("hidden");
+}
+
+function getSelectedEditClasses() {
+  const container = document.getElementById("editAssignedClasses");
+  return Array.from(container.querySelectorAll("input[type='checkbox']:checked"))
+    .map((input) => input.value);
+}
+
+async function saveEditedUser() {
+  if (!currentEditUserId) return;
+
+  const firstName = document.getElementById("editFirstName").value.trim();
+  const lastName = document.getElementById("editLastName").value.trim();
+  const email = document.getElementById("editEmail").value.trim().toLowerCase();
+  const password = document.getElementById("editPassword").value.trim();
+  const status = document.getElementById("editStatus").value;
+  const assignedClasses = getSelectedEditClasses();
+
+  if (!firstName || !lastName || !email) {
+    showNotification("First name, last name and email are required", "error");
+    return;
+  }
+
+  const payload = {
+    firstName,
+    lastName,
+    email,
+    isActive: status === "active",
+    assignedClasses,
+  };
+  if (password) payload.password = password;
+
+  await updateAccess(currentEditUserId, payload);
+  closeEditPanel();
+}
+
+async function deleteUser(id) {
+  const page = document.getElementById("userManagementPage");
+  showLoading(page, "Deleting user...");
+  try {
+    await authService.deleteUser(id);
+    showNotification("User deleted", "success");
+    await refreshUsers();
+  } catch (error) {
+    console.error(error);
+    showNotification(error.message || "Failed to delete user", "error");
+  } finally {
+    hideLoading(page);
+  }
 }
 
 function updateTermLockStatus(currentSettings) {

@@ -6,6 +6,7 @@ const {
   getMe,
   listUsers,
   updateUserAccess,
+  deleteUser,
 } = require("./auth.controller");
 const { protect, authorize } = require("../../shared/middleware/auth.middleware");
 
@@ -14,5 +15,6 @@ router.post("/login", loginUser);
 router.get("/me", protect, getMe);
 router.get("/users", protect, authorize("admin"), listUsers);
 router.patch("/users/:id/access", protect, authorize("admin"), updateUserAccess);
+router.delete("/users/:id", protect, authorize("admin"), deleteUser);
 
 module.exports = router;

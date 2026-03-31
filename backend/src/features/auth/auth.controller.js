@@ -124,14 +124,44 @@ const listUsers = async (req, res, next) => {
 const updateUserAccess = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { isActive, assignedClasses, forceLogoutNow } = req.body;
+    const {
+      firstName,
+      lastName,
+      email,
+      password,
+      isActive,
+      assignedClasses,
+      forceLogoutNow,
+    } = req.body;
 
     const user = await User.findById(id);
     if (!user) {
       res.status(404);
       throw new Error("User not found");
     }
+    if (user.role === "admin" && req.user.id !== user.id) {
+      res.status(403);
+      throw new Error("Cannot modify another admin account");
+    }
 
+    if (typeof firstName === "string" && firstName.trim()) {
+      user.firstName = firstName.trim();
+    }
+    if (typeof lastName === "string" && lastName.trim()) {
+      user.lastName = lastName.trim();
+    }
+    if (typeof email === "string" && email.trim()) {
+      const normalizedEmail = email.trim().toLowerCase();
+      const emailOwner = await User.findOne({ email: normalizedEmail });
+      if (emailOwner && emailOwner.id !== user.id) {
+        res.status(400);
+        throw new Error("Email already in use");
+      }
+      user.email = normalizedEmail;
+    }
+    if (typeof password === "string" && password.trim()) {
+      user.password = password.trim();
+    }
     if (typeof isActive === "boolean") {
       user.isActive = isActive;
     }
@@ -151,6 +181,29 @@ const updateUserAccess = async (req, res, next) => {
   }
 };
 
+// @desc    Delete user
+// @route   DELETE /api/auth/users/:id
+// @access  Admin only
+const deleteUser = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findById(id);
+    if (!user) {
+      res.status(404);
+      throw new Error("User not found");
+    }
+    if (user.role === "admin") {
+      res.status(403);
+      throw new Error("Admin users cannot be deleted");
+    }
+
+    await user.deleteOne();
+    res.status(200).json({ id, message: "User deleted successfully" });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // Generate JWT
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -164,4 +217,5 @@ module.exports = {
   getMe,
   listUsers,
   updateUserAccess,
+  deleteUser,
 };

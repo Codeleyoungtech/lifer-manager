@@ -22,6 +22,10 @@ export const authService = {
     return await api.patch(`/auth/users/${id}/access`, payload);
   },
 
+  deleteUser: async (id) => {
+    return await api.delete(`/auth/users/${id}`);
+  },
+
   logout: () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");

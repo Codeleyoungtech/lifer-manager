@@ -38,6 +38,22 @@
         border: 1px solid #d1d5db;
         border-radius: 8px;
       }
+      .class-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        padding: 10px;
+        max-height: 220px;
+        overflow-y: auto;
+      }
+      .class-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+      }
       .btn {
         border: none;
         border-radius: 8px;
@@ -79,6 +95,16 @@
       .badge-inactive {
         background: #fee2e2;
         color: #991b1b;
+      }
+      .editor-panel {
+        margin-top: 12px;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 12px;
+        background: #f9fafb;
+      }
+      .hidden {
+        display: none;
       }
       @media (max-width: 768px) {
         .dashboard-page {
@@ -168,7 +194,7 @@
               </div>
               <div class="field" style="grid-column: 1 / -1">
                 <label for="assignedClasses">Assigned Classes</label>
-                <select id="assignedClasses" multiple size="6"></select>
+                <div id="assignedClasses" class="class-grid"></div>
               </div>
             </div>
             <div style="margin-top: 10px">
@@ -226,6 +252,47 @@
               </thead>
               <tbody id="usersTableBody"></tbody>
             </table>
+
+            <div class="editor-panel hidden" id="editUserPanel">
+              <h4 style="margin-bottom: 8px">Edit User</h4>
+              <div class="grid">
+                <div class="field">
+                  <label for="editFirstName">First Name</label>
+                  <input id="editFirstName" type="text" />
+                </div>
+                <div class="field">
+                  <label for="editLastName">Last Name</label>
+                  <input id="editLastName" type="text" />
+                </div>
+                <div class="field">
+                  <label for="editEmail">Email</label>
+                  <input id="editEmail" type="email" />
+                </div>
+                <div class="field">
+                  <label for="editPassword">New Password (optional)</label>
+                  <input id="editPassword" type="password" />
+                </div>
+                <div class="field">
+                  <label for="editStatus">Status</label>
+                  <select id="editStatus">
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                  </select>
+                </div>
+                <div class="field" style="grid-column: 1 / -1">
+                  <label for="editAssignedClasses">Assigned Classes</label>
+                  <div id="editAssignedClasses" class="class-grid"></div>
+                </div>
+              </div>
+              <div style="margin-top: 10px; display: flex; gap: 8px">
+                <button class="btn btn-primary" id="saveEditUserBtn">
+                  Save Changes
+                </button>
+                <button class="btn btn-secondary" id="cancelEditUserBtn">
+                  Cancel
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </section>
