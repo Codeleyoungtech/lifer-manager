@@ -1,12 +1,17 @@
 import {
   getSettings,
   getStudentsByClass,
-  getStudentResults,
 } from "./storage.js";
-import { generateResultSheet, getResultStyles } from "./result-templates.js";
+import {
+  generateResultSheet,
+  getResultStyles,
+  primeResultTemplateCache,
+} from "./result-templates.js";
 import resultMetadataService from "./api/result-metadata.service.js";
 import { showLoading, hideLoading, showNotification } from "./utils/ui.js";
 import itcFontUrl from "../assets/fonts/ITC-Machine-Medium.otf";
+import { resultService } from "./api/result.service.js";
+import attendanceService from "./api/attendance.service.js";
 
 // State
 let currentStudents = [];
@@ -14,31 +19,31 @@ let currentYear = "";
 let currentTerm = "";
 let currentClass = "";
 let currentStudent = null; // Track current student for reloading
+const studentResultsCache = new Map();
+const metadataCache = new Map();
+
+const buildCacheKey = (studentId, year, term) => `${studentId}:${year}:${term}`;
 
 window.addEventListener("DOMContentLoaded", async function () {
-  await loadYearOptions();
-  await loadClassOptions();
+  await loadInitialFilters();
   setupEventListeners();
   injectStyles();
 });
 
-async function loadYearOptions() {
+async function loadInitialFilters() {
   try {
     const settings = await getSettings();
     const yearSelect = document.getElementById("academicYear");
+    const termSelect = document.getElementById("termSelect");
+    const classSelect = document.getElementById("classLevel");
+
     yearSelect.innerHTML = `
       <option value="${settings.currentAcademicYear}">${settings.currentAcademicYear}</option>
     `;
     currentYear = settings.currentAcademicYear;
-  } catch (error) {
-    console.error("Error loading year options:", error);
-  }
-}
+    termSelect.value = settings.currentTerm || "firstTerm";
+    currentTerm = termSelect.value;
 
-async function loadClassOptions() {
-  try {
-    const settings = await getSettings();
-    const classSelect = document.getElementById("classLevel");
     classSelect.innerHTML = '<option value="">Select Class</option>';
     settings.classes.forEach((className) => {
       const option = document.createElement("option");
@@ -47,7 +52,7 @@ async function loadClassOptions() {
       classSelect.appendChild(option);
     });
   } catch (error) {
-    console.error("Error loading class options:", error);
+    console.error("Error loading initial filters:", error);
   }
 }
 
@@ -91,15 +96,20 @@ async function loadStudents() {
     return;
   }
 
-  showLoading(document.body, "Loading Students...");
+  showLoading(document.body, "Loading students and caching class data...");
 
   try {
     currentClass = classLevel;
     currentTerm = term;
     currentYear = year;
+    studentResultsCache.clear();
+    metadataCache.clear();
 
+    const settings = await getSettings();
     currentStudents = await getStudentsByClass(classLevel);
     currentStudents.sort((a, b) => a.firstName.localeCompare(b.firstName));
+
+    await preloadClassData(classLevel, year, term, currentStudents, settings);
 
     renderStudentList(currentStudents);
 
@@ -119,6 +129,99 @@ async function loadStudents() {
   } finally {
     hideLoading(document.body);
   }
+}
+
+async function preloadClassData(classLevel, year, term, students, settings) {
+  // Preload all results for class in one request
+  const [allResultsForTerm, allMetadata, attendanceRecords, allResultsForYear] =
+    await Promise.all([
+      resultService.getResults({
+        classLevel,
+        academicYear: year,
+        term,
+      }),
+      resultMetadataService.getMetadataByClass(classLevel, term, year),
+      attendanceService.getAttendance(classLevel, term, year),
+      resultService.getResults({
+        classLevel,
+        academicYear: year,
+      }),
+    ]);
+
+  const groupedResults = new Map();
+  students.forEach((student) => {
+    groupedResults.set(student._id, { subjects: {} });
+  });
+
+  allResultsForTerm.forEach((record) => {
+    const sid = record.studentId?._id || record.studentId;
+    if (!sid) return;
+    if (!groupedResults.has(sid)) {
+      groupedResults.set(sid, { subjects: {} });
+    }
+    groupedResults.get(sid).subjects[record.subjectCode] = record;
+  });
+
+  students.forEach((student) => {
+    const cacheKey = buildCacheKey(student._id, year, term);
+    studentResultsCache.set(cacheKey, groupedResults.get(student._id) || { subjects: {} });
+  });
+
+  // Preload all metadata for class in one request
+  const metadataMap = new Map();
+  (allMetadata || []).forEach((item) => {
+    const sid = item.studentId?._id || item.studentId;
+    if (sid) metadataMap.set(sid, item);
+  });
+
+  students.forEach((student) => {
+    const cacheKey = buildCacheKey(student._id, year, term);
+    metadataCache.set(cacheKey, metadataMap.get(student._id) || {});
+  });
+
+  const attendanceByStudentTerm = new Map();
+  (attendanceRecords || []).forEach((record) => {
+    const sid = record.studentId?._id || record.studentId;
+    if (!sid) return;
+    const key = `${sid}:${year}:${term}`;
+    attendanceByStudentTerm.set(key, record);
+  });
+
+  const cumulativeMap = new Map();
+  const rollup = new Map();
+  (allResultsForYear || []).forEach((record) => {
+    const sid = record.studentId?._id || record.studentId;
+    if (!sid) return;
+    const termKey = record.term;
+    const k = `${sid}:${termKey}`;
+    if (!rollup.has(k)) {
+      rollup.set(k, { total: 0, count: 0 });
+    }
+    const current = rollup.get(k);
+    current.total += record.total || 0;
+    current.count += 1;
+  });
+
+  students.forEach((student) => {
+    const base = {
+      firstTerm: null,
+      secondTerm: null,
+      thirdTerm: null,
+    };
+    ["firstTerm", "secondTerm", "thirdTerm"].forEach((t) => {
+      const entry = rollup.get(`${student._id}:${t}`);
+      if (entry && entry.count > 0) {
+        base[t] = ((entry.total / (entry.count * 100)) * 100).toFixed(2);
+      }
+    });
+    cumulativeMap.set(`${student._id}:${year}`, base);
+  });
+
+  primeResultTemplateCache({
+    settings,
+    attendanceByStudentTerm,
+    cumulativeScores: cumulativeMap,
+  });
 }
 
 function renderStudentList(students) {
@@ -190,28 +293,13 @@ async function selectStudent(student) {
   document.getElementById("printCurrentBtn").disabled = true;
 
   try {
-    const termResults = await getStudentResults(
-      student._id,
-      currentYear,
-      currentTerm
-    );
+    const cacheKey = buildCacheKey(student._id, currentYear, currentTerm);
+    let termResults = studentResultsCache.get(cacheKey);
+    if (!termResults) termResults = { subjects: {} };
 
     // Load metadata (conventional performance + comments)
-    let metadata = {};
-    try {
-      metadata = await resultMetadataService.getResultMetadata(
-        student._id,
-        currentTerm,
-        currentYear
-      );
-
-      // If metadata is undefined or doesn't have expected structure, use empty object
-      if (!metadata || typeof metadata !== "object") {
-        metadata = {};
-      }
-    } catch (error) {
-      // No existing metadata, use defaults
-    }
+    let metadata = metadataCache.get(cacheKey);
+    if (!metadata) metadata = {};
 
     const resultHTML = await generateResultSheet(
       student,
@@ -357,20 +445,12 @@ async function downloadAllPDF() {
       );
 
       // Load metadata
-      let metadata = {};
-      try {
-        metadata = await resultMetadataService.getResultMetadata(
-          student._id,
-          currentTerm,
-          currentYear
-        );
-      } catch (error) {
-        // No metadata, use defaults
-      }
+      const cacheKey = buildCacheKey(student._id, currentYear, currentTerm);
+      const metadata = metadataCache.get(cacheKey) || {};
 
       const resultHTML = await generateResultSheet(
         student,
-        termResults.subjects || {},
+        termResults?.subjects || {},
         currentTerm,
         currentYear,
         metadata
@@ -496,14 +576,19 @@ async function saveMetadataChanges(silent = false) {
         intuitiveFeats,
       }
     );
+    const cacheKey = buildCacheKey(studentId, currentYear, currentTerm);
+    const currentMeta = metadataCache.get(cacheKey) || {};
+    metadataCache.set(cacheKey, {
+      ...currentMeta,
+      classTeacherComment,
+      principalComment,
+      conventionalPerformance,
+      intuitiveFeats,
+    });
 
     if (!silent) {
       hideLoading(document.body);
       showNotification("✅ Changes saved successfully!", "success");
-      // Reload the result to show saved data
-      if (currentStudent) {
-        await selectStudent(currentStudent);
-      }
     }
   } catch (error) {
     console.error("Error saving metadata:", error);

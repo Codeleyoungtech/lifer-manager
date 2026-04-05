@@ -51,6 +51,40 @@ const getResultMetadata = async (req, res, next) => {
   }
 };
 
+// @desc    Get result metadata by class/term/year
+// @route   GET /api/results/metadata?classLevel=X&term=Y&year=Z
+// @access  Private
+const getResultMetadataByClass = async (req, res, next) => {
+  try {
+    const { classLevel, term, year } = req.query;
+
+    if (!classLevel || !term || !year) {
+      return res.status(400).json({
+        message: "Class level, term and academic year are required",
+      });
+    }
+
+    if (!hasClassAccess(req, classLevel)) {
+      return res.status(403).json({
+        message: "Forbidden: class not assigned",
+      });
+    }
+
+    const students = await Student.find({ currentClass: classLevel }).select("_id");
+    const studentIds = students.map((student) => student._id);
+
+    const records = await ResultMetadata.find({
+      studentId: { $in: studentIds },
+      term,
+      academicYear: year,
+    });
+
+    res.status(200).json(records);
+  } catch (error) {
+    next(error);
+  }
+};
+
 // @desc    Save or update result metadata
 // @route   PUT /api/results/metadata/:studentId
 // @access  Private
@@ -140,5 +174,6 @@ const saveResultMetadata = async (req, res, next) => {
 
 module.exports = {
   getResultMetadata,
+  getResultMetadataByClass,
   saveResultMetadata,
 };

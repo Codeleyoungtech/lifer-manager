@@ -8,6 +8,7 @@ const {
 } = require("./result.controller");
 const {
   getResultMetadata,
+  getResultMetadataByClass,
   saveResultMetadata,
 } = require("./result-metadata.controller");
 const { protect } = require("../../shared/middleware/auth.middleware");
@@ -18,6 +19,7 @@ router.post("/batch", protect, batchSaveResults);
 router.post("/calculate-positions", protect, calculatePositions);
 
 // Metadata routes (conventional performance + comments)
+router.get("/metadata", protect, getResultMetadataByClass);
 router.get("/metadata/:studentId", protect, getResultMetadata);
 router.put("/metadata/:studentId", protect, saveResultMetadata);
 

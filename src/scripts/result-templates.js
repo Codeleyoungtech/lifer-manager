@@ -1,11 +1,8 @@
 import {
   getSettings,
-  getSubjectsForStudent,
   getSubjectsByClass,
   getStudentsByClass,
-  getStudentResults,
 } from "./storage.js";
-import attendanceService from "./api/attendance.service.js";
 import itcFontUrl from "../assets/fonts/ITC-Machine-Medium.otf";
 import bookAntiquaFontUrl from "../assets/fonts/book-antiqua-bold.ttf";
 import rockwellFontUrl from "../assets/fonts/Rockwell-Bold.ttf";
@@ -13,111 +10,162 @@ import mmlcLogoUrl from "../assets/mmlclogo.jpg";
 import pfbsLogoUrl from "../assets/pfbslogo.jpg";
 import backgroundImgUrl from "../public/download.jpeg";
 
+const cache = {
+  settingsPromise: null,
+  settingsValue: null,
+  schoolNameImagePromise: null,
+  preciousSchoolNameImagePromise: null,
+  studentsCountByClass: new Map(),
+  subjectsByClass: new Map(),
+  attendanceByStudentTerm: new Map(),
+  cumulativeScores: new Map(),
+};
+
+export function primeResultTemplateCache({
+  settings,
+  attendanceByStudentTerm,
+  cumulativeScores,
+} = {}) {
+  if (settings) {
+    cache.settingsValue = settings;
+    cache.settingsPromise = Promise.resolve(settings);
+  }
+  if (attendanceByStudentTerm instanceof Map) {
+    cache.attendanceByStudentTerm = attendanceByStudentTerm;
+  }
+  if (cumulativeScores instanceof Map) {
+    cache.cumulativeScores = cumulativeScores;
+  }
+}
+
+async function getCachedSettings() {
+  if (cache.settingsValue) return cache.settingsValue;
+  if (!cache.settingsPromise) {
+    cache.settingsPromise = getSettings();
+  }
+  cache.settingsValue = await cache.settingsPromise;
+  return cache.settingsValue;
+}
+
+async function getCachedStudentsCount(classLevel) {
+  if (!cache.studentsCountByClass.has(classLevel)) {
+    const students = await getStudentsByClass(classLevel);
+    cache.studentsCountByClass.set(classLevel, students.length);
+  }
+  return cache.studentsCountByClass.get(classLevel);
+}
+
+async function getCachedSubjectsByClass(classLevel) {
+  if (!cache.subjectsByClass.has(classLevel)) {
+    const subjects = await getSubjectsByClass(classLevel);
+    cache.subjectsByClass.set(classLevel, subjects || []);
+  }
+  return [...cache.subjectsByClass.get(classLevel)];
+}
+
 // Generate school name as canvas image with ITC font and gradient
 async function generateSchoolNameImage() {
+  if (cache.schoolNameImagePromise) {
+    return cache.schoolNameImagePromise;
+  }
+  cache.schoolNameImagePromise = (async () => {
   // Wait for ITC font to load
-  try {
-    await document.fonts.load("900 120px ITC");
-    await document.fonts.ready;
-  } catch (e) {
-    console.warn("Font loading issue:", e);
-  }
+    try {
+      await document.fonts.load("900 120px ITC");
+      await document.fonts.ready;
+    } catch (e) {
+      console.warn("Font loading issue:", e);
+    }
 
-  const canvas = document.createElement("canvas");
-  const ctx = canvas.getContext("2d");
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
 
-  // Set canvas size - BIGGER
-  canvas.width = 1200;
-  canvas.height = 130;
+    // Set canvas size - BIGGER
+    canvas.width = 1200;
+    canvas.height = 130;
 
-  // Create gradient
-  const gradient = ctx.createLinearGradient(0, 0, 0, 130);
-  gradient.addColorStop(0, "#7ab85c");
-  gradient.addColorStop(0.5, "#4a7c3a");
-  gradient.addColorStop(1, "#2d5a28");
+    // Create gradient
+    const gradient = ctx.createLinearGradient(0, 0, 0, 130);
+    gradient.addColorStop(0, "#7ab85c");
+    gradient.addColorStop(0.5, "#4a7c3a");
+    gradient.addColorStop(1, "#2d5a28");
 
-  // Set font - INCREASED TO 105px
-  ctx.font = "900 105px ITC, Arial Black, sans-serif";
-  ctx.textAlign = "left";
-  ctx.textBaseline = "alphabetic"; // FIXED: Use alphabetic baseline for consistent positioning
+    // Set font - INCREASED TO 105px
+    ctx.font = "900 105px ITC, Arial Black, sans-serif";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "alphabetic";
+    ctx.strokeStyle = "white";
+    ctx.lineWidth = 5;
+    ctx.fillStyle = gradient;
 
-  // White stroke settings
-  ctx.strokeStyle = "white";
-  ctx.lineWidth = 5;
+    const text = "MUCH MORE LIFE COLLEGE";
+    const letterSpacing = 4;
+    const totalWidth =
+      ctx.measureText(text).width + letterSpacing * (text.length - 1);
+    let x = (canvas.width - totalWidth) / 2;
+    const y = 95;
 
-  // Gradient fill
-  ctx.fillStyle = gradient;
+    for (let i = 0; i < text.length; i++) {
+      const char = text[i];
+      ctx.strokeText(char, x, y);
+      ctx.fillText(char, x, y);
+      x += ctx.measureText(char).width + letterSpacing;
+    }
 
-  // Draw text with letter spacing
-  const text = "MUCH MORE LIFE COLLEGE";
-  const letterSpacing = 4; // pixels between letters
-  const totalWidth =
-    ctx.measureText(text).width + letterSpacing * (text.length - 1);
-  let x = (canvas.width - totalWidth) / 2;
-  const y = 95; // Adjusted for alphabetic baseline
-
-  for (let i = 0; i < text.length; i++) {
-    const char = text[i];
-    // Draw stroke first, then fill
-    ctx.strokeText(char, x, y);
-    ctx.fillText(char, x, y);
-    x += ctx.measureText(char).width + letterSpacing;
-  }
-
-  return canvas.toDataURL("image/png");
+    return canvas.toDataURL("image/png");
+  })();
+  return cache.schoolNameImagePromise;
 }
 
 // Generate Precious Fruit Beginners' School name image
 // Generate Precious Fruit Beginners' School name image
 async function generatePreciousFruitSchoolNameImage() {
-  try {
-    await document.fonts.load("900 120px ITC");
-    await document.fonts.ready;
-  } catch (e) {
-    console.warn("Font loading issue:", e);
+  if (cache.preciousSchoolNameImagePromise) {
+    return cache.preciousSchoolNameImagePromise;
   }
+  cache.preciousSchoolNameImagePromise = (async () => {
+    try {
+      await document.fonts.load("900 120px ITC");
+      await document.fonts.ready;
+    } catch (e) {
+      console.warn("Font loading issue:", e);
+    }
 
-  const canvas = document.createElement("canvas");
-  const ctx = canvas.getContext("2d");
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
 
-  // BIGGER canvas size for wider/larger text
-  canvas.width = 1600;
-  canvas.height = 140;
+    canvas.width = 1600;
+    canvas.height = 140;
 
-  // Create gradient
-  const gradient = ctx.createLinearGradient(0, 0, 0, 140);
-  gradient.addColorStop(0, "#7ab85c");
-  gradient.addColorStop(0.5, "#4a7c3a");
-  gradient.addColorStop(1, "#2d5a28");
+    const gradient = ctx.createLinearGradient(0, 0, 0, 140);
+    gradient.addColorStop(0, "#7ab85c");
+    gradient.addColorStop(0.5, "#4a7c3a");
+    gradient.addColorStop(1, "#2d5a28");
 
-  // INCREASED font size to 100px
-  ctx.font = "900 100px ITC, Arial Black, sans-serif";
-  ctx.textAlign = "left"; // Changed to left align for manual positioning
-  ctx.textBaseline = "alphabetic"; // FIXED: Use alphabetic baseline for consistent letter positioning
+    ctx.font = "900 100px ITC, Arial Black, sans-serif";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "alphabetic";
+    ctx.strokeStyle = "white";
+    ctx.lineWidth = 5;
+    ctx.fillStyle = gradient;
 
-  // White stroke settings
-  ctx.strokeStyle = "white";
-  ctx.lineWidth = 5;
+    const text = "PRECIOUS FRUIT BEGINNERS' SCHOOL";
+    const letterSpacing = 4;
+    const totalWidth =
+      ctx.measureText(text).width + letterSpacing * (text.length - 1);
+    let x = (canvas.width - totalWidth) / 2;
+    const y = 95;
 
-  // Gradient fill
-  ctx.fillStyle = gradient;
+    for (let i = 0; i < text.length; i++) {
+      const char = text[i];
+      ctx.strokeText(char, x, y);
+      ctx.fillText(char, x, y);
+      x += ctx.measureText(char).width + letterSpacing;
+    }
 
-  // Draw text with letter spacing
-  const text = "PRECIOUS FRUIT BEGINNERS' SCHOOL";
-  const letterSpacing = 4; // Increased spacing
-  const totalWidth =
-    ctx.measureText(text).width + letterSpacing * (text.length - 1);
-  let x = (canvas.width - totalWidth) / 2;
-  const y = 95; // Adjusted y position for alphabetic baseline
-
-  for (let i = 0; i < text.length; i++) {
-    const char = text[i];
-    ctx.strokeText(char, x, y);
-    ctx.fillText(char, x, y);
-    x += ctx.measureText(char).width + letterSpacing;
-  }
-
-  return canvas.toDataURL("image/png");
+    return canvas.toDataURL("image/png");
+  })();
+  return cache.preciousSchoolNameImagePromise;
 }
 
 // Determine which template to use based on class level
@@ -184,7 +232,7 @@ async function generateSecondaryResultSheet(
   year,
   metadata = {}
 ) {
-  const settings = await getSettings();
+  const settings = await getCachedSettings();
   const isJSS = student.currentClass.startsWith("JSS");
   const isSS = student.currentClass.startsWith("SS");
 
@@ -276,7 +324,7 @@ async function generatePrimaryResultSheet(
   year,
   metadata = {}
 ) {
-  const settings = await getSettings();
+  const settings = await getCachedSettings();
   const stats = await calculateStatistics(subjectResults, student.currentClass);
   const cumulativeScores = await calculateCumulativeScores(
     student._id || student.id,
@@ -351,9 +399,7 @@ async function generatePrimaryResultsTable(
   subjectResults,
   settings = {}
 ) {
-  const allSubjectsForStudent = await getSubjectsForStudent(
-    student._id || student.id
-  );
+  const allSubjectsForStudent = await getSubjectsForRender(student);
   sortSubjects(allSubjectsForStudent, student.currentClass, settings);
 
   let subjectRows = "";
@@ -426,7 +472,7 @@ async function generatePreNurseryResultSheet(
   year,
   metadata = {}
 ) {
-  const settings = await getSettings();
+  const settings = await getCachedSettings();
   const stats = await calculateStatistics(subjectResults, student.currentClass);
   const cumulativeScores = await calculateCumulativeScores(
     student._id || student.id,
@@ -507,9 +553,7 @@ async function generatePreNurseryResultsTable(
   metadata = {},
   settings = {}
 ) {
-  const allSubjectsForStudent = await getSubjectsForStudent(
-    student._id || student.id
-  );
+  const allSubjectsForStudent = await getSubjectsForRender(student);
   sortSubjects(allSubjectsForStudent, student.currentClass, settings);
 
   let subjectRows = "";
@@ -730,16 +774,8 @@ async function generateStudentInfo(
   const resumptionDate = formatDateForDisplay(settings.dateOfResumption);
 
   // Fetch attendance for this student
-  let attendance = {};
-  try {
-    attendance = await attendanceService.getStudentAttendance(
-      student._id || student.id,
-      term,
-      year
-    );
-  } catch (error) {
-    console.log("No attendance found for student:", error);
-  }
+  const attendanceKey = `${student._id || student.id}:${year}:${term}`;
+  const attendance = cache.attendanceByStudentTerm.get(attendanceKey) || {};
 
   const maxAttendance =
     attendance?.maxAttendance || settings.maxAttendance || "-";
@@ -846,11 +882,9 @@ async function generateSubjectRows(student, subjectResults, settings) {
   let allSubjectsForStudent;
 
   if (student.currentClass.startsWith("SS")) {
-    allSubjectsForStudent = await getSubjectsByClass(student.currentClass);
+    allSubjectsForStudent = await getCachedSubjectsByClass(student.currentClass);
   } else {
-    allSubjectsForStudent = await getSubjectsForStudent(
-      student._id || student.id
-    );
+    allSubjectsForStudent = await getSubjectsForRender(student);
   }
 
   sortSubjects(allSubjectsForStudent, student.currentClass, settings);
@@ -973,57 +1007,38 @@ async function calculateStatistics(subjectResults, classLevel) {
   const percentage =
     totalObtainable > 0 ? (totalObtained / totalObtainable) * 100 : 0;
 
-  const studentsInClass = await getStudentsByClass(classLevel);
+  const totalStudents = await getCachedStudentsCount(classLevel);
 
   return {
     totalObtained,
     totalObtainable,
     percentage,
-    totalStudents: studentsInClass.length,
+    totalStudents,
   };
 }
 
 // Calculate cumulative scores for all three terms
 async function calculateCumulativeScores(studentId, academicYear) {
-  const terms = ["firstTerm", "secondTerm", "thirdTerm"];
-  const cumulativeScores = {
+  const cacheKey = `${studentId}:${academicYear}`;
+  if (cache.cumulativeScores.has(cacheKey)) {
+    return cache.cumulativeScores.get(cacheKey);
+  }
+  return {
     firstTerm: null,
     secondTerm: null,
     thirdTerm: null,
   };
+}
 
-  for (const term of terms) {
-    try {
-      const termResults = await getStudentResults(
-        studentId,
-        academicYear,
-        term
-      );
+async function getSubjectsForRender(student) {
+  const classSubjects = await getCachedSubjectsByClass(student.currentClass);
 
-      if (termResults && termResults.subjects) {
-        let totalObtained = 0;
-        let subjectCount = 0;
-
-        for (let code in termResults.subjects) {
-          const result = termResults.subjects[code];
-          if (result && typeof result.total === "number") {
-            totalObtained += result.total;
-            subjectCount++;
-          }
-        }
-
-        if (subjectCount > 0) {
-          const totalObtainable = subjectCount * 100;
-          const percentage = (totalObtained / totalObtainable) * 100;
-          cumulativeScores[term] = percentage.toFixed(2);
-        }
-      }
-    } catch (error) {
-      // Keep as null if no results
-    }
-  }
-
-  return cumulativeScores;
+  return classSubjects.filter((subject) => {
+    if (subject.code === "ISLM") return student.religion === "ISLAM";
+    if (subject.code === "CRS") return student.religion === "CHRISTIANITY";
+    if (subject.department === "GENERAL") return true;
+    return subject.department === student.department;
+  });
 }
 
 export function getResultStyles() {

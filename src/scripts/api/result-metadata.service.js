@@ -12,6 +12,15 @@ export default {
     return data;
   },
 
+  // Get metadata for all students in a class (one-shot preload)
+  async getMetadataByClass(classLevel, term, year) {
+    return await api.get(
+      `/results/metadata?classLevel=${encodeURIComponent(
+        classLevel
+      )}&term=${encodeURIComponent(term)}&year=${encodeURIComponent(year)}`
+    );
+  },
+
   // Save result metadata
   async saveResultMetadata(studentId, term, year, data) {
     const response = await api.put(`/results/metadata/${studentId}`, {
