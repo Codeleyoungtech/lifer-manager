@@ -432,9 +432,9 @@ async function generatePrimaryResultsTable(
       <tr>
         <td class="subject-title">${subject.name}</td>
         <td class="bold">10</td>
-        <td>${result?.weeklyTest ?? "--"}</td>
+        <td>${formatTwoDigitScore(result?.weeklyTest, "--")}</td>
         <td class="bold">20</td>
-        <td>${result?.midTerm ?? "--"}</td>
+        <td>${formatTwoDigitScore(result?.midTerm, "--")}</td>
         <td class="bold">70</td>
         <td>${result?.exam ?? "--"}</td>
         <td><strong>${result?.total ?? "--"}</strong></td>
@@ -586,9 +586,9 @@ async function generatePreNurseryResultsTable(
       <tr>
         <td class="subject-title">${subject.name}</td>
         <td class="bold">20</td>
-        <td>${result?.weeklyTest || ""}</td>
+        <td>${formatTwoDigitScore(result?.weeklyTest, "")}</td>
         <td class="bold">20</td>
-        <td>${result?.midTerm || ""}</td>
+        <td>${formatTwoDigitScore(result?.midTerm, "")}</td>
         <td class="bold">60</td>
         <td>${result?.exam || ""}</td>
         <td><strong>${result?.total || ""}</strong></td>
@@ -761,6 +761,13 @@ function formatDateForDisplay(dateString) {
   return `${day}/${month}/${year}`;
 }
 
+function formatTwoDigitScore(value, fallback = "--") {
+  if (value === null || value === undefined || value === "") return fallback;
+  const scoreText = String(value).trim();
+  if (/^\d+$/.test(scoreText)) return scoreText.padStart(2, "0");
+  return scoreText;
+}
+
 // Get ordinal suffix (1ST, 2ND, 3RD, etc.)
 function getOrdinal(n) {
   if (!n || isNaN(n) || n == 0) return "--";
@@ -918,8 +925,8 @@ async function generateSubjectRows(student, subjectResults, settings) {
     rows += `
       <tr>
         <td class="subject-title">${subject.name}</td>
-        <td class="mark-col">${result?.weeklyTest ?? "--"}</td>
-        <td class="mark-col">${result?.midTerm ?? "--"}</td>
+        <td class="mark-col">${formatTwoDigitScore(result?.weeklyTest, "--")}</td>
+        <td class="mark-col">${formatTwoDigitScore(result?.midTerm, "--")}</td>
         <td class="mark-col">${result?.exam ?? "--"}</td>
         <td class="mark-col"><strong>${result?.total ?? "--"}</strong></td>
         <td class="mark-col"><strong>${result?.grade ?? "--"}</strong></td>
