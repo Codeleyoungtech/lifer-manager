@@ -1,6 +1,125 @@
 // Sidebar toggle functionality with Persistence and "Best Logic"
 (function () {
   const SIDEBAR_STATE_KEY = "lifer_sidebar_state";
+  const SIDEBAR_LINKS = [
+    {
+      href: "../pages/index.html",
+      icon: "dashboard",
+      label: "Dashboard",
+    },
+    {
+      href: "../pages/editor.html",
+      icon: "description",
+      label: "Legacy Editor",
+    },
+    {
+      href: "../pages/student.html",
+      icon: "group",
+      label: "Students",
+    },
+    {
+      href: "../pages/result-manager.html",
+      icon: "assignment",
+      label: "Student Results",
+    },
+    {
+      href: "../pages/broadsheet.html",
+      icon: "table_chart",
+      label: "Broadsheet",
+    },
+    {
+      href: "../pages/attendance.html",
+      icon: "calendar_month",
+      label: "Attendance",
+    },
+    {
+      href: "../pages/teacher-comments.html",
+      icon: "comment",
+      label: "Teacher Comments",
+    },
+    {
+      href: "../pages/subject.html",
+      icon: "school",
+      label: "Classes & Subjects",
+    },
+    {
+      href: "../pages/settings.html",
+      icon: "settings",
+      label: "Settings",
+    },
+    {
+      href: "../pages/user-management.html",
+      icon: "manage_accounts",
+      label: "User Setup",
+    },
+  ];
+
+  function normalizePath(path) {
+    return (path || "").replace(/\/+$/, "");
+  }
+
+  function buildSidebarLinkItem(linkDef) {
+    const li = document.createElement("li");
+    const a = document.createElement("a");
+    a.href = linkDef.href;
+    a.innerHTML = `
+      <span class="material-symbols-outlined">${linkDef.icon}</span>
+      <span>${linkDef.label}</span>
+    `;
+    li.appendChild(a);
+    return li;
+  }
+
+  function ensureSidebarLinks(sidebar) {
+    const list = sidebar.querySelector(".links-wrapper ul");
+    if (!list) return;
+
+    const existingHrefs = new Set();
+    list.querySelectorAll("a").forEach((link) => {
+      const href = link.getAttribute("href");
+      if (href) existingHrefs.add(href);
+    });
+
+    SIDEBAR_LINKS.forEach((linkDef) => {
+      if (!existingHrefs.has(linkDef.href)) {
+        list.appendChild(buildSidebarLinkItem(linkDef));
+      }
+    });
+
+    const currentPath = normalizePath(window.location.pathname);
+    list.querySelectorAll("a").forEach((link) => {
+      link.classList.remove("active");
+      const path = normalizePath(new URL(link.href, window.location.origin).pathname);
+      if (path === currentPath) {
+        link.classList.add("active");
+      }
+    });
+  }
+
+  function enforceSidebarRoleVisibility(sidebar) {
+    let user = null;
+    try {
+      user = JSON.parse(localStorage.getItem("user") || "null");
+    } catch (error) {
+      user = null;
+    }
+
+    if (user?.role !== "teacher") return;
+
+    const allowedHrefs = new Set([
+      "../pages/editor.html",
+      "../pages/attendance.html",
+      "../pages/teacher-comments.html",
+    ]);
+
+    sidebar.querySelectorAll(".links-wrapper a").forEach((link) => {
+      const href = link.getAttribute("href") || "";
+      if (!allowedHrefs.has(href)) {
+        const item = link.closest("li");
+        if (item) item.style.display = "none";
+      }
+    });
+  }
 
   function hydrateSidebarUser() {
     const userNameEl = document.querySelector(".sidebar-footer .user-name");
@@ -46,6 +165,8 @@
   const sidebar = document.querySelector("aside");
   if (!sidebar) return; // Guard clause
 
+  ensureSidebarLinks(sidebar);
+  enforceSidebarRoleVisibility(sidebar);
   hydrateSidebarUser();
 
   // Initialize state from localStorage (Desktop only)

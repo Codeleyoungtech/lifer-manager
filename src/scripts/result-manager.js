@@ -438,14 +438,10 @@ async function downloadAllPDF() {
         `Processing ${i + 1}/${currentStudents.length}: ${student.firstName}`
       );
 
-      const termResults = await getStudentResults(
-        student._id,
-        currentYear,
-        currentTerm
-      );
+      const cacheKey = buildCacheKey(student._id, currentYear, currentTerm);
+      const termResults = studentResultsCache.get(cacheKey) || { subjects: {} };
 
       // Load metadata
-      const cacheKey = buildCacheKey(student._id, currentYear, currentTerm);
       const metadata = metadataCache.get(cacheKey) || {};
 
       const resultHTML = await generateResultSheet(

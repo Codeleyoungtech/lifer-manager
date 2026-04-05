@@ -129,6 +129,12 @@
         border: 1px solid #e0e0e0;
       }
 
+      #resultSheetContainer {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+      }
+
       .preview-header {
         width: 100%;
         max-width: 950px;
@@ -217,6 +223,86 @@
       .btn-warning {
         background: #ffc107;
         color: #333;
+      }
+
+      @media (max-width: 1200px) {
+        .dashboard-page {
+          padding: 14px;
+        }
+
+        .result-manager-container {
+          flex-direction: row;
+          height: calc(100vh - 250px);
+          gap: 14px;
+          overflow-x: auto;
+          overflow-y: hidden;
+          align-items: stretch;
+        }
+
+        .student-list-sidebar {
+          width: 320px;
+          min-width: 320px;
+          max-height: none;
+          flex-shrink: 0;
+        }
+
+        .result-preview-area {
+          min-width: 940px;
+          max-width: none;
+          padding: 12px;
+        }
+
+        .preview-header {
+          max-width: 100%;
+          position: static;
+          flex-wrap: wrap;
+          gap: 10px;
+          padding: 10px 12px;
+        }
+
+        #resultSheetContainer {
+          overflow: auto;
+          justify-content: center;
+          padding-bottom: 8px;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .result-manager-container {
+          flex-direction: column;
+          height: auto;
+          overflow: visible;
+        }
+
+        .student-list-sidebar {
+          width: 100%;
+          min-width: 0;
+          max-height: 320px;
+        }
+
+        .result-preview-area {
+          min-width: 0;
+          width: 100%;
+        }
+
+        .controls-section {
+          padding: 14px;
+          gap: 10px;
+        }
+
+        .form-control {
+          min-width: 130px;
+          width: 100%;
+        }
+
+        .form-group {
+          width: 100%;
+        }
+
+        .btn {
+          width: 100%;
+          justify-content: center;
+        }
       }
 
       /* Hide sidebar when printing */

@@ -5,6 +5,14 @@ import { showLoading, hideLoading, showNotification } from "./utils/ui.js";
 let currentClasses = [];
 let currentDepartments = [];
 let allSubjects = [];
+let currentClassGroups = {};
+
+const CLASS_GROUP_OPTIONS = [
+  { value: "prenursery", label: "Pre-Nursery" },
+  { value: "primary", label: "Primary" },
+  { value: "jss", label: "Junior Secondary (JSS)" },
+  { value: "ss", label: "Senior Secondary (SS)" },
+];
 
 window.addEventListener("DOMContentLoaded", async function () {
   // Initialize tabs immediately so they are interactive
@@ -74,6 +82,7 @@ async function loadSettings() {
     // Load classes and departments
     currentClasses = settings.classes || [];
     currentDepartments = settings.departments || [];
+    currentClassGroups = normalizeClassGroups(settings.classGroups, currentClasses);
 
     renderClassesList();
     renderDepartmentsList();
@@ -102,6 +111,8 @@ function renderClassesList() {
     `;
     list.appendChild(li);
   });
+
+  renderClassGroupingList();
 }
 
 function renderDepartmentsList() {
@@ -140,6 +151,7 @@ function setupEventListeners() {
       }
 
       currentClasses.push(className);
+      currentClassGroups[className] = inferClassGroup(className);
       renderClassesList();
       input.value = "";
       showNotification(`Added class: ${className}`, "success");
@@ -193,6 +205,7 @@ function setupEventListeners() {
 window.removeClass = function (index) {
   const className = currentClasses[index];
   currentClasses.splice(index, 1);
+  delete currentClassGroups[className];
   renderClassesList();
   showNotification(`Removed class: ${className}`, "success");
 };
@@ -206,6 +219,7 @@ window.removeDepartment = function (index) {
 
 async function saveSettings() {
   try {
+    const groupedClasses = buildGroupedClasses(currentClasses, currentClassGroups);
     const formData = {
       schoolName: document.getElementById("schoolName").value.trim(),
       currentAcademicYear: document.getElementById("academicYear").value.trim(),
@@ -215,6 +229,7 @@ async function saveSettings() {
       maxAttendance:
         parseInt(document.getElementById("maxAttendance").value) || 0,
       classes: currentClasses,
+      classGroups: groupedClasses,
       departments: currentDepartments,
       subjectOrders: {
         prenursery: getOrderFromContainer("container-prenursery"),
@@ -266,6 +281,94 @@ const validClassPatterns = {
   ss: /^SS/i,
 };
 
+function inferClassGroup(className = "") {
+  const upper = className.trim().toUpperCase();
+  if (validClassPatterns.prenursery.test(upper)) return "prenursery";
+  if (validClassPatterns.primary.test(upper)) return "primary";
+  if (validClassPatterns.jss.test(upper)) return "jss";
+  return "ss";
+}
+
+function normalizeClassGroups(savedGroups = {}, classes = []) {
+  const map = {};
+
+  classes.forEach((className) => {
+    map[className] = inferClassGroup(className);
+  });
+
+  Object.entries(savedGroups || {}).forEach(([group, classList]) => {
+    if (!Array.isArray(classList)) return;
+    classList.forEach((className) => {
+      if (classes.includes(className)) {
+        map[className] = group;
+      }
+    });
+  });
+
+  return map;
+}
+
+function buildGroupedClasses(classes = [], classGroups = {}) {
+  const grouped = {
+    prenursery: [],
+    primary: [],
+    jss: [],
+    ss: [],
+  };
+
+  classes.forEach((className) => {
+    const group = classGroups[className] || inferClassGroup(className);
+    if (!grouped[group]) grouped[group] = [];
+    grouped[group].push(className);
+  });
+
+  return grouped;
+}
+
+function renderClassGroupingList() {
+  const container = document.getElementById("classGroupingList");
+  if (!container) return;
+
+  container.innerHTML = "";
+
+  if (currentClasses.length === 0) {
+    container.innerHTML = `<p class="gray-medium" style="font-size: 12px;">No classes yet. Add a class to assign group.</p>`;
+    return;
+  }
+
+  currentClasses.forEach((className) => {
+    const row = document.createElement("div");
+    row.className = "class-group-row";
+
+    const name = document.createElement("div");
+    name.className = "class-group-name";
+    name.textContent = className;
+
+    const select = document.createElement("select");
+    CLASS_GROUP_OPTIONS.forEach((optionMeta) => {
+      const option = document.createElement("option");
+      option.value = optionMeta.value;
+      option.textContent = optionMeta.label;
+      select.appendChild(option);
+    });
+
+    select.value = currentClassGroups[className] || inferClassGroup(className);
+    select.addEventListener("change", (event) => {
+      currentClassGroups[className] = event.target.value;
+      renderSubjectOrders({
+        prenursery: getOrderFromContainer("container-prenursery"),
+        primary: getOrderFromContainer("container-primary"),
+        jss: getOrderFromContainer("container-jss"),
+        ss: getOrderFromContainer("container-ss"),
+      });
+    });
+
+    row.appendChild(name);
+    row.appendChild(select);
+    container.appendChild(row);
+  });
+}
+
 function renderSubjectOrders(savedOrders) {
   renderContainer(
     "container-prenursery",
@@ -292,14 +395,14 @@ function renderSubjectOrders(savedOrders) {
 }
 
 function filterSubjectsForCategory(category) {
-  const pattern = validClassPatterns[category];
-  if (!pattern) return [];
-
   return allSubjects.filter((subject) => {
     // If subject has no classes defined, show it everywhere (fallback)
     if (!subject.classes || subject.classes.length === 0) return true;
 
-    return subject.classes.some((cls) => pattern.test(cls));
+    return subject.classes.some((cls) => {
+      const classGroup = currentClassGroups[cls] || inferClassGroup(cls);
+      return classGroup === category;
+    });
   });
 }
 

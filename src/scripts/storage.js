@@ -3,17 +3,73 @@ import { subjectService } from "./api/subject.service.js";
 import { resultService } from "./api/result.service.js";
 import { dashboardService } from "./api/dashboard.service.js";
 
+const cache = {
+  settings: null,
+  allStudents: null,
+  studentsByClass: new Map(),
+  allSubjects: null,
+  subjectsByClass: new Map(),
+  studentResults: new Map(),
+  resultsByClassAndSubject: new Map(),
+  broadsheetData: new Map(),
+};
+
+function cacheIfMissing(entry, fetcher) {
+  if (!entry) {
+    return fetcher();
+  }
+  return entry;
+}
+
+function clearStudentCaches() {
+  cache.allStudents = null;
+  cache.studentsByClass.clear();
+  cache.broadsheetData.clear();
+}
+
+function clearSubjectCaches() {
+  cache.allSubjects = null;
+  cache.subjectsByClass.clear();
+  cache.broadsheetData.clear();
+}
+
+function clearResultCaches(studentId = null) {
+  if (studentId) {
+    const prefix = `${studentId}::`;
+    for (const key of cache.studentResults.keys()) {
+      if (key.startsWith(prefix)) {
+        cache.studentResults.delete(key);
+      }
+    }
+  } else {
+    cache.studentResults.clear();
+  }
+
+  cache.resultsByClassAndSubject.clear();
+  cache.broadsheetData.clear();
+}
+
 // Settings are now fetched from the backend
 export async function getSettings() {
-  return await dashboardService.getSettings();
+  cache.settings = cacheIfMissing(cache.settings, async () => {
+    return await dashboardService.getSettings();
+  });
+  return await cache.settings;
 }
 
 export async function getAllStudents() {
-  return await studentService.getAll();
+  cache.allStudents = cacheIfMissing(cache.allStudents, async () => {
+    return await studentService.getAll();
+  });
+  return await cache.allStudents;
 }
 
 export async function getStudentsByClass(classLevel) {
-  return await studentService.getAll({ classLevel });
+  const key = classLevel || "__all__";
+  if (!cache.studentsByClass.has(key)) {
+    cache.studentsByClass.set(key, studentService.getAll({ classLevel }));
+  }
+  return await cache.studentsByClass.get(key);
 }
 
 // Backend handles ID generation
@@ -27,23 +83,33 @@ export function generateStudentId() {
 export async function addStudent(studentData) {
   const newStudent = await studentService.create(studentData);
   console.log("Add Student Response:", newStudent);
+  clearStudentCaches();
   return newStudent.studentId || newStudent._id;
 }
 
 export async function updateStudent(id, studentData) {
   await studentService.update(id, studentData);
+  clearStudentCaches();
 }
 
 export async function deleteStudent(id) {
   await studentService.delete(id);
+  clearStudentCaches();
 }
 
 export async function getAllSubjects() {
-  return await subjectService.getAll();
+  cache.allSubjects = cacheIfMissing(cache.allSubjects, async () => {
+    return await subjectService.getAll();
+  });
+  return await cache.allSubjects;
 }
 
 export async function getSubjectsByClass(classLevel) {
-  return await subjectService.getAll({ classLevel });
+  const key = classLevel || "__all__";
+  if (!cache.subjectsByClass.has(key)) {
+    cache.subjectsByClass.set(key, subjectService.getAll({ classLevel }));
+  }
+  return await cache.subjectsByClass.get(key);
 }
 
 export async function getSubjectsForStudent(studentId) {
@@ -110,6 +176,7 @@ export async function getSubjectByCode(code) {
 export async function addSubject(subjectData) {
   try {
     await subjectService.create(subjectData);
+    clearSubjectCaches();
     return true;
   } catch (error) {
     alert(error.message);
@@ -120,6 +187,7 @@ export async function addSubject(subjectData) {
 export async function updateSubject(code, subjectData) {
   try {
     await subjectService.update(code, subjectData);
+    clearSubjectCaches();
     return true;
   } catch (error) {
     alert(error.message);
@@ -129,6 +197,7 @@ export async function updateSubject(code, subjectData) {
 
 export async function deleteSubject(code) {
   await subjectService.delete(code);
+  clearSubjectCaches();
 }
 
 export async function saveResult(studentId, subjectCode, scores, year, term) {
@@ -150,6 +219,7 @@ export async function saveResult(studentId, subjectCode, scores, year, term) {
   };
 
   await resultService.saveResult(resultData);
+  clearResultCaches(studentId);
 }
 
 export async function getStudentResults(studentId, year, term) {
@@ -157,27 +227,31 @@ export async function getStudentResults(studentId, year, term) {
   if (!year) year = settings.currentAcademicYear;
   if (!term) term = settings.currentTerm;
 
-  const results = await resultService.getResults({
-    studentId,
-    academicYear: year,
-    term,
-  });
+  const key = `${studentId}::${year}::${term}`;
+  if (!cache.studentResults.has(key)) {
+    cache.studentResults.set(
+      key,
+      (async () => {
+        const results = await resultService.getResults({
+          studentId,
+          academicYear: year,
+          term,
+        });
 
-  // The frontend expects a specific structure: { subjects: { code: result } }
-  // The backend returns an array of result objects.
-  // We need to transform it to match what frontend expects if we want to minimize frontend changes.
-
-  const formattedResults = { subjects: {} };
-
-  if (Array.isArray(results)) {
-    results.forEach((result) => {
-      formattedResults.subjects[result.subjectCode] = result;
-    });
-  } else {
-    console.error("Expected array of results but got:", results);
+        const formattedResults = { subjects: {} };
+        if (Array.isArray(results)) {
+          results.forEach((result) => {
+            formattedResults.subjects[result.subjectCode] = result;
+          });
+        } else {
+          console.error("Expected array of results but got:", results);
+        }
+        return formattedResults;
+      })()
+    );
   }
 
-  return formattedResults;
+  return await cache.studentResults.get(key);
 }
 
 export async function getResultsByClass(classLevel, subjectCode, year, term) {
@@ -185,23 +259,30 @@ export async function getResultsByClass(classLevel, subjectCode, year, term) {
   if (!year) year = settings.currentAcademicYear;
   if (!term) term = settings.currentTerm;
 
-  const results = await resultService.getResults({
-    classLevel,
-    subjectCode,
-    academicYear: year,
-    term,
-  });
+  const key = `${classLevel || "__all__"}::${subjectCode || "__all__"}::${year}::${term}`;
+  if (!cache.resultsByClassAndSubject.has(key)) {
+    cache.resultsByClassAndSubject.set(
+      key,
+      (async () => {
+        const results = await resultService.getResults({
+          classLevel,
+          subjectCode,
+          academicYear: year,
+          term,
+        });
 
-  // Transform to map by studentId for easy lookup
-  const resultsMap = {};
-  results.forEach((result) => {
-    // result.studentId is populated, so we use _id
-    if (result.studentId && result.studentId._id) {
-      resultsMap[result.studentId._id] = result;
-    }
-  });
+        const resultsMap = {};
+        results.forEach((result) => {
+          if (result.studentId && result.studentId._id) {
+            resultsMap[result.studentId._id] = result;
+          }
+        });
+        return resultsMap;
+      })()
+    );
+  }
 
-  return resultsMap;
+  return await cache.resultsByClassAndSubject.get(key);
 }
 
 export async function calculatePositions(classLevel, subjectCode, year, term) {
@@ -215,6 +296,7 @@ export async function calculatePositions(classLevel, subjectCode, year, term) {
     academicYear: year,
     term,
   });
+  clearResultCaches();
 }
 
 export async function getBroadsheetData(classLevel, year, term) {
@@ -222,35 +304,36 @@ export async function getBroadsheetData(classLevel, year, term) {
   if (!year) year = settings.currentAcademicYear;
   if (!term) term = settings.currentTerm;
 
-  // 1. Get All Students in Class
-  const students = await getStudentsByClass(classLevel);
+  const key = `${classLevel || "__all__"}::${year}::${term}`;
+  if (!cache.broadsheetData.has(key)) {
+    cache.broadsheetData.set(
+      key,
+      (async () => {
+        const students = await getStudentsByClass(classLevel);
+        const subjects = await getSubjectsByClass(classLevel);
+        const allResults = await resultService.getResults({
+          classLevel,
+          academicYear: year,
+          term,
+        });
 
-  // 2. Get All Subjects for Class
-  const subjects = await getSubjectsByClass(classLevel);
+        const resultsMap = {};
+        allResults.forEach((r) => {
+          const sId = r.studentId._id || r.studentId;
+          if (!resultsMap[sId]) {
+            resultsMap[sId] = {};
+          }
+          resultsMap[sId][r.subjectCode] = r;
+        });
 
-  // 3. Get All Results for Class
-  // We use the raw service call to get the flat array
-  const allResults = await resultService.getResults({
-    classLevel,
-    academicYear: year,
-    term,
-  });
+        return {
+          students,
+          subjects,
+          results: resultsMap,
+        };
+      })()
+    );
+  }
 
-  // 4. Organize Results by StudentID -> SubjectCode
-  const resultsMap = {}; // { studentId: { subjectCode: { total: 50, ... } } }
-
-  allResults.forEach((r) => {
-    // Ensure we have a valid student reference
-    const sId = r.studentId._id || r.studentId;
-    if (!resultsMap[sId]) {
-      resultsMap[sId] = {};
-    }
-    resultsMap[sId][r.subjectCode] = r;
-  });
-
-  return {
-    students,
-    subjects,
-    results: resultsMap,
-  };
+  return await cache.broadsheetData.get(key);
 }

@@ -206,6 +206,33 @@
         font-size: 16px;
       }
 
+      .class-grouping-list {
+        margin-top: 14px;
+        display: grid;
+        gap: 8px;
+      }
+
+      .class-group-row {
+        display: grid;
+        grid-template-columns: 1fr 220px;
+        gap: 10px;
+        align-items: center;
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 10px 12px;
+      }
+
+      .class-group-name {
+        font-size: 13px;
+        font-weight: 600;
+        color: #1f2937;
+      }
+
+      .class-group-row select {
+        width: 100%;
+      }
+
       /* Buttons */
       .form-actions {
         display: flex;
@@ -460,6 +487,7 @@
                         </button>
                       </div>
                       <ul id="classesList" class="items-list"></ul>
+                      <div id="classGroupingList" class="class-grouping-list"></div>
                     </div>
                   </div>
 

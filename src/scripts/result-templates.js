@@ -13,6 +13,7 @@ import backgroundImgUrl from "../public/download.jpeg";
 const cache = {
   settingsPromise: null,
   settingsValue: null,
+  fontLoadPromise: null,
   schoolNameImagePromise: null,
   preciousSchoolNameImagePromise: null,
   studentsCountByClass: new Map(),
@@ -63,19 +64,31 @@ async function getCachedSubjectsByClass(classLevel) {
   return [...cache.subjectsByClass.get(classLevel)];
 }
 
+async function ensureTemplateFontsLoaded() {
+  if (!cache.fontLoadPromise) {
+    cache.fontLoadPromise = (async () => {
+      try {
+        await Promise.all([
+          document.fonts.load('900 120px "ITC"'),
+          document.fonts.load('700 24px "book-antiqua"'),
+          document.fonts.load('700 24px "rockwell"'),
+        ]);
+        await document.fonts.ready;
+      } catch (error) {
+        // Font loading can fall back on slow connections; keep rendering.
+      }
+    })();
+  }
+  await cache.fontLoadPromise;
+}
+
 // Generate school name as canvas image with ITC font and gradient
 async function generateSchoolNameImage() {
   if (cache.schoolNameImagePromise) {
     return cache.schoolNameImagePromise;
   }
   cache.schoolNameImagePromise = (async () => {
-  // Wait for ITC font to load
-    try {
-      await document.fonts.load("900 120px ITC");
-      await document.fonts.ready;
-    } catch (e) {
-      console.warn("Font loading issue:", e);
-    }
+    await ensureTemplateFontsLoaded();
 
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
@@ -124,12 +137,7 @@ async function generatePreciousFruitSchoolNameImage() {
     return cache.preciousSchoolNameImagePromise;
   }
   cache.preciousSchoolNameImagePromise = (async () => {
-    try {
-      await document.fonts.load("900 120px ITC");
-      await document.fonts.ready;
-    } catch (e) {
-      console.warn("Font loading issue:", e);
-    }
+    await ensureTemplateFontsLoaded();
 
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
@@ -169,8 +177,22 @@ async function generatePreciousFruitSchoolNameImage() {
 }
 
 // Determine which template to use based on class level
-function getTemplateType(classLevel) {
+function getTemplateType(classLevel, settings = {}) {
   const level = classLevel.toUpperCase();
+  const classGroups = settings.classGroups || {};
+
+  if (Array.isArray(classGroups.prenursery) && classGroups.prenursery.includes(classLevel)) {
+    return "prenursery";
+  }
+  if (Array.isArray(classGroups.primary) && classGroups.primary.includes(classLevel)) {
+    return "primary";
+  }
+  if (Array.isArray(classGroups.jss) && classGroups.jss.includes(classLevel)) {
+    return "secondary";
+  }
+  if (Array.isArray(classGroups.ss) && classGroups.ss.includes(classLevel)) {
+    return "secondary";
+  }
 
   // Pre-nursery template: Nursery1, KG1, KG2
   if (level === "NURSERY1" || level === "KG1" || level === "KG2") {
@@ -193,7 +215,8 @@ export async function generateResultSheet(
   year,
   metadata = {}
 ) {
-  const templateType = getTemplateType(student.currentClass);
+  const settings = await getCachedSettings();
+  const templateType = getTemplateType(student.currentClass, settings);
 
   // Route to appropriate template
   if (templateType === "prenursery") {
@@ -1052,16 +1075,19 @@ export function getResultStyles() {
     @font-face {
       font-family: "ITC";
       src: url(${itcFontUrl});
+      font-display: swap;
     }
     
     @font-face {
       font-family: "book-antiqua";
       src: url(${bookAntiquaFontUrl});
+      font-display: swap;
     }
     
     @font-face {
       font-family: "rockwell";
       src: url(${rockwellFontUrl});
+      font-display: swap;
     }
 
     .resu-back {

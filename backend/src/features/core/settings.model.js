@@ -62,6 +62,23 @@ const settingsSchema = mongoose.Schema(
       jss: { type: [String], default: [] },
       ss: { type: [String], default: [] },
     },
+    classGroups: {
+      prenursery: { type: [String], default: ["Nursery1", "KG1", "KG2"] },
+      primary: {
+        type: [String],
+        default: [
+          "Nursery2",
+          "Primary1",
+          "Primary2",
+          "Primary3",
+          "Primary4",
+          "Primary5",
+          "Primary6",
+        ],
+      },
+      jss: { type: [String], default: ["JSS1", "JSS2", "JSS3"] },
+      ss: { type: [String], default: ["SS1", "SS2", "SS3"] },
+    },
   },
   {
     timestamps: true,
