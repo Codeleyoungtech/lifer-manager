@@ -2,6 +2,7 @@ const Student = require("../students/student.model");
 const Attendance = require("./attendance.model");
 const Result = require("../results/result.model");
 const ResultMetadata = require("../results/result-metadata.model");
+const Settings = require("./settings.model");
 
 const csvEscape = (value) => {
   const text = value === undefined || value === null ? "" : String(value);
@@ -15,6 +16,53 @@ const toCsv = (headers, rows) => {
   );
   return [headerLine, ...rowLines].join("\n");
 };
+
+const normalizePhone = (value) => String(value || "").replace(/\D/g, "");
+
+const vCardEscape = (value) =>
+  String(value || "")
+    .replace(/\\/g, "\\\\")
+    .replace(/\n/g, "\\n")
+    .replace(/;/g, "\\;")
+    .replace(/,/g, "\\,");
+
+const getParentContactPrefix = (classLevel, settings = {}) => {
+  const classGroups = settings.classGroups || {};
+
+  if (
+    Array.isArray(classGroups.jss) &&
+    classGroups.jss.includes(classLevel)
+  ) {
+    return "MMLC";
+  }
+
+  if (
+    Array.isArray(classGroups.ss) &&
+    classGroups.ss.includes(classLevel)
+  ) {
+    return "MMLC";
+  }
+
+  const level = String(classLevel || "").toUpperCase();
+  if (level.includes("JSS") || /^SS/.test(level)) {
+    return "MMLC";
+  }
+
+  return "PFBS";
+};
+
+const toVcf = (contacts) =>
+  contacts
+    .map(({ name, phone }) =>
+      [
+        "BEGIN:VCARD",
+        "VERSION:3.0",
+        `FN:${vCardEscape(name)}`,
+        `TEL;TYPE=CELL:${vCardEscape(phone)}`,
+        "END:VCARD",
+      ].join("\n")
+    )
+    .join("\n");
 
 const exportStudents = async (req, res, next) => {
   try {
@@ -38,6 +86,48 @@ const exportStudents = async (req, res, next) => {
       `attachment; filename="students-export.csv"`
     );
     res.status(200).send(csv);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const exportParentContacts = async (req, res, next) => {
+  try {
+    const [settings, students] = await Promise.all([
+      Settings.findOne().select("classGroups"),
+      Student.find({ contactPhone: { $exists: true, $ne: "" } })
+        .select("guardianName contactPhone currentClass firstName otherNames")
+        .sort({ currentClass: 1, guardianName: 1, firstName: 1 }),
+    ]);
+
+    const seenPhones = new Set();
+    const contacts = [];
+
+    students.forEach((student) => {
+      const normalizedPhone = normalizePhone(student.contactPhone);
+      if (!normalizedPhone || seenPhones.has(normalizedPhone)) return;
+
+      seenPhones.add(normalizedPhone);
+      const prefix = getParentContactPrefix(student.currentClass, settings || {});
+      const guardianName =
+        String(student.guardianName || "").trim() ||
+        `${student.firstName || ""} ${student.otherNames || ""}`.trim() ||
+        "Parent";
+
+      contacts.push({
+        name: `${prefix} ${guardianName} LP`.trim(),
+        phone: student.contactPhone,
+      });
+    });
+
+    const vcf = toVcf(contacts);
+
+    res.setHeader("Content-Type", "text/vcard; charset=utf-8");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="parent-contacts.vcf"`
+    );
+    res.status(200).send(vcf);
   } catch (error) {
     next(error);
   }
@@ -209,6 +299,7 @@ const exportComments = async (req, res, next) => {
 
 module.exports = {
   exportStudents,
+  exportParentContacts,
   exportAttendance,
   exportResults,
   exportComments,

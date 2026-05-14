@@ -48,7 +48,8 @@ function setupEvents() {
   document.querySelectorAll(".export-btn").forEach((button) => {
     button.addEventListener("click", async (event) => {
       const type = event.currentTarget.dataset.type;
-      await exportCsv(type);
+      const extension = event.currentTarget.dataset.extension || "csv";
+      await exportFile(type, extension);
     });
   });
 
@@ -352,7 +353,7 @@ async function setCurrentTermLock(shouldLock) {
   }
 }
 
-async function exportCsv(type) {
+async function exportFile(type, extension = "csv") {
   const token = localStorage.getItem("token");
   if (!token) {
     showNotification("Please login again", "error");
@@ -375,7 +376,8 @@ async function exportCsv(type) {
     const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
     link.href = url;
-    link.download = `${type}-export.csv`;
+    link.download =
+      extension === "vcf" ? `${type}.vcf` : `${type}-export.${extension}`;
     document.body.appendChild(link);
     link.click();
     link.remove();

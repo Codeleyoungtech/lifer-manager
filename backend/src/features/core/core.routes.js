@@ -56,6 +56,12 @@ router.get(
   exportController.exportStudents
 );
 router.get(
+  "/export/parent-contacts",
+  protect,
+  authorize("admin", "principal"),
+  exportController.exportParentContacts
+);
+router.get(
   "/export/attendance",
   protect,
   authorize("admin", "principal"),
